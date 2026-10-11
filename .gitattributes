@@ -1,0 +1,10 @@
+# Portable source files stay LF on every platform, regardless of global autocrlf.
+* text=auto eol=lf
+*.db -text
+*.gguf -text
+*.safetensors -text
+*.png -text
+*.jpg -text
+*.ico -text
+*.ttf -text
+*.otf -text

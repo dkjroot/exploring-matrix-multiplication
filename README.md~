@@ -1,0 +1,167 @@
+# Exploring matrix multiplication
+
+Four implementations use Python arithmetic and lists, without NumPy, SciPy,
+BLAS, or another matrix multiplication library. Python 3.10 or newer is required;
+there are no third-party runtime or test dependencies.
+
+| Algorithm | Module | Recursive scheme | Square arithmetic exponent |
+| --- | --- | --- | --- |
+| Naive | `matrix_multiplication/naive.py` | Row-by-column dot products | 3 |
+| Strassen | `matrix_multiplication/strassen.py` | Seven products; 18 additions/subtractions per 2-by-2 block level | log₂(7), about 2.8074 |
+| Strassen-Winograd | `matrix_multiplication/strassen_winograd.py` | Seven products; 15 additions/subtractions per level | log₂(7), about 2.8074 |
+| AlphaEvolve | `matrix_multiplication/alphaevolve.py` | 48 complex-field products per 4-by-4 block level | log₄(48), about 2.7925 |
+
+## Run the explorer
+
+On this Windows machine, use `./python.ps1` in place of `python`: it finds an
+installed Python or the available Codex desktop bundled interpreter. For example,
+`./python.ps1 explore.py --self-test`. On another machine with Python installed,
+the commands below run directly.
+
+The AlphaEvolve notebook and extracted coefficients are local research data,
+excluded from Git. They have already been imported in this checkout. In a fresh
+checkout, import them explicitly with the standard-library-only tool:
+
+```powershell
+python tools/import_alphaevolve.py --download
+```
+
+If you downloaded the notebook manually, use
+`python tools/import_alphaevolve.py "path/to/mathematical_results.ipynb"` instead.
+The importer reads literal data and never runs notebook code. It verifies all
+4,096 coefficients of the rank-48 tensor identity before saving the data.
+
+```powershell
+python explore.py
+python explore.py --list
+python explore.py --algorithm all --a "[[1,2,3],[4,5,6]]" --b "[[7,8],[9,10],[11,12]]"
+python explore.py --algorithm alphaevolve --a "[[1j,2],[3,4j]]" --b "[[5,6],[7,8]]"
+python explore.py --self-test
+```
+
+The explorer prints the product and verifies it against independent exact
+rational arithmetic. It exits with status 1 if an algorithm errors or its result
+fails verification. `--atol` and `--rtol` configure floating-point tolerances.
+`python -m unittest discover -s tests -v` runs the same regression suite.
+
+## Shared Python interface
+
+```python
+from fractions import Fraction
+from matrix_multiplication import multiply, strassen
+
+a = [[Fraction(1, 3), 2], [3, 4]]
+b = [[5, 6], [7, 8]]
+product = multiply(a, b, algorithm="alphaevolve", cutoff=1)
+same_product = strassen.multiply(a, b, cutoff=1)
+```
+
+Each module provides `multiply(a, b, *, cutoff=1)`. Inputs are nonempty rectangular
+lists or tuples of rows, containing integers, standard-library rational numbers,
+finite floats, or finite complex values. The left column count must equal the
+right row count. Empty matrices and zero-length rows are rejected because these
+representations cannot express their dimensions unambiguously. Inputs are never
+modified; results are new lists of rows.
+
+Recursive algorithms pad to a square power of two (Strassen variants) or four
+(AlphaEvolve), then crop the product. This supports odd and rectangular shapes,
+but padding can be expensive for skinny matrices. `cutoff` selects the largest
+classical leaf size; the default of 1 exercises full recursion. Naive validates
+this option for interface consistency but always performs classical multiplication.
+These are readable research implementations; smaller arithmetic exponents do
+not guarantee smaller Python runtimes. Profiling and instrumentation are deferred.
+
+## Correctness and accuracy
+
+The tests check every base matrix-unit pair: 16 pairs for each 2-by-2 scheme and
+256 pairs for AlphaEvolve's 4-by-4 scheme. Since these formulas are bilinear,
+those checks establish their complete base identities. Block recursion preserves
+these identities inductively; zero padding and cropping preserve the requested
+product. The tests additionally exercise recursion, shapes, identity and zero
+matrices, seeded random inputs, exact fractions, large integers, complex values,
+input immutability, malformed inputs, and coefficient corruption.
+
+Integer and rational inputs are checked by exact equality. AlphaEvolve represents
+complex intermediates as real/imaginary pairs and stores doubled Gaussian-integer
+coefficients, preserving exact arithmetic for real integer and Fraction inputs.
+Each recursive level removes a common factor of eight exactly. Built-in complex
+inputs retain Python's floating-point semantics. The 48-product count describes
+complex-field products; the implementation expands a complex product into four
+real products, and also performs coefficient scaling and additions.
+
+For float and complex inputs, an independent Fraction reference represents the
+actual binary input values exactly. Every result entry must satisfy
+`abs(error) <= atol + rtol * abs(reference)` (defaults: 1e-9 for both tolerances).
+No finite test suite proves all floating-point inputs accurate: cancellation,
+overflow, and operation ordering matter even for the naive algorithm. A regression
+case deliberately demonstrates cancellation and verifies that the harness reports
+the error instead of accepting naive output as ground truth.
+
+## Why there is no 2.25 implementation
+
+The October 2026 OpenAI manuscript proves an asymptotic arithmetic bound of
+`O_epsilon(n^(9/4 + epsilon))` over the complex numbers. Its final step chooses a
+base size `u` and a rank decomposition with fewer than `u^(9/4 + delta)` products
+by existence; it does not supply that size or the decomposition's coefficients
+(Section 5, page 9). This does not give us an explicit finite multiplication scheme
+to implement and test. The explorer reports this limit rather than labelling a
+different algorithm as 2.25. The earlier Coppersmith-Winograd/laser-method exponent
+bounds likewise are not represented by Strassen-Winograd, which is a different
+algorithm. Deriving usable finite schemes from those results is further research.
+
+## Sources
+
+https://en.wikipedia.org/wiki/AlphaTensor
+https://en.wikipedia.org/wiki/Computational_complexity_of_matrix_multiplication
+https://pubmed.ncbi.nlm.nih.gov/36198780/
+https://arxiv.org/pdf/1612.05766
+https://arxiv.org/html/2608.16884v1
+https://ieee-focs.org/FOCS-2018-Papers/pdfs/59f580.pdf
+https://arxiv.org/pdf/2410.21050
+http://par.nsf.gov/servlets/purl/10524471
+https://www.quantamagazine.org/new-breakthrough-brings-matrix-multiplication-closer-to-ideal-20240307/
+https://binaryverseai.com/openai-matrix-multiplication/
+https://siliconangle.com/2026/10/07/openai-publishes-722-ai-generated-math-discoveries-in-major-scientific-milestone/
+https://en.wikipedia.org/wiki/Strassen_algorithm
+https://www-auth.cs.wisc.edu/lists/theory-reading/2009-December/pdfmN6UVeUiJ3.pdf
+https://people.math.harvard.edu/~knill/history/matrix/
+
+## Additional background references
+
+Local copies are stored in `Background Research/`, which is excluded from Git. The directory includes `SOURCES.md` with download details and notes on why these references were selected. The existing literature review is preserved there.
+
+### Recent primary results
+
+- [An Upper Bound of 9/4 for the Matrix Multiplication Exponent](https://raw.githubusercontent.com/openai/math/main/preprints/Matrix-Multiplication-Nine-Fourths-October-2-2026/paper.pdf)
+- [Complex Matrix Multiplication Below 2.258 and Rectangular Bounds](https://raw.githubusercontent.com/openai/math/main/preprints/Complex-Matrix-Multiplication-Below-2.258-and-Rectangular-Bounds-September-24-2026/Complex-Matrix-Multiplication-Below-2.258-and-Rectangular-Bounds-September-24-2026.pdf)
+- [Staggered extraction for exact matrix multiplication over every field](https://raw.githubusercontent.com/openai/math/main/preprints/Staggered-extraction-for-exact-matrix-multiplication-over-every-field-September-24-2026/Staggered-extraction-for-exact-matrix-multiplication-over-every-field-September-24-2026.pdf)
+- [OpenAI family 107 formalization notes](https://raw.githubusercontent.com/openai/math/main/lean/docs/107.md)
+
+### AI-assisted discovery and earlier exponent improvements
+
+- [AlphaEvolve: A coding agent for scientific and algorithmic discovery](https://arxiv.org/pdf/2506.13131)
+- [DeepMind's published AlphaEvolve coefficient data and verification notebook](https://github.com/google-deepmind/alphaevolve_results)
+- [AlphaEvolve notebook download](https://raw.githubusercontent.com/google-deepmind/alphaevolve_results/main/mathematical_results.ipynb)
+- [More Asymmetry Yields Faster Matrix Multiplication](https://arxiv.org/pdf/2404.16349)
+
+### Numerical accuracy and practical performance
+
+- [Fast matrix multiplication is stable](https://arxiv.org/pdf/math/0603207)
+- [Improving the numerical stability of fast matrix multiplication](https://arxiv.org/pdf/1507.00687)
+- [Strassen's Algorithm Reloaded](https://jianyuhuang.com/papers/sc16.pdf)
+
+### Alternative approaches and barriers
+
+- [A group-theoretic approach to fast matrix multiplication](https://arxiv.org/pdf/math/0307321)
+- [Barriers for fast matrix multiplication from irreversibility](https://arxiv.org/pdf/1812.06952)
+- [Limits on the Universal Method for Matrix Multiplication](https://arxiv.org/pdf/1812.08731)
+
+### Release context and catalogue
+
+- [OpenAI mathematical manuscript catalogue](https://raw.githubusercontent.com/openai/math/main/CONTENTS.md)
+- [OpenAI mathematics release README](https://raw.githubusercontent.com/openai/math/main/README.md)
+
+### Additional download endpoints for the original sources
+
+- [AlphaTensor full paper (Nature)](https://www.nature.com/articles/s41586-022-05172-4.pdf)
+- [PubMed record export (NCBI XML)](https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=36198780&retmode=xml)

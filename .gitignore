@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local reference material from external authors
+/Background Research/
+
+# Generated experiment visualizations; publish selected reports manually
+/outputs/
