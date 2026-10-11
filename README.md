@@ -1,0 +1,16 @@
+Sources:
+https://en.wikipedia.org/wiki/AlphaTensor
+https://en.wikipedia.org/wiki/Computational_complexity_of_matrix_multiplication
+https://pubmed.ncbi.nlm.nih.gov/36198780/
+https://arxiv.org/pdf/1612.05766
+https://arxiv.org/html/2608.16884v1
+https://ieee-focs.org/FOCS-2018-Papers/pdfs/59f580.pdf
+https://arxiv.org/pdf/2410.21050
+http://par.nsf.gov/servlets/purl/10524471
+https://www.quantamagazine.org/new-breakthrough-brings-matrix-multiplication-closer-to-ideal-20240307/
+https://binaryverseai.com/openai-matrix-multiplication/
+https://notebook.google.com/notebook/ce0de122-97d4-4002-a337-1e63fa144855
+https://siliconangle.com/2026/10/07/openai-publishes-722-ai-generated-math-discoveries-in-major-scientific-milestone/
+https://en.wikipedia.org/wiki/Strassen_algorithm
+https://www-auth.cs.wisc.edu/lists/theory-reading/2009-December/pdfmN6UVeUiJ3.pdf
+https://people.math.harvard.edu/~knill/history/matrix/
