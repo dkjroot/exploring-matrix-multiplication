@@ -7,8 +7,10 @@ The renderer must preserve evidence and make model/measurement differences visib
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
+from xml.etree import ElementTree
 
 from matrix_multiplication import reporting as visual
 
@@ -49,6 +51,49 @@ class VisualizationTests(unittest.TestCase):
         self.assertIn('href="measurements.json"', html)
         self.assertNotIn("<script", html)
         self.assertNotIn('src="http', html)
+
+    def test_all_chart_axes_name_the_quantity_and_logarithmic_scale(self):
+        """Every main chart labels both axes, including depth and secondary bars."""
+        html = self.render(self.fixture())
+        charts = [ElementTree.fromstring(svg) for svg in re.findall(r'<svg\b.*?</svg>', html, re.DOTALL)]
+        self.assertGreaterEqual(len(charts), 5)
+        for chart in charts:
+            labels = {node.attrib["data-axis"]: node.text for node in chart.findall("text") if "data-axis" in node.attrib}
+            self.assertEqual(set(labels), {"x", "y"})
+            self.assertTrue(all(labels.values()))
+        self.assertIn("Algorithm and recursion depth", html)
+        self.assertIn("Elapsed time (seconds)", html)
+        self.assertIn("Python allocations (bytes)", html)
+        curves = visual.curve_chart("Growth", [{"label": "Example", "color": 0, "points": [(1, 1), (2, 7)]}],
+                                    logarithmic=True, y_label="Data multiplications (count)")
+        chart = ElementTree.fromstring(re.search(r'<svg\b.*?</svg>', curves, re.DOTALL).group())
+        labels = [node.text for node in chart.findall("text") if "data-axis" in node.attrib]
+        self.assertEqual(len(labels), 2)
+        self.assertTrue(all("log scale" in label for label in labels))
+
+    def test_legends_group_related_models_and_do_not_rely_on_color_alone(self):
+        """Isolation retains associated models; markers and legend text remain distinct."""
+        series = [{"label": f"cutoff 1 {kind}", "color": 0, "kind": kind, "points": [(1, 1), (2, 7)]}
+                  for kind in ("observed", "ideal", "prediction")]
+        series.append({"label": "<unsafe> cutoff 2", "color": 1, "points": [(1, 1), (2, 7)]})
+        html = visual.curve_chart("Growth", series)
+        svg = ElementTree.fromstring(re.search(r'<svg\b.*?</svg>', html, re.DOTALL).group())
+        groups = [node for node in svg.findall("g") if node.attrib.get("class") == "chart-series"]
+        self.assertEqual([node.attrib["data-series-group"] for node in groups], ["g0", "g0", "g0", "g1"])
+        self.assertEqual({node.attrib["data-series-kind"] for node in groups[:3]}, {"observed", "ideal", "prediction"})
+        self.assertTrue(groups[0].findall(".//circle"))
+        self.assertTrue(groups[3].findall(".//rect"))
+        self.assertIn('stroke-dasharray="8 6"', html)
+        self.assertIn(':has(.legend-button[data-series-group="g0"]:hover)', html)
+        self.assertIn(':has(.legend-button[data-series-group="g0"]:focus-visible)', html)
+        self.assertIn('.work-chart:not(:has(.legend-button:hover))', html)
+        self.assertIn('visibility:hidden', html)
+        self.assertEqual(html.count('class="legend-button"'), 4)
+        self.assertIn('Some measured series have identical counts and overlap', html)
+        self.assertNotIn('<unsafe>', html)
+        self.assertIn('&lt;unsafe&gt;', html)
+        self.assertNotIn('<script', html)
+        self.assertIn('visibility:visible!important', visual.STYLE)
 
     def test_missing_values_are_not_zero_and_zero_is_not_missing(self):
         """Distinguish a real zero-width bar from absent or unusable numeric data."""

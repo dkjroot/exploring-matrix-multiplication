@@ -18,6 +18,21 @@ def arithmetic_model(name):
     floating-point evaluation. Fixed leaf cutoffs preserve the recursive exponent;
     fixing recursion depth while matrix size grows would instead yield cubic work.
     """
+    if name == "smirnov":
+        # The family parameters are known even before downloading coefficients.
+        # Successful runs replace this declaration with the verified plan model.
+        return {
+            "square_arithmetic_exponent": log(64000, 54),
+            "exponent_expression": "log_54(64000)",
+            "base_dimension": 54, "base_bilinear_rank": 64000,
+            "recurrence": "T(n) = 64000 T(n/54) + O(n^2)",
+            "parameter_source": "declared three-stage Smirnov construction; not inferred from executions",
+            "stage_dimensions": [[3, 3, 6], [3, 6, 3], [6, 3, 3]],
+            "arithmetic_domain": "real or complex field",
+            "identity_validation": "declared parameters only; execution requires verified local coefficients",
+            "assumptions": ["unit-cost field arithmetic", "fixed classical leaf cutoff", "balanced repeating cycle"],
+            "scope": "algorithm family; not an exponent estimated from this run",
+        }
     radix, rank = {
         "naive": (None, None), "strassen": (2, 7),
         "strassen-winograd": (2, 7), "alphaevolve": (4, 48),

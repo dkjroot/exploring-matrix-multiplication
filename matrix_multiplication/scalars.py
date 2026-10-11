@@ -8,18 +8,24 @@ No zero/one shortcuts silently change the reference operation schedule.
 """
 
 import operator
+from dataclasses import dataclass
 
 from .instrumentation import count, evaluate, scope
 
 
+@dataclass(frozen=True, slots=True, repr=False)
 class Gaussian:
-    """Represent real/imaginary components without converting exact values to float."""
+    """An immutable real/imaginary pair, preserving supplied exact components.
 
-    __slots__ = ("real", "imag")
+    Arithmetic always constructs a new pair rather than altering its operands.
+    This matters particularly for coefficients: once a scheme has passed exact
+    verification, later callers must not be able to change its stored constants.
+    The generated dataclass constructor stores components without float coercion;
+    coefficient validation belongs to scheme_io, public input validation to common.
+    """
 
-    def __init__(self, real=0, imag=0):
-        """Store components as supplied; integers and Fractions remain exact."""
-        self.real, self.imag = real, imag
+    real: object = 0
+    imag: object = 0
 
     @classmethod
     def from_number(cls, value):

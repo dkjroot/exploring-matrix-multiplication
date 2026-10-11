@@ -90,22 +90,42 @@ def zeros(rows, columns=None):
         return [[0 for _ in range(columns)] for _ in range(rows)]
 
 
-def padded(matrix, size):
+def padded(matrix, size, columns=None):
     """Copy a rectangular input into a zero square without mutating its rows."""
     with scope("matrix.pad", source_rows=len(matrix), source_columns=len(matrix[0]), size=size):
-        result = zeros(size)
+        result = zeros(size, columns)
         for i, row in enumerate(matrix):
             result[i][:len(row)] = row
             count("matrix_cells_copied", len(row))
         return result
 
 
-def padded_size(rows, inner, columns, radix):
-    """Choose a radix power covering all dimensions, so splitting stays exact."""
-    size = 1
+def padded_size(rows, inner, columns, radix, *, radices=None):
+    """Cover dimensions with a fixed radix power or a repeating radix prefix.
+
+    A mixed plan pads to a product of successive radices, so every chosen split
+    divides exactly. It does not round using the whole cycle's larger radix.
+    """
+    size, depth = 1, 0
     while size < max(rows, inner, columns):
-        size *= radix
+        size *= radices[depth % len(radices)] if radices else radix
+        depth += 1
     return size
+
+
+def padded_dimensions(rows, inner, columns, shapes):
+    """Cover inputs with successive rectangular stage shapes, keeping splits exact.
+
+    Each tuple describes one stage's row, inner, and column block counts. Multiply
+    prefixes of the schedule until all three padded dimensions cover the inputs.
+    Taking the prefix rather than the full cycle avoids unnecessary levels while
+    ensuring that every later integer block division has zero remainder.
+    """
+    shape, depth = (1, 1, 1), 0
+    while any(p < requested for p, requested in zip(shape, (rows, inner, columns))):
+        shape = tuple(p*q for p, q in zip(shape, shapes[depth % len(shapes)]))
+        depth += 1
+    return shape
 
 
 def crop(matrix, rows, columns):
@@ -124,18 +144,21 @@ def map_entries(matrix, function, *, name="matrix.map"):
 
 
 def recursive_product(a, b, cutoff, radix, kernel, *, name="recursive",
-                      instrumentation=None, encode=None, decode=None):
+                      instrumentation=None, encode=None, decode=None, radices=None):
     """Run the shared public contract around an algorithm's square kernel.
 
     Encoding/decoding lets a scheme choose an exact scalar domain independently
     of traversal. Observation ends before independent correctness verification.
+    Optional radices select composition padding; the kernel uses that same cycle.
     """
     with session(instrumentation), scope(f"{name}.multiply", radix=radix, cutoff=cutoff):
         rows, inner, columns = validate(a, b, cutoff)
-        size = padded_size(rows, inner, columns, radix)
+        rectangular = radices and isinstance(radices[0], tuple)
+        size = None if rectangular else padded_size(rows, inner, columns, radix, radices=radices)
+        pm, pk, pn = padded_dimensions(rows, inner, columns, radices) if rectangular else (size, size, size)
         count("input_cells", rows * inner + inner * columns)
-        count("padded_input_cells", 2 * size * size)
-        left, right = padded(a, size), padded(b, size)
+        count("padded_input_cells", pm*pk + pk*pn)
+        left, right = padded(a, pm, pk), padded(b, pk, pn)
         if encode is not None:
             left = map_entries(left, encode, name="scalar.encode_matrix")
             right = map_entries(right, encode, name="scalar.encode_matrix")
@@ -143,25 +166,41 @@ def recursive_product(a, b, cutoff, radix, kernel, *, name="recursive",
         return map_entries(result, decode, name="scalar.decode_matrix") if decode else result
 
 
-def recursive_kernel(a, b, cutoff, radix, step, *, name, depth=0):
+def recursive_kernel(a, b, cutoff, radix, step, *, name, depth=0, select_step=None):
     """Traverse recursion once for all schemes; ``step`` supplies only its formula.
 
     ``step(a_blocks, b_blocks, product)`` forms input combinations, calls the
     supplied child product, and returns output blocks in row-major order. The
     number of calls is chosen by the scheme (7 or 48), never by instrumentation.
+    ``select_step(depth)`` optionally supplies a mixed plan's radix and formula;
+    leaf selection, child traversal, observation, and split/join remain shared.
     """
     with scope(f"{name}.node", depth=depth, size=len(a), cutoff=cutoff):
         count("recursive_nodes")
-        if len(a) <= cutoff:
+        if max(len(a), len(b), len(b[0])) <= cutoff:
+            # The leaf condition uses all three dimensions. In a rectangular
+            # cycle the row count alone can be small while the shared dimension
+            # still needs another split. Changing this predicate would change
+            # both measured work and the independent recurrence budget.
             count("classical_leaves")
             return classical(a, b)
 
+        # A composition selects a formula by depth; existing algorithms retain
+        # their fixed formula. Padding follows the same radix schedule.
+        if select_step is not None:
+            radix, step = select_step(depth)
+
         def product(left, right):
             """Descend one level with the same scheme and incremented trace depth."""
-            return recursive_kernel(left, right, cutoff, radix, step, name=name, depth=depth + 1)
+            return recursive_kernel(left, right, cutoff, radix, step, name=name,
+                                    depth=depth + 1, select_step=select_step)
 
-        blocks = step(split(a, radix), split(b, radix), product)
-        return join(blocks, radix)
+        m, k, n = radix if isinstance(radix, tuple) else (radix, radix, radix)
+        blocks = step(split(a, m, k), split(b, k, n), product)
+        # The formula chooses how many child products to request; this traversal
+        # only supplies recursion and shapes. That separation lets algorithms
+        # share all observation code without changing their mathematical ranks.
+        return join(blocks, m, n)
 
 
 def add(a, b):
@@ -196,28 +235,39 @@ def accumulate_scaled(target, source, coefficient):
 def linear_combination(blocks, terms):
     """Evaluate sparse (block_index, coefficient) terms in their published order."""
     with scope("block.linear_combination", terms=len(terms), size=len(blocks[0])):
-        result = zeros(len(blocks[0]))
+        result = zeros(len(blocks[0]), len(blocks[0][0]))
         for index, coefficient in terms:
             accumulate_scaled(result, blocks[index], coefficient)
         return result
 
 
-def split(matrix, radix=2):
-    """Copy a square into radix-squared equal blocks in row-major order."""
+def split(matrix, radix=2, columns=None):
+    """Copy a matrix into equal row-major blocks, optionally with rectangular tiling.
+
+    Callers have already padded the shape to be divisible by the stage's row and
+    column counts. Block (i,j) occupies flat position i*columns+j. Independent
+    slices ensure that formula intermediates cannot mutate the caller's matrix.
+    """
     with scope("block.split", size=len(matrix), radix=radix):
-        size = len(matrix) // radix
-        count("matrix_cells_allocated", len(matrix) ** 2)
-        count("matrix_cells_copied", len(matrix) ** 2)
-        return [[row[j * size:(j + 1) * size]
-                 for row in matrix[i * size:(i + 1) * size]]
-                for i in range(radix) for j in range(radix)]
+        columns = radix if columns is None else columns
+        height, width = len(matrix) // radix, len(matrix[0]) // columns
+        count("matrix_cells_allocated", len(matrix) * len(matrix[0]))
+        count("matrix_cells_copied", len(matrix) * len(matrix[0]))
+        return [[row[j * width:(j + 1) * width]
+                 for row in matrix[i * height:(i + 1) * height]]
+                for i in range(radix) for j in range(columns)]
 
 
-def join(blocks, radix=2):
-    """Reverse split, copying row-major output blocks into one fresh square."""
+def join(blocks, radix=2, columns=None):
+    """Reverse split, copying row-major output blocks into a fresh matrix.
+
+    For each block row i, emit its internal rows r. Each such row concatenates
+    internal row r of every block column j, reversing exactly the split ordering.
+    """
     with scope("block.join", block_size=len(blocks[0]), radix=radix):
-        size = len(blocks[0])
-        count("matrix_cells_allocated", (radix * size) ** 2)
-        count("matrix_cells_copied", (radix * size) ** 2)
-        return [[value for j in range(radix) for value in blocks[i * radix + j][r]]
+        columns = radix if columns is None else columns
+        size, width = len(blocks[0]), len(blocks[0][0])
+        count("matrix_cells_allocated", radix * size * columns * width)
+        count("matrix_cells_copied", radix * size * columns * width)
+        return [[value for j in range(columns) for value in blocks[i * columns + j][r]]
                 for i in range(radix) for r in range(size)]

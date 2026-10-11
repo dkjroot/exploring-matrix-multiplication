@@ -28,6 +28,7 @@ flowchart TD
 | Vectors and blocks | `matrix_multiplication/common.py` | Dot products, elementwise loops, sparse linear combinations, split/join, pad/crop |
 | Traversal | `recursive_kernel` and `recursive_product` in `common.py` | Leaf selection, child callbacks, recursion depth, common public flow |
 | Schemes | `matrix_multiplication/schemes.py` | Sparse recipe descriptor, structural validation, U/V products and W accumulation |
+| Rectangular cycle | `matrix_multiplication/rectangular.py` | Smirnov-required cyclic orientation, balanced dimension checks, distinct block-area budgets; shared traversal and primitives |
 | Formulas/adapters | Existing algorithm modules | Algorithm-specific algebra and scalar-domain setup |
 | Correctness | `matrix_multiplication/verification.py` | Independent exact oracle; deliberately does not use the observed arithmetic |
 
@@ -38,6 +39,23 @@ blocks to the same traversal. AlphaEvolve translates its transposed W convention
 once into the generic sparse scheme descriptor, then uses that traversal too.
 
 ## What counts mean
+
+`Composition` selects a stage by recursion depth through the same traversal.
+Its cycle repeats, and padding uses a product of successive stage radices.
+`plan.budget(rows, inner, columns, cutoff=...)` predicts products and total field
+and atomic work independently of execution. Imported schemes count every scale
+and accumulation, including coefficients equal to zero or one. Built-in Strassen
+and Winograd stages preserve their readable formulas and reused intermediates.
+Complex-coefficient plans encode every stage's input as Gaussian pairs, so even
+real-coefficient stages incur component arithmetic; the budget includes that cost.
+Import and exact identity verification are setup work outside the counters.
+Certificate generation and both exact identity checkers are also outside the
+measured execution. The independent checker imports no observation primitives;
+built-in formula extraction explicitly suspends any active observer. Certificates
+establish the mathematical recipe, not the accuracy of operation counters.
+Reports expose each level's stage and dimensions, the cycle recurrence, and budget
+matches. The mixed schedule's asymptotic exponent is not a slope measured from a
+single experiment. See README's import/composition section for the JSON contract.
 
 An observer records **the operations actually executed by this reference
 schedule**, including work on padding and multiplication/addition by zero or one.
@@ -259,3 +277,45 @@ representations (rather than the inputs themselves). Report JSON stores the prof
 trace JSON stores those reports plus retained events. Documentation checking
 requires headers and class/function docstrings in the maintained Python sources,
 including tests and tools. Third-party research snapshots are excluded.
+
+`session(None)` inherits an enclosing observer; recursive primitives use that
+behavior to participate in one experiment. `suspended()` explicitly disables
+observation for setup or observer callbacks and restores the prior context on
+success or failure. Symbolic certificate extraction uses suspension, so building
+a formula inside an active experiment cannot add setup work to its counters.
+
+## Construction and search evidence
+
+`python sweep.py` now runs all implemented report families in one dated output
+tree. Its arithmetic-growth stage keeps clocks and allocation probes disabled.
+Separate 2-by-2 integer and floating-point diagnostic pairs enable primitive
+profiles, Python allocation peaks, and bounded scalar/primitive traces. Those
+pair envelopes remain in their original JSON and are embedded as separately
+scoped references, never assigned to the larger size-sweep samples. Generated
+matrix recipes join the count-only comparison automatically. `--measurements-only`
+retains the original arithmetic-only workflow.
+
+`suite-manifest.json` records stage outcomes, requested budgets, source and
+artifact fingerprints. A failed identity/execution/budget check causes a failed
+suite and nonzero CLI status; a bounded search that does not find its target
+remains valid research evidence and explicitly records the miss. The suite
+checkpoints completed stages, but does not yet resume an interrupted random walk.
+
+The exact tensor generator and search engine perform setup arithmetic on
+coefficients. Their restarts, attempted/accepted flips and splits, height
+rejections, and replayable best path are recorded separately in construction
+reports. We do not currently count every rational operation of the generator.
+These counts are not matrix multiplication execution measurements.
+
+An exported, fully verified `scheme.json` enters the existing composition engine.
+Its input combinations, recursive products, output accumulations, coefficient
+scalings, and any normalizations use the same instrumented execution primitives
+and per-level budgets as imported schemes. The measurement sweep can therefore
+compare a discovered recipe against existing algorithms without changing its
+meaning of products or arithmetic steps. See [CONSTRUCTIONS.md](CONSTRUCTIONS.md).
+
+CW polynomial recovery reports both its polynomial rank-one term count and the
+finite products required by exact interpolation. That is construction evidence
+for a generic tensor, not a measured square multiplier with the CW limiting
+exponent. Extraction and conversion to a verified matrix identity must precede
+such an execution claim.

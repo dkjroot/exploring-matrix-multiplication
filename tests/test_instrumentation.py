@@ -15,6 +15,7 @@ from matrix_multiplication import ALGORITHMS, Instrumentation, alphaevolve, mult
 from matrix_multiplication import scalars
 from matrix_multiplication.instrumentation import session
 from matrix_multiplication.verification import check_product
+from tests.support import available_algorithms, requires_coefficients
 
 
 class InstrumentationTests(unittest.TestCase):
@@ -61,6 +62,7 @@ class InstrumentationTests(unittest.TestCase):
         self.assertEqual(observer.counts["field_additions"], 181)
         self.assertEqual(observer.counts["field_subtractions"], 66)
 
+    @requires_coefficients("alphaevolve")
     def test_alphaevolve_complex_expansion_and_coefficients(self):
         """Separate 48 data products from coefficient work and four-real expansions."""
         observer = Instrumentation()
@@ -75,6 +77,7 @@ class InstrumentationTests(unittest.TestCase):
         self.assertEqual(observer.counts["field_normalizations"], 16)
         self.assertEqual(observer.counts["integer_divmods"], 32)
 
+    @requires_coefficients("alphaevolve")
     def test_alphaevolve_two_level_product_budget(self):
         """Two radix-four levels retain exactly 48 squared data products."""
         observer = Instrumentation(profile=False)
@@ -84,6 +87,7 @@ class InstrumentationTests(unittest.TestCase):
         self.assertEqual(observer.counts["recursive_nodes"], 1 + 48 + 48 ** 2)
         self.assertEqual(observer.products_by_depth, {2: 48 ** 2})
 
+    @requires_coefficients("alphaevolve")
     def test_cold_coefficient_validation_is_not_product_work(self):
         """Cache warming must never change an experiment's arithmetic budget."""
         alphaevolve._factors.cache_clear()
@@ -99,7 +103,7 @@ class InstrumentationTests(unittest.TestCase):
         for a, b in [([[Fraction(1, 3), 2]], [[3], [Fraction(2, 7)]]),
                      ([[1.25, -3.5]], [[2.75], [0.125]]),
                      ([[1j, 2]], [[3], [-4j]])]:
-            for name, implementation in ALGORITHMS.items():
+            for name, implementation in available_algorithms().items():
                 with self.subTest(algorithm=name):
                     expected = implementation(a, b)
                     observer = Instrumentation(trace=True, capture_values=True, trace_limit=50)

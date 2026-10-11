@@ -73,11 +73,8 @@ class Instrumentation:
         if self.sink is not None:
             # Observer callbacks belong to measurement machinery, not algorithm
             # arithmetic. Suspending observation also prevents recursive tracing.
-            token = _ACTIVE.set((None, None))
-            try:
+            with suspended():
                 self.sink(event)
-            finally:
-                _ACTIVE.reset(token)
 
     def _profile(self, name, elapsed, exclusive, operations=None):
         """Aggregate one primitive call without storing a record for every call."""
@@ -109,6 +106,23 @@ class Instrumentation:
             "maximum_depth": self.maximum_depth,
             "retained_trace_events": len(self.events), "dropped_trace_events": self.dropped_events,
         }
+
+
+@contextmanager
+def suspended():
+    """Temporarily exclude setup, verification, or observer callbacks from counts.
+
+    ``session(None)`` means inherit the current observer, which is useful when
+    recursive primitives cooperate. It cannot disable an enclosing experiment.
+    This explicit operation clears both observer and parent span, then restores
+    them even if unobserved work raises. Nesting suspensions is safe because each
+    ContextVar token restores precisely the context it replaced.
+    """
+    token = _ACTIVE.set((None, None))
+    try:
+        yield
+    finally:
+        _ACTIVE.reset(token)
 
 
 @contextmanager

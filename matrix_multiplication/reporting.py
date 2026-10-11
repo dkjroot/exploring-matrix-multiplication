@@ -15,7 +15,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-COLORS = ("#6554c0", "#167d8d", "#be5733", "#446fba", "#91603c")
+# Okabe and Ito's Color Universal Design palette, reordered so the first four
+# series use black, orange, blue, and bluish green rather than adjacent blue/purple.
+# Source and attribution: https://jfly.uni-koeln.de/color/#pallet
+COLORS = ("#000000", "#E69F00", "#0072B2", "#009E73", "#D55E00", "#CC79A7", "#56B4E9", "#F0E442")
 STYLE = """
 :root { color-scheme: light; --ink:#202c40; --muted:#59677a; --line:#dce2eb; }
 * { box-sizing:border-box; } body { margin:0; background:#f4f5f9; color:var(--ink);
@@ -42,9 +45,18 @@ summary { cursor:pointer; font-weight:650; } pre { overflow:auto; max-height:500
 background:#f4f5f9; border-radius:8px; font-size:12px; } a { color:#5745b1; }
 .callout { border-left:4px solid #be5733; padding:12px 18px; background:#fff6ee; border-radius:4px; }
 footer { color:var(--muted); font-size:13px; } .hash { overflow-wrap:anywhere; }
+.chart-legend { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; }
+.legend-button { display:flex; align-items:center; gap:8px; padding:8px 10px;
+background:white; color:var(--ink); border:1px solid var(--line); border-radius:6px;
+font:inherit; font-size:14px; cursor:pointer; text-align:left; }
+.legend-button:hover,.legend-button:focus-visible { background:#edf2f7;
+border-color:var(--ink); outline:2px solid var(--ink); outline-offset:2px; }
+svg.legend-swatch { width:52px; height:18px; margin:0; flex:none; }
+.chart-axis-label { font-size:15px; font-weight:600; }
 @media(max-width:800px) { .grid { grid-template-columns:1fr; } main { padding:20px 14px; } .panel { padding:16px; } }
 @media print { body { background:white; } main { max-width:none; padding:0; } .grid { display:block; }
-.panel { margin:16px 0!important; break-inside:avoid; } .table-wrap { overflow:visible; } a { color:inherit; } }
+.panel { margin:16px 0!important; break-inside:avoid; } .table-wrap { overflow:visible; } a { color:inherit; }
+.work-chart .chart-series { visibility:visible!important; } }
 """
 
 
@@ -137,7 +149,7 @@ def table(headers, rows):
     return f'<div class="table-wrap"><table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
 
 
-def bar_chart(title, entries, unit, *, maximum=None):
+def bar_chart(title, entries, unit, *, maximum=None, category_label="Algorithm / series"):
     """Draw a zero-based linear SVG bar chart with exact values and missing labels.
 
 Each row includes a text value, so tiny bars and zero measurements remain legible.
@@ -149,27 +161,35 @@ Charts are inline vectors: no plotting package, image asset, CDN, or JavaScript.
     if maximum is not None:
         ceiling = max(ceiling, maximum)
     ceiling = ceiling or 1
-    width, left, plot, row_height = 680, 205, 315, 48
-    height = 48 + row_height * len(entries)
+    width, left, plot, row_height = 720, 240, 315, 48
+    # A one-row depth chart still needs enough height for its rotated axis name.
+    plot_height = max(row_height * len(entries), len(category_label) * 7 + 20)
+    plot_bottom = 32 + plot_height
+    height = plot_bottom + 48
     title_markup = text(title)
     parts = [f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{title_markup}">',
              f"<title>{title_markup}</title>",
              f"<desc>Linear bars start at zero. Units: {text(unit)}. Values are labelled in every row.</desc>"]
     for tick in range(5):
         x = left + plot * tick / 4
-        parts.append(f'<line x1="{x}" x2="{x}" y1="25" y2="{height - 8}" stroke="#e4e8ef"/>')
+        parts.append(f'<line x1="{x}" x2="{x}" y1="25" y2="{plot_bottom}" stroke="#e4e8ef"/>')
         parts.append(f'<text x="{x}" y="16" text-anchor="middle" class="axis">{text(display(ceiling * tick / 4))}</text>')
     for index, (label, value) in enumerate(entries):
-        y = 32 + index * row_height
+        y = 32 + (plot_height - row_height * len(entries)) / 2 + index * row_height
         short_label = label if len(label) <= 28 else label[:25] + "…"
         label_size = 14 if len(short_label) > 22 else 16
-        parts.append(f'<text x="8" y="{y + 19}" font-size="{label_size}"><title>{text(label)}</title>{text(short_label)}</text>')
+        parts.append(f'<text x="40" y="{y + 19}" font-size="{label_size}"><title>{text(label)}</title>{text(short_label)}</text>')
         numeric = number(value)
         if numeric is not None:
             size = numeric / ceiling * plot
             parts.append(f'<rect x="{left}" y="{y}" width="{size:.5f}" height="27" rx="4" fill="{COLORS[index % len(COLORS)]}"><title>{text(label)}: {text(display(value))} {text(unit)}</title></rect>')
         value_text = display(value) if numeric is not None else "Unavailable"
         parts.append(f'<text x="{left + plot + 16}" y="{y + 19}" font-size="16">{text(value_text)}</text>')
+    axis_name = {"exponent": "Theoretical exponent p", "field products": "Data multiplications (count)",
+                 "operations": "Arithmetic operations (count)", "seconds": "Elapsed time (seconds)",
+                 "bytes": "Python allocations (bytes)"}.get(unit, unit)
+    parts.append(f'<text class="chart-axis-label" data-axis="x" x="{left + plot / 2}" y="{height - 12}" text-anchor="middle">{text(axis_name)}</text>')
+    parts.append(f'<text class="chart-axis-label" data-axis="y" transform="translate(17 {(32 + plot_bottom) / 2}) rotate(-90)" text-anchor="middle">{text(category_label)}</text>')
     parts.append("</svg>")
     return "".join(parts)
 
@@ -223,6 +243,22 @@ def algorithm_details(name, report):
             ("Maximum absolute error", accuracy.get("maximum_absolute_error")),
             ("Trace retained / dropped", f'{display(report.get("retained_trace_events"))} / {display(report.get("dropped_trace_events"))}')]
     body += table(("Property", "Reported value"), rows)
+    if report.get("measurement"):
+        body += '<p class="note">Measurement source: ' + text(measurement_label(report, experiment.get("cutoff"))) + '.</p>'
+    if model.get("schedule"):
+        body += '<h4>Repeating composition schedule</h4>'
+        body += f'<p>{text(" → ".join(model["schedule"]))} → repeat</p>'
+        budget = report.get("composition_budget")
+        if budget:
+            body += table(("Depth", "Stage", "Nodes", "Square size", "Radix", "Rank"),
+                          [(level["depth"], level["stage"], level["nodes"], level["size"],
+                            level["radix"], level["rank"]) for level in budget["levels"]])
+            body += table(("Metric", "Predicted", "Captured", "Matches"),
+                          [(key, budget[key], report.get("counts", {}).get(key, 0)
+                            if key == "field_multiplications" else report.get(key),
+                            report.get("composition_budget_matches", {}).get(key))
+                           for key in ("field_multiplications", "field_arithmetic_operations", "atomic_arithmetic_operations")])
+        body += '<p class="note">The exponent comes from the ranks and radices of the repeating cycle. Finite padding and cutoff phases can change its observed growth.</p>'
     if accuracy.get("failures"):
         body += f'<p class="callout">Failed entries: {text(json.dumps(accuracy["failures"]))}</p>'
     assumptions = model.get("assumptions")
@@ -248,7 +284,41 @@ def algorithm_details(name, report):
     return body
 
 
-def curve_chart(title, series, *, logarithmic=False):
+def point_marker(x, y, group, color, *, radius=4.5):
+    """Draw distinct circle/square/triangle/diamond markers without relying on hue."""
+    shape = group % 4
+    attrs = f'fill="{color}" stroke="{color}" stroke-width="1.5"'
+    if group % 8 >= 4:
+        attrs = f'fill="white" stroke="{color}" stroke-width="2"'
+    if shape == 0:
+        return f'<circle cx="{x}" cy="{y}" r="{radius}" {attrs}/>'
+    if shape == 1:
+        return f'<rect x="{x - radius}" y="{y - radius}" width="{2 * radius}" height="{2 * radius}" {attrs}/>'
+    points = ([(x, y - radius - 1), (x + radius + 1, y + radius), (x - radius - 1, y + radius)]
+              if shape == 2 else [(x, y - radius - 1), (x + radius + 1, y), (x, y + radius + 1), (x - radius - 1, y)])
+    return f'<polygon points="{" ".join(f"{px},{py}" for px, py in points)}" {attrs}/>'
+
+
+def legend_swatch(line):
+    """Match each legend's line style and marker to its plotted series."""
+    group, kind = line["color"], line.get("kind", "observed")
+    color = COLORS[group % len(COLORS)]
+    body = (f'<path d="M18 9h16 M26 2v14" stroke="{color}" stroke-width="2"/>' if kind == "prediction" else
+            f'<path d="M2 9h48" stroke="{color}" stroke-width="2.5"' +
+            (' stroke-dasharray="6 4"' if kind == "ideal" else '') + '/>')
+    if kind == "observed":
+        body += point_marker(26, 9, group, color, radius=4)
+    return f'<svg class="legend-swatch" viewBox="0 0 52 18" aria-hidden="true">{body}</svg>'
+
+
+def metric_axis_label(metric):
+    """Name the counted arithmetic layer without implying a hardware measurement."""
+    return {"field_multiplications": "Data multiplications (count)",
+            "field_arithmetic_operations": "Field arithmetic steps (count)",
+            "atomic_arithmetic_operations": "Component / atomic steps (count)"}[metric]
+
+
+def curve_chart(title, series, *, logarithmic=False, y_label="Arithmetic operations (count)"):
     """Plot measured points and model curves with explicit linear or log-log axes.
 
 Solid lines connect sampled executions, dashed lines show the ideal recurrence
@@ -265,8 +335,8 @@ No value on a theoretical curve is represented as a captured execution count.
     ymax = max(transform(y) for _, y in all_points)
     xmax = xmax if xmax > xmin else xmin + 1
     ymax = ymax if ymax > ymin else ymin + 1
-    left, top, width, height = 100, 35, 720, 260
-    parts = [f'<svg viewBox="0 0 900 355" role="img" aria-label="{text(title)}"><title>{text(title)}</title>',
+    left, top, width, height = 120, 35, 700, 260
+    parts = [f'<svg viewBox="0 0 900 365" role="img" aria-label="{text(title)}"><title>{text(title)}</title>',
              f'<desc>{"Log-log" if logarithmic else "Linear"} axes. Solid measured points; dashed ideal model; crosses are padding-aware predictions.</desc>']
     # Tick actual sampled dimensions, rather than incidental integer points in
     # the dense ideal curve. This makes the padding boundaries easier to read.
@@ -283,13 +353,16 @@ No value on a theoretical curve is represented as a captured execution count.
         value = 10 ** transformed if logarithmic else transformed
         y = top + height - height * index / 4
         parts.append(f'<line x1="{left}" x2="{left + width}" y1="{y}" y2="{y}" stroke="#e4e8ef"/><text x="{left - 12}" y="{y + 5}" text-anchor="end" font-size="14">{text(display(value))}</text>')
-    parts.append('<text x="460" y="345" text-anchor="middle" font-size="16">Requested square dimension n</text>')
+    scale_label = " (log scale)" if logarithmic else ""
+    parts.append(f'<text class="chart-axis-label" data-axis="x" x="470" y="350" text-anchor="middle">Requested square dimension n{scale_label}</text>')
+    parts.append(f'<text class="chart-axis-label" data-axis="y" transform="translate(22 165) rotate(-90)" text-anchor="middle">{text(y_label)}{scale_label}</text>')
     for line in series:
         points = [(x, y) for x, y in line["points"] if number(x) not in (None, 0) and number(y) is not None and (not logarithmic or y > 0)]
         color = COLORS[line["color"] % len(COLORS)]
         mapped = [(left + (transform(x) - xmin) / (xmax - xmin) * width,
                    top + height - (transform(y) - ymin) / (ymax - ymin) * height) for x, y in points]
         kind = line.get("kind", "observed")
+        parts.append(f'<g class="chart-series" data-series-group="g{line["color"]}" data-series-kind="{text(kind)}">')
         if kind != "prediction" and mapped:
             coordinates = " ".join(f"{x:.3f},{y:.3f}" for x, y in mapped)
             dash = ' stroke-dasharray="8 6"' if kind == "ideal" else ""
@@ -300,12 +373,27 @@ No value on a theoretical curve is represented as a captured execution count.
                 if kind == "prediction":
                     parts.append(f'<g stroke="{color}" stroke-width="2"><title>{tooltip}</title><line x1="{x - 7}" x2="{x + 7}" y1="{y}" y2="{y}"/><line x1="{x}" x2="{x}" y1="{y - 7}" y2="{y + 7}"/></g>')
                 else:
-                    parts.append(f'<circle cx="{x}" cy="{y}" r="4.5" fill="{color}"><title>{tooltip}</title></circle>')
+                    parts.append(f'<g><title>{tooltip}</title>{point_marker(x, y, line["color"], color)}</g>')
+        parts.append('</g>')
     parts.append("</svg>")
-    legend = '<div class="summary">' + "".join(
-        f'<span class="note" style="color:{COLORS[line["color"] % len(COLORS)]}">{text(line["label"])}</span>'
+    legend = '<div class="chart-legend" aria-label="Chart legend">' + "".join(
+        f'<button type="button" class="legend-button" data-series-group="g{line["color"]}" aria-label="Isolate {text(line["label"])} and related curves">{legend_swatch(line)}<span>{text(line["label"])}</span></button>'
         for line in series) + "</div>"
-    return "".join(parts) + legend
+    # :has scopes hover/focus to this chart. All series in the same group stay
+    # visible, including ideal curves and padded predictions. No JS is needed,
+    # so offline files retain the same behavior and no data enters script code.
+    rules = []
+    for group in sorted({line["color"] for line in series}):
+        trigger = f'.legend-button[data-series-group="g{group}"]'
+        rules.append(f'.work-chart:has({trigger}:hover) .chart-series:not([data-series-group="g{group}"]),'
+                     f'.work-chart:not(:has(.legend-button:hover)):has({trigger}:focus-visible) .chart-series:not([data-series-group="g{group}"])'
+                     '{visibility:hidden;}')
+    observed = [line["points"] for line in series if line.get("kind", "observed") == "observed"]
+    overlap = any(a == b and a for index, a in enumerate(observed) for b in observed[index + 1:])
+    note = '<p class="note">Hover a legend entry or focus it with Tab to isolate that series and its related models. Moving away restores all curves.</p>'
+    if overlap:
+        note += '<p class="note">Some measured series have identical counts and overlap. Isolate their legend entries to see each one separately.</p>'
+    return '<div class="work-chart"><style>' + "".join(rules) + '</style>' + "".join(parts) + legend + note + '</div>'
 
 
 def measured_series(lines, metric):
@@ -347,6 +435,16 @@ def comparison_series(lines, metric):
     return result
 
 
+def measurement_label(sample, cutoff):
+    """Name the actual evidence source while keeping older reports readable."""
+    measurement = sample.get("measurement", {})
+    kind = measurement.get("kind", "executed")
+    if kind == "setup_error":
+        return "Setup failed before execution"
+    source = measurement.get("source_cutoff", cutoff)
+    return f"Reused from cutoff {source}" if kind == "reused" else f"Executed at cutoff {source}"
+
+
 def render_work_sweep(data, *, title, source_name, source_hash, generated):
     """Show measured count growth, declared ideal curves, and padding/cutoff effects."""
     lines = data["series"]
@@ -356,13 +454,24 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
     passed = sum(sample["status"] == "passed" for sample in samples)
     matches = sum(sample.get("prediction_matches_observed_data_multiplications") is True for sample in samples)
     step_matches = sum(sample.get("prediction_matches_observed_arithmetic_steps") is True for sample in samples)
+    executed = sum(sample.get("measurement", {}).get("kind", "executed") == "executed" for sample in samples)
+    reused = sum(sample.get("measurement", {}).get("kind") == "reused" for sample in samples)
     parts = ['<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">',
              f'<title>{text(title)}</title><style>{STYLE}</style></head><body><main><header><div class="eyebrow">Measured arithmetic growth</div>',
              f'<h1>{text(title)}</h1><p>Executed multiplication and arithmetic-step counts across matrix sizes and classical leaf blocks. Wall-clock time is not plotted.</p>',
              f'<p class="note">Generated {text(generated)} · Sizes {text(configuration.get("sizes"))} · Cutoffs {text(configuration.get("cutoffs"))} · Seed {text(configuration.get("seed"))}</p>',
-             f'<div class="summary"><span class="badge">{len(samples)} executions</span><span class="badge">{passed} verified outputs</span><span class="badge">{matches} multiplication budgets match the recurrence</span><span class="badge">{step_matches} full arithmetic budgets match</span></div></header>',
-             '<p class="callout">Theoretical exponents are calculated from declared scheme parameters. Measured slopes below are finite-range fits to captured counters, not proofs of an asymptotic exponent. A power law is straight on log-log axes; padding can produce plateaus.</p>']
+             f'<div class="summary"><span class="badge">{len(samples)} requested configurations</span><span class="badge">{executed} actual executions</span><span class="badge">{reused} reused measurements</span><span class="badge">{passed} configurations verified</span><span class="badge">{matches} multiplication budgets match the recurrence</span><span class="badge">{step_matches} full arithmetic budgets match</span></div></header>',
+             '<p class="note">Equivalent cutoffs can share one verified execution for the same algorithm and input. Reused rows retain its measured counters and verification and identify the executed cutoff in the Measurement source column. Equivalence requires identical padding, recursion stages, and leaf dimensions. Each requested cutoff retains its own theoretical predictions and graph.</p>',
+             '<p class="callout">Theoretical exponents are calculated from declared scheme parameters. Measured slopes below are finite-range fits to captured counters, not proofs of an asymptotic exponent. A power law is straight on log-log axes; padding can produce plateaus.</p>',
+             panel("What does cutoff mean?", "The cutoff is the maximum block size at which recursion stops and ordinary row-by-column multiplication starts.",
+                   '<p>For Strassen on a 16×16 matrix, cutoff 4 splits into 8×8 blocks, then 4×4 blocks, and multiplies those leaves classically. Cutoff 1 continues down to individual numbers. More recursion can save data multiplications while adding combination work.</p><p>The naive algorithm never recurses, so its cutoff does nothing and its curves overlap. AlphaEvolve splits in powers of four, so cutoff 2 still produces 1×1 leaves. The exact-count table records the actual leaf size.</p>')]
     models = {line["algorithm"]: line["mathematical_model"] for line in lines}
+    schedules = [(name, " → ".join(model["schedule"]), model["base_dimension"],
+                  model["base_bilinear_rank"], model["arithmetic_domain"])
+                 for name, model in models.items() if model.get("schedule")]
+    if schedules:
+        parts.append(panel("Composition schedules", "Stages repeat by recursion depth. Each complete cycle multiplies its stage radices and ranks. These are executable constructions, not new exponent records.",
+                           table(("Report name", "Repeating stage order", "Cycle radix", "Cycle rank", "Domain"), schedules)))
     parts.append(panel("Square arithmetic exponents · theoretical",
                        "Calculated from declared base dimensions and ranks, independently of the executed sweep. Fixed leaf cutoffs preserve each family exponent.",
                        bar_chart("Square arithmetic exponents", [(name, model.get("square_arithmetic_exponent")) for name, model in models.items()], "exponent", maximum=3)))
@@ -371,8 +480,8 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
     for metric, heading in (("field_arithmetic_operations", "Measured field arithmetic steps"),
                             ("atomic_arithmetic_operations", "Measured component / atomic steps")):
         curves = measured_series(baseline, metric)
-        body = curve_chart(heading, curves)
-        body += '<details><summary>Log-log view</summary>' + curve_chart(heading, curves, logarithmic=True) + '</details>'
+        body = curve_chart(heading, curves, y_label=metric_axis_label(metric))
+        body += '<details><summary>Log-log view</summary>' + curve_chart(heading, curves, logarithmic=True, y_label=metric_axis_label(metric)) + '</details>'
         explanation = (f"Cutoff {baseline_cutoff}. Field steps include data and coefficient multiplications, additions, subtractions, and normalization. Complex-field operations differ from real-field operations."
                        if metric == "field_arithmetic_operations" else
                        f"Cutoff {baseline_cutoff}. Exposed component calls include real arithmetic, exact divmods, and any opaque native complex operations. This overlaps the field layer: do not add the two totals.")
@@ -382,14 +491,14 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
         curves = comparison_series(group, "field_multiplications")
         model = group[0]["mathematical_model"]
         body = f'<p>Theoretical family exponent: <strong>{text(display(model["square_arithmetic_exponent"]))}</strong> ({text(model["exponent_expression"])}). {text(model.get("parameter_source", "Declared scheme parameters"))}.</p>'
-        body += curve_chart(f"{name} data multiplications", curves)
-        body += '<details><summary>Log-log view of multiplications</summary>' + curve_chart(f"{name} data multiplications", curves, logarithmic=True) + '</details>'
+        body += curve_chart(f"{name} data multiplications", curves, y_label=metric_axis_label("field_multiplications"))
+        body += '<details><summary>Log-log view of multiplications</summary>' + curve_chart(f"{name} data multiplications", curves, logarithmic=True, y_label=metric_axis_label("field_multiplications")) + '</details>'
         body += '<details><summary>All arithmetic steps for these block sizes</summary>'
         body += '<p>Total-work models include quadratic additions, coefficient scaling, and normalization at each recursive level. Their smooth curves retain these lower-order terms; they are not simply a rescaled n<sup>p</sup>. Model constants describe our primitive schedule and are not fitted to the captured counters.</p>'
         for metric, heading in (("field_arithmetic_operations", "Field steps"), ("atomic_arithmetic_operations", "Component / atomic steps")):
             step_curves = comparison_series(group, metric)
-            body += f'<h3>{heading}</h3>' + curve_chart(heading, step_curves)
-            body += '<details><summary>Log-log view of arithmetic steps</summary>' + curve_chart(heading, step_curves, logarithmic=True) + '</details>'
+            body += f'<h3>{heading}</h3>' + curve_chart(heading, step_curves, y_label=metric_axis_label(metric))
+            body += '<details><summary>Log-log view of arithmetic steps</summary>' + curve_chart(heading, step_curves, logarithmic=True, y_label=metric_axis_label(metric)) + '</details>'
         body += '</details>'
         rows = []
         for line in group:
@@ -400,18 +509,25 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
                          fits.get("atomic_arithmetic_operations", {}).get("slope")))
         body += table(("Leaf cutoff", "Theoretical exponent", "Measured multiplication slope", "Measured field-step slope", "Measured component-step slope"), rows)
         body += '<p class="note">Fits use successful executed samples over the requested size range. Multiplication slopes can change with padding; total-step slopes also include coefficient work and lower-order terms. No finite fitted slope establishes a new mathematical bound.</p>'
-        parts.append(panel(f"{name} · measured versus theoretical multiplications", "Solid points are captured counts; connecting lines are visual guides. Dashed curves predict ideal unpadded growth with the effective radix-power leaf. Crosses predict the padded recurrence at sampled sizes; matching crosses and points check that execution follows the model. Fixed cutoffs can change constants and finite work without changing the asymptotic family exponent.", body))
+        if model.get("schedule"):
+            body += '<p class="note">Repeating stage schedules use exact discrete predictions at each sample. A smooth ideal curve is omitted because cutoff constants depend on the stage where recursion ends.</p>'
+        if group[0]["work_model"].get("unavailable_reason"):
+            body += '<p class="callout">Coefficient setup unavailable: ' + text(group[0]["work_model"]["unavailable_reason"]) + '</p>'
+        parts.append(panel(f"{name} · measured versus theoretical multiplications", "Solid points are captured counts; connecting lines are visual guides. Dashed curves, where present, predict ideal unpadded growth with the effective radix-power leaf. Crosses predict the padded recurrence at sampled sizes; matching crosses and points check that execution follows the model. Fixed cutoffs can change constants and finite work without changing the asymptotic family exponent.", body))
     rows = []
     for line in lines:
         for sample in line["samples"]:
             observation, predicted = sample["observation"], sample["prediction"]
             counts = observation["counts"]
-            rows.append((line["algorithm"], line["cutoff"], sample["size"], predicted["padded_dimension"],
-                         predicted["effective_leaf_dimension"], counts.get("field_multiplications", 0),
-                         predicted["padded_data_multiplications"], counts.get("coefficient_multiplications", 0),
-                         observation.get("field_arithmetic_operations"), observation.get("atomic_arithmetic_operations"), sample["status"]))
-    parts.append(panel("Exact sampled counts and effective blocks", "Data multiplications multiply data-dependent values. Coefficient multiplications multiply by fixed constants. Field and component totals overlap. The configured cutoff is a maximum leaf size; actual recursive leaf sizes must be radix powers.",
-                       table(("Algorithm", "Cutoff", "n", "Padded n", "Actual leaf n", "Data multiplications", "Padded prediction", "Coefficient multiplications", "Field steps", "Component steps", "Output check"), rows)))
+            padded_label = (" × ".join(str(x) for x in predicted["padded_dimensions"])
+                            if "padded_dimensions" in predicted else predicted.get("padded_dimension"))
+            rows.append((line["algorithm"], line["cutoff"], sample["size"], padded_label,
+                         predicted.get("effective_leaf_dimension"), counts.get("field_multiplications", 0),
+                         predicted.get("padded_data_multiplications"), counts.get("coefficient_multiplications", 0),
+                         observation.get("field_arithmetic_operations"), observation.get("atomic_arithmetic_operations"), sample["status"],
+                         measurement_label(sample, line["cutoff"])))
+    parts.append(panel("Exact sampled counts and effective blocks", "Data multiplications multiply data-dependent values. Coefficient multiplications multiply by fixed constants. Field and component totals overlap. The configured cutoff is a maximum leaf size; actual recursive leaf sizes follow the selected radix schedule.",
+                       table(("Algorithm", "Cutoff", "n", "Padded n", "Actual leaf n", "Data multiplications", "Padded prediction", "Coefficient multiplications", "Field steps", "Component steps", "Output check", "Measurement source"), rows)))
     parts.append(sweep_evidence(data))
     for line in lines:
         for sample in line["samples"]:
@@ -438,7 +554,15 @@ def sweep_sample_report(line, sample):
     or tolerance measurement is invented; unavailable fields remain unavailable.
     """
     size = sample["size"]
-    return {**sample["observation"], "status": sample["status"], "error": sample.get("error"),
+    budget = sample.get("prediction", {}).get("composition_budget")
+    extra = {}
+    if budget:
+        extra = {"composition_budget": budget, "composition_budget_matches": {
+            "field_multiplications": sample.get("prediction_matches_observed_data_multiplications"),
+            **{key: sample["observation"].get(key) == budget[key]
+               for key in ("field_arithmetic_operations", "atomic_arithmetic_operations")}}}
+    return {**sample["observation"], **extra, "status": sample["status"], "error": sample.get("error"),
+            "measurement": sample.get("measurement", {}),
             "mathematical_model": line["mathematical_model"],
             "experiment": {"input_shapes": [[size, size], [size, size]], "cutoff": line["cutoff"],
                            "input_repr_sha256": sample.get("input_repr_sha256"),
@@ -464,14 +588,15 @@ def sweep_evidence(data):
                 report.get("field_arithmetic_operations"), report.get("atomic_arithmetic_operations")))
             check = sample.get("verification", {})
             accuracy.append((*key, sample["status"], check.get("mode"), check.get("maximum_absolute_error"),
-                             json.dumps(check.get("failures", [])), sample.get("error")))
+                             json.dumps(check.get("failures", [])), sample.get("error"),
+                             measurement_label(sample, line["cutoff"])))
     parts = [panel("Arithmetic work breakdown",
                    "Captured counts for every sample. Data and coefficient multiplications are separate; field and component totals overlap. Expand to inspect additions, subtractions, and normalization.",
                    '<details><summary>Full arithmetic breakdown across sizes and cutoffs</summary>' +
                    table(("Algorithm", "Cutoff", "n", "Data multiplications", "Coefficient multiplications", "Additions", "Subtractions", "Normalizations", "Field steps", "Atomic steps"), breakdown) + '</details>'),
-             panel("Accuracy and verification evidence", "Every output is checked by the independent exact oracle outside the observed algorithm. Timing and memory probes are disabled for these sweep samples.",
+             panel("Accuracy and verification evidence", "Each actual output is checked by the independent exact oracle outside the observed algorithm. Equivalent cutoff rows reuse that verification and identify its source. Timing and memory probes are disabled for these sweep samples.",
                    '<details><summary>Accuracy for every executed sample</summary>' +
-                   table(("Algorithm", "Cutoff", "n", "Status", "Verification mode", "Maximum absolute error", "Failed entries", "Error"), accuracy) + '</details>'),
+                   table(("Algorithm", "Cutoff", "n", "Status", "Verification mode", "Maximum absolute error", "Failed entries", "Error", "Measurement source"), accuracy) + '</details>'),
              '<section class="panel"><h2>Per-sample primitive and recursion evidence</h2><p class="note">Primitive clocks were disabled: zero profile seconds mean clocks were off. Call counts and inclusive arithmetic remain captured. Inclusive profiles overlap.</p>']
     for line in data["series"]:
         parts.append(f'<details><summary>{text(line["algorithm"])} · cutoff {text(line["cutoff"])} · {len(line["samples"])} samples</summary>')
@@ -480,7 +605,7 @@ def sweep_evidence(data):
             parts.append(f'<details><summary>n={text(sample["size"])} · {text(sample["status"])}</summary>')
             depths = sorted(report.get("products_by_depth", {}).items(), key=lambda item: int(item[0]))
             parts.append('<h3>Data products by recursion depth</h3>' + bar_chart("Data products by recursion depth",
-                         [(f"depth {depth}", count) for depth, count in depths], "field products"))
+                         [(f"depth {depth}", count) for depth, count in depths], "field products", category_label="Recursion depth"))
             parts.append(algorithm_details(line["algorithm"], report))
             parts.append('<details><summary>Recurrence prediction and declared scalar costs</summary><pre>' +
                          text(json.dumps({"prediction": sample["prediction"], "work_model": line.get("work_model")}, indent=2)) + '</pre></details></details>')
@@ -540,7 +665,7 @@ def render_html(reports, *, title, source_name, source_hash, generated, sections
                      for depth, value in sorted(report.get("products_by_depth", {}).items(), key=lambda item: str(item[0]).zfill(10))]
     if depth_entries:
         parts.append(panel("Data products by recursion depth", "Counts show where leaf products actually execute, not hypothetical work at every internal node. Cutoff and padding determine the observed depth.",
-                           bar_chart("Data products by recursion depth", depth_entries, "field products")))
+                           bar_chart("Data products by recursion depth", depth_entries, "field products", category_label="Algorithm and recursion depth")))
     parts.append('<div class="grid">')
     runtime = [(name, report.get("execution_measurements", {}).get("elapsed_algorithm_call_seconds")) for name, report in reports.items()]
     memory = []
@@ -623,4 +748,3 @@ def write_report(source, *, output_root=None, title="Matrix multiplication exper
     source = Path(source)
     return write_data_report(source.read_bytes(), source_name=source.name, output_root=output_root,
                              title=title, timestamp=timestamp)
-

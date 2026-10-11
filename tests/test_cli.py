@@ -5,6 +5,8 @@ import io
 import unittest
 
 import explore
+from matrix_multiplication import ALGORITHMS
+from tests.support import requires_coefficients
 
 
 class CliTests(unittest.TestCase):
@@ -17,13 +19,17 @@ class CliTests(unittest.TestCase):
             status = explore.main(arguments)
         return status, output.getvalue(), errors.getvalue()
 
+    @requires_coefficients("alphaevolve", "smirnov")
     def test_all_algorithms_and_rectangular_literals(self):
         """Run all algorithms on one explicit rectangular product."""
         status, output, errors = self.run_cli(["--a", "[[1,2,3]]", "--b", "[[4],[5],[6]]"])
         self.assertEqual(status, 0, errors)
-        self.assertEqual(output.count("PASS: exact equality"), 4)
-        self.assertEqual(output.count("[[32]]"), 4)
+        self.assertEqual(output.count("PASS: exact equality"), len(ALGORITHMS))
+        # Exact rational output is allowed by the shared interface.
+        self.assertEqual(output.count("[[32]]") + output.count("[[Fraction(32, 1)]]"), len(ALGORITHMS))
+        self.assertIn("smirnov:", output)
 
+    @requires_coefficients("alphaevolve")
     def test_complex_literals(self):
         """Parse complex literals and display a verified complex answer."""
         status, output, errors = self.run_cli(["--algorithm", "alphaevolve", "--a", "[[1j]]", "--b", "[[2j]]"])

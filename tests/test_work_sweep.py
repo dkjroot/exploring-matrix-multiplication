@@ -12,14 +12,158 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from matrix_multiplication import naive
+from matrix_multiplication import ALGORITHMS, naive, smirnov
 from matrix_multiplication.work_sweep import collect_work, log_log_fit, prediction
+from matrix_multiplication.composition import Composition
 import sweep
 from matrix_multiplication import reporting as visual
+from tests.support import requires_coefficients
 
 
 class WorkSweepTests(unittest.TestCase):
     """Check that predictions do not substitute for observed work or accuracy checks."""
+
+    def test_boolean_grid_entries_are_rejected_before_deduplication(self):
+        """A valid 1 must not conceal True, which compares equal in a Python set."""
+        for sizes, cutoffs in (([1, True], [1]), ([1], [1, True]), ([1, 1.0], [1])):
+            with self.subTest(sizes=sizes, cutoffs=cutoffs), self.assertRaises(ValueError):
+                collect_work(sizes, cutoffs, algorithms=["naive"])
+
+    def test_naive_executes_once_per_size_and_reports_reused_evidence(self):
+        """Count real kernel calls, retain cutoff rows, and isolate copied snapshots."""
+        with patch("matrix_multiplication.naive.classical", wraps=naive.classical) as kernel:
+            data = collect_work([2, 3], [1, 2, 4], algorithms=["naive"])
+        self.assertEqual(kernel.call_count, 2)
+        self.assertEqual(data["execution_summary"], {"requested_configurations": 6,
+                         "actual_executions": 2, "reused_measurements": 4, "setup_errors": 0})
+        source, reused = data["series"][0]["samples"][0], data["series"][1]["samples"][0]
+        self.assertEqual(reused["measurement"]["kind"], "reused")
+        self.assertEqual(reused["measurement"]["source_cutoff"], 1)
+        self.assertEqual(source["observation"], reused["observation"])
+        html = visual.render_html(data, title="Reuse", source_name="test.json", source_hash="abc", generated="today")
+        for phrase in ("2 actual executions", "4 reused measurements", "Measurement source", "Reused from cutoff 1"):
+            self.assertIn(phrase, html)
+        reused["observation"]["counts"]["field_multiplications"] = -1
+        reused["verification"]["failures"] = ("changed copy",)
+        self.assertEqual(source["observation"]["counts"]["field_multiplications"], 8)
+        self.assertEqual(source["verification"]["failures"], ())
+
+    def test_recursive_cutoffs_with_different_leaves_remain_distinct(self):
+        """Reuse Strassen cutoff 3 from 2 while executing leaf sizes 1, 2, and 4."""
+        data = collect_work([4], [1, 2, 3, 4], algorithms=["strassen"])
+        samples = [line["samples"][0] for line in data["series"]]
+        self.assertEqual([s["measurement"]["kind"] for s in samples],
+                         ["executed", "executed", "reused", "executed"])
+        self.assertEqual(samples[2]["measurement"]["source_cutoff"], 2)
+        self.assertEqual([s["observation"]["counts"]["field_multiplications"] for s in samples], [49, 56, 56, 64])
+
+    def test_composition_uses_ordered_stages_and_keeps_each_prediction(self):
+        """Known mixed-radix plans reuse equal leaves without dropping stage evidence."""
+        plan = Composition(["strassen", "strassen-winograd"])
+        data = collect_work([4], [1, 2, 3, 4], algorithms=["naive"], compositions={"mixed": plan})
+        lines = [line for line in data["series"] if line["algorithm"] == "mixed"]
+        self.assertEqual([line["samples"][0]["measurement"]["kind"] for line in lines],
+                         ["executed", "executed", "reused", "executed"])
+        self.assertEqual(lines[2]["samples"][0]["prediction"], lines[1]["samples"][0]["prediction"])
+
+    def test_replaced_callbacks_are_never_assumed_equivalent(self):
+        """A new callback can depend on cutoff even when its advertised model cannot."""
+        calls = []
+        def replacement(a, b, **kwargs):
+            """Keep the output correct while exposing actual public dispatch calls."""
+            calls.append(kwargs["cutoff"])
+            return naive.multiply(a, b, **kwargs)
+        with patch.dict(ALGORITHMS, {"naive": replacement}):
+            data = collect_work([2], [1, 2, 4], algorithms=["naive"])
+        self.assertEqual(calls, [1, 2, 4])
+        self.assertEqual(data["execution_summary"]["reused_measurements"], 0)
+
+    def test_failed_outputs_and_budget_mismatches_are_not_reused(self):
+        """Only successful observations agreeing with independent budgets enter the cache."""
+        from matrix_multiplication.instrumentation import count
+        original = naive.classical
+        for failure in ("output", "budget"):
+            def inconsistent(a, b):
+                """Inject an oracle failure or a counter mismatch beneath known dispatch."""
+                result = original(a, b)
+                if failure == "output":
+                    result[0][0] += 1
+                else:
+                    count("field_multiplications")
+                return result
+            with self.subTest(failure=failure), patch("matrix_multiplication.naive.classical", side_effect=inconsistent) as kernel:
+                data = collect_work([2], [1, 2, 4], algorithms=["naive"])
+            self.assertEqual(kernel.call_count, 3)
+            self.assertEqual(data["execution_summary"]["reused_measurements"], 0)
+
+    def test_unfamiliar_plan_classes_execute_independently(self):
+        """Custom plan classes may add cutoff-sensitive behavior beneath the same budget."""
+        class UnfamiliarPlan(Composition):
+            """Stand in for an extension whose behavior is not guaranteed by our traversal."""
+        data = collect_work([2], [1, 2, 3], algorithms=["naive"],
+                            compositions={"custom": UnfamiliarPlan(["strassen"])})
+        lines = [line for line in data["series"] if line["algorithm"] == "custom"]
+        self.assertTrue(all(line["samples"][0]["measurement"]["kind"] == "executed" for line in lines))
+
+    @unittest.skipUnless(smirnov.DATA_PATH.exists(), "import Smirnov data first")
+    @requires_coefficients("alphaevolve")
+    def test_reuse_matches_independent_runs_including_rectangular_stages(self):
+        """Small executions compare optimized and repeated counts, verification, and fits."""
+        options = {"algorithms": ["naive", "alphaevolve", "smirnov"]}
+        optimized = collect_work([2, 4], [1, 2, 4, 6], **options)
+        independent = collect_work([2, 4], [1, 2, 4, 6], reuse_equivalent_cutoffs=False, **options)
+        self.assertLess(optimized["execution_summary"]["actual_executions"], independent["execution_summary"]["actual_executions"])
+        for line, baseline in zip(optimized["series"], independent["series"]):
+            self.assertEqual(line["empirical_fits"], baseline["empirical_fits"])
+            for sample, original in zip(line["samples"], baseline["samples"]):
+                for key in ("observation", "verification", "prediction", "status",
+                            "prediction_matches_observed_data_multiplications", "prediction_matches_observed_arithmetic_steps"):
+                    self.assertEqual(sample[key], original[key], (line["algorithm"], key))
+        self.assertEqual(independent["execution_summary"]["reused_measurements"], 0)
+
+    def test_cli_can_repeat_equivalent_cutoffs_explicitly(self):
+        """The independent-run option disables reuse without changing report generation."""
+        with tempfile.TemporaryDirectory(dir=visual.ROOT) as directory, redirect_stdout(io.StringIO()):
+            self.assertEqual(sweep.main(["--measurements-only", "--sizes", "2", "--cutoffs", "1", "2", "4", "--algorithms", "naive",
+                                        "--repeat-equivalent-cutoffs", "--output-root", directory]), 0)
+            folder = next(Path(directory).iterdir())
+            data = json.loads((folder / "measurements.json").read_text(encoding="utf-8"))
+        self.assertFalse(data["configuration"]["reuse_equivalent_cutoffs"])
+        self.assertEqual(data["execution_summary"]["actual_executions"], 3)
+        self.assertEqual(data["execution_summary"]["reused_measurements"], 0)
+
+    @unittest.skipUnless(smirnov.DATA_PATH.exists(), "import Smirnov data first")
+    @requires_coefficients("alphaevolve")
+    def test_default_suite_includes_smirnov_with_rectangular_predictions(self):
+        """The default executes all five, retaining exact stage shapes and counts."""
+        data = collect_work([1, 2, 4], [1, 2])
+        self.assertEqual({line["algorithm"] for line in data["series"]}, set(ALGORITHMS))
+        self.assertIn("smirnov", ALGORITHMS)
+        for line in data["series"]:
+            for sample in line["samples"]:
+                self.assertEqual(sample["status"], "passed")
+                self.assertTrue(sample["prediction_matches_observed_data_multiplications"])
+                self.assertTrue(sample["prediction_matches_observed_arithmetic_steps"])
+            if line["algorithm"] == "smirnov":
+                self.assertEqual(line["ideal_curve"], [])
+                self.assertEqual(line["mathematical_model"]["base_dimension"], 54)
+                self.assertEqual(line["samples"][1]["prediction"]["padded_dimensions"], [3, 3, 6])
+                self.assertEqual(prediction("smirnov", 4, line["cutoff"]), line["samples"][2]["prediction"])
+
+    def test_missing_smirnov_data_remains_an_explicit_reported_error(self):
+        """An unavailable recipe cannot drop an algorithm or break HTML generation."""
+        message = "Smirnov data missing: run python tools/import_smirnov.py --download"
+        with patch("matrix_multiplication.smirnov.plan", side_effect=FileNotFoundError(message)):
+            data = collect_work([2], [1], algorithms=["naive", "smirnov"])
+        line = data["series"][1]
+        sample = line["samples"][0]
+        self.assertEqual(sample["status"], "error")
+        self.assertIn(message, sample["error"])
+        self.assertEqual(sample["prediction"], {})
+        self.assertIsNone(sample["prediction_matches_observed_arithmetic_steps"])
+        html = visual.render_html(data, title="Missing data", source_name="test.json", source_hash="abc", generated="today")
+        self.assertIn(message, html)
+        self.assertIn("2.774", html)
 
     def test_predictions_include_padding_and_effective_cutoffs(self):
         """Exercise recurrence plateaus and leaf sizes independently of the evaluator."""
@@ -50,6 +194,7 @@ class WorkSweepTests(unittest.TestCase):
                 self.assertEqual(sample["observation"]["field_arithmetic_operations"], expected)
         self.assertEqual(samples[2]["input_repr_sha256"], lines[("naive", 1)]["samples"][2]["input_repr_sha256"])
 
+    @requires_coefficients("alphaevolve")
     def test_full_recurrences_match_gaussian_and_winograd_execution(self):
         """Verify coefficient/normalization costs and complex component expansion."""
         data = collect_work([1, 4], [1, 4], algorithms=["alphaevolve", "strassen-winograd"])

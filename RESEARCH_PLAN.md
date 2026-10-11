@@ -40,7 +40,7 @@ a proof of a global record: there is no exhaustive GitHub implementation registr
 | Candidate | Square recursive exponent | Available material | Audit limit |
 | --- | --- | --- | --- |
 | [LITA](https://github.com/khoruzhii/lita/tree/472a79fbc8248423a97bebb3aacbc89e769b9b3e) | log_32(14196) = 2.758639371812189 | Rational coefficients, generator and a sample evaluator | Strongest explicit candidate found; complete rational identity not independently proved here, full recursive implementation not tested, no clear license located |
-| [Smirnov in fast-matmul](https://github.com/arbenson/fast-matmul) | log_54(64000) = 2.7742999804 | Generated C++ rectangular and square-composition implementations | Clearly licensed BSD 2-Clause candidate; inspected, not built or benchmarked here |
+| [Smirnov in fast-matmul](https://github.com/arbenson/fast-matmul) | log_54(64000) = 2.7742999804 | Exact coefficient tables; our independent cyclic reference implementation | All three base identities certified; full 54x54 base executed with 64000 products and exact output; not a new record |
 | [AlphaTensor](https://github.com/google-deepmind/alphatensor) | log_4(47) = 2.7772944258 | Published factorization and evaluation tools, Apache 2.0 | The 47-product result is over F2, not an ordinary rational/real/complex scheme |
 | [AlphaEvolve](https://github.com/google-deepmind/alphaevolve_results) | log_4(48) = 2.7924812504 | Complex coefficients, Apache 2.0; our own evaluator is already implemented | Our base identity is completely checked; measured CPU/GPU performance work remains |
 
@@ -89,13 +89,21 @@ mathematically justified algorithmic change.
 
 ## Next work
 
-The existing four reference algorithms now share documented scalar/block
+The combined runner is now `python sweep.py`: all supported report families
+share one dated output tree, generated schemes join the arithmetic comparison,
+and an outcome/fingerprint manifest preserves completed work. Finite search/CW
+budgets are separate from arithmetic sweep sizes. This orchestrates existing
+capabilities; it does not itself lower the exponent. The original arithmetic-only
+mode remains available with `--measurements-only`.
+
+The existing five reference algorithms now share documented scalar/block
 primitives, a sparse bilinear evaluator, and recursive traversal. Opt-in
 instrumentation counts arithmetic and structural work, aggregates primitive
 profiles, and retains or streams scalar traces. See INSTRUMENTATION.md and the
 five-step checklist in README.md. No new lower-exponent scheme is claimed by
-this infrastructure refactor; general coefficient ingestion/certificates and
-CPU/GPU backends remain research work.
+the initial infrastructure refactor. Coefficient ingestion and portable exact
+certificates are now implemented, and the Smirnov extension below supplies a
+lower-exponent executable baseline. CPU/GPU backends remain research work.
 
 Prioritize the mathematical construction work below over kernel tuning. A backend
 becomes useful when it allows us to execute and inspect a construction that our
@@ -117,6 +125,103 @@ production classical multiplier.
    release code, certificates, attribution, license notices, and reproducible runs.
 
 ## Constructive route toward stronger exponents
+
+### Implemented construction/search milestone
+
+The initial construction layer is now executable. `tensors.py` provides exact
+rational products/powers, direct sums, general linear restrictions, coordinate
+selection, and matrix-specific row-major reindexing. `decomposition_search.py`
+provides proportional-factor flips, exact sparse dependency reductions, optional
+temporary rank-increasing splits, seeded bounded walks, and replay transcripts.
+Generated matrix recipes pass complete identity verification and can enter the
+existing instrumented composition/sweep and independent certificate paths.
+
+The default discovery starts with eight classical 2-by-2 products and finds
+seven without being supplied a seven-product formula. This demonstrates a
+working generator, not a new exponent result. `degenerations.py` constructs the
+published CW polynomial family, powers it with a shared parameter, and exactly
+recovers its tensor coefficient with the full finite interpolation cost. Complete
+small tensor checks pass. The stronger matrix extraction/packing construction is
+still missing; CW tensors are not exported as ordinary matrix multipliers.
+
+Smirnov remains the verified 2.7742999804 baseline. Crossing 11/4 (2.75) needs
+new verified finite rank/extraction evidence. The rational search is incomplete
+and may miss paths or decompositions requiring a broader algebraic coefficient
+field; it neither supplies the OpenAI finite size nor makes its existence proof
+constructive. See [CONSTRUCTIONS.md](CONSTRUCTIONS.md) for executable commands,
+source attribution, finite work accounting, and the remaining milestones.
+
+### Remaining mathematical construction work
+
+The next implementation priorities are now more concrete:
+
+1. **CW sector selection and executable extraction/packing.** Generate index
+   restrictions on CW powers, verify that selected components are the intended
+   matrix tensors, and verify that components proposed as a direct sum have
+   disjoint variable spaces. Then implement the conversion from simultaneous
+   independent products to the desired dense multiplication. An asymptotic sum
+   inequality alone is not an executable packing algorithm; all finite recovery
+   and extraction costs must be included before assigning an exponent.
+2. **Targeted reductions of existing recipes.** Start from verified explicit
+   schemes rather than always from classical products. Smirnov's small real
+   (3,3,6) base is a useful target: cyclic rank 40 gives 2.7742999804, rank 39
+   would give 2.7552591863, and rank 38 would give 2.7357237712. These figures
+   are derived from log_54(r^3), not from discovered reductions. This links a
+   finite coefficient-search task directly to crossing 2.75.
+3. **Campaigns, symmetry, and resumable evidence.** Explore seeds, starting
+   recipes, coefficient heights, and temporary rank ceilings; checkpoint RNG
+   state and the current tensor so a stopped walk can resume exactly. Add
+   basis/permutation transformations with explicit inverses and verified tensor
+   preservation. Canonicalization may improve search coverage, but must not
+   introduce unjustified reuse of floating execution observations.
+4. **Candidate proposals plus exact reconstruction.** Numerical optimization
+   can suggest coefficients; rational/algebraic reconstruction followed by a
+   complete identity check is the acceptance boundary. Write inspectable proposal
+   primitives and retain failed candidates. A small residual or modular samples
+   cannot certify a real/complex matrix identity.
+5. **Broader coefficient domains.** Extend search/construction from Q to Q(i),
+   then number fields represented by exact polynomial relations if necessary.
+   Verify reduction and interpolation arithmetic in each field. The OpenAI
+   existence argument need not supply a rational or Gaussian-rational witness.
+6. **Compact construction and streamed execution.** Replace materialized powers
+   with lazy coordinate rules, sparse restrictions, and streamed combinations.
+   This makes larger finite constructions inspectable without changing their
+   product count or interpreting better memory behavior as a lower exponent.
+7. **Certificates for the whole derivation.** Record independently checkable
+   polynomial coefficients, lower-coefficient cancellations, interpolation
+   weights, restriction maps, component independence, and packing witnesses.
+   Final-base verification exists; complete construction-path certificates do not.
+8. **Finite goal schedules.** Generate exact rank thresholds for chosen base
+   sizes and exponent goals. The automatic suite already computes thresholds
+   below 11/4 and 23/10 using integer inequalities; these are not existence
+   claims. Add proved lower-bound exclusions and compare each verified candidate's
+   finite padded arithmetic as well as its limiting recurrence.
+9. **Effective OpenAI witness audit.** Map where the proof introduces a finite
+   size or decomposition by existence, investigate whether bounds can be made
+   explicit, and connect any constructive result to the generator/certificate
+   interface. This is a separate research path from increasing a heuristic walk
+   budget. Approaching 9/4 permits a chosen positive epsilon.
+
+CW extraction/packing and explicit-base reductions have the most direct relation
+to lowering the exponent; campaign infrastructure and broader domains support
+those searches. GPU work becomes useful when these constructions demand it.
+The mathematical background remains the credited CW/laser and flip-graph papers
+listed in README.md; these priorities are our proposed implementation work, not
+claims that those papers provide an immediately usable finite witness.
+
+The square sparse interchange and repeating composition interpreter now exist in
+`scheme_io.py` and `composition.py`. Both explorer and size sweeps execute plans
+through shared primitives, retain coefficient provenance, and compare captured
+arithmetic with per-level recurrence budgets. General finite identity checking is
+implemented. Portable exact Python certificates now include a standalone,
+independently written basis checker and the composition argument. General
+rectangular constructions, formal proof-assistant verification, and compiled execution remain
+separate work. The required rectangular block extension and Smirnov cyclic
+baseline are now implemented: shape cycles (3,3,6), (3,6,3), (6,3,3) give a
+dimension-54 rank-64000 square base. A full base execution was verified against
+classical multiplication, including predicted/captured arithmetic budgets.
+Coefficients are pinned local research data with source/license notices. This
+lowers our implemented exponent to 2.7742999804; it reproduces a known bound.
 
 1. **Executable lower-exponent baseline.** Extend the sparse scheme representation
    to rectangular dimensions, import clearly licensed Smirnov data, and compose

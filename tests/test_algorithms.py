@@ -15,6 +15,7 @@ import unittest
 from matrix_multiplication import ALGORITHMS, multiply
 from matrix_multiplication import alphaevolve
 from matrix_multiplication.verification import check_product
+from tests.support import available_algorithms, requires_coefficients
 
 
 class AlgorithmTests(unittest.TestCase):
@@ -23,7 +24,7 @@ class AlgorithmTests(unittest.TestCase):
     def assert_products(self, a, b, expected=None, cutoffs=(1,)):
         """Compare exact/tolerant results, explicit expectations, and unchanged inputs."""
         original = copy.deepcopy((a, b))
-        for name, implementation in ALGORITHMS.items():
+        for name, implementation in available_algorithms().items():
             for cutoff in cutoffs:
                 with self.subTest(algorithm=name, cutoff=cutoff, shape=(len(a), len(b), len(b[0]))):
                     result = implementation(a, b, cutoff=cutoff)
@@ -52,7 +53,11 @@ class AlgorithmTests(unittest.TestCase):
         """Check every coefficient of each complete bilinear base identity."""
         # Matrix multiplication is bilinear. Testing every E_ij * E_kl checks
         # every coefficient of the full 2x2 and 4x4 base identities.
-        for name, implementation in ALGORITHMS.items():
+        for name, implementation in available_algorithms().items():
+            if name == "smirnov":
+                # Its rectangular identities are checked exhaustively by the
+                # independent certificate checker in test_smirnov, not 2x2 units.
+                continue
             size = 4 if name == "alphaevolve" else 2
             for left in range(size * size):
                 i, j = divmod(left, size)
@@ -76,25 +81,30 @@ class AlgorithmTests(unittest.TestCase):
             b = [[rng.randint(-20, 20) for _ in range(columns)] for _ in range(inner)]
             self.assert_products(a, b, cutoffs=(1, 3, 64))
 
+    @requires_coefficients("alphaevolve")
     def test_two_alphaevolve_recursion_levels(self):
         """Verify composition of the rank-48 base scheme, beyond a single level."""
         rng = random.Random(48)
         a = [[rng.randint(-3, 3) for _ in range(16)] for _ in range(16)]
         b = [[rng.randint(-3, 3) for _ in range(16)] for _ in range(16)]
-        self.assert_products(a, b)
+        # This case targets the two-level rank-48 composition specifically.
+        # Smirnov's separate bounded tests exercise its own rectangular stages.
+        self.assertTrue(check_product(a, b, alphaevolve.multiply(a, b)).passed)
 
     def test_exact_large_integers(self):
         """Ensure complex intermediates never round large exact real inputs."""
         large = 10 ** 80 + 7
         self.assert_products([[large, -large], [2, 3]], [[large, 1], [large, -1]])
-        self.assertTrue(all(type(x) is int for row in alphaevolve.multiply([[large]], [[large]]) for x in row))
+        if "alphaevolve" in available_algorithms():
+            self.assertTrue(all(type(x) is int for row in alphaevolve.multiply([[large]], [[large]]) for x in row))
 
     def test_exact_rationals(self):
         """Preserve Fraction inputs and verify their results by exact equality."""
         a = [[Fraction(1, 3), Fraction(-2, 7)], [Fraction(5, 11), Fraction(4, 9)]]
         b = [[Fraction(7, 13), Fraction(2, 5)], [Fraction(3, 8), Fraction(-1, 17)]]
         self.assert_products(a, b)
-        self.assertTrue(check_product(a, b, alphaevolve.multiply(a, b)).exact)
+        if "alphaevolve" in available_algorithms():
+            self.assertTrue(check_product(a, b, alphaevolve.multiply(a, b)).exact)
 
     def test_floating_and_complex(self):
         """Exercise floating domains with recursion and classical leaf cutoffs."""
@@ -126,7 +136,7 @@ class AlgorithmTests(unittest.TestCase):
         def transpose(matrix):
             """Build the independent transpose used by this algebraic property."""
             return [list(row) for row in zip(*matrix)]
-        for name, implementation in ALGORITHMS.items():
+        for name, implementation in available_algorithms().items():
             with self.subTest(algorithm=name):
                 self.assertEqual(transpose(implementation(a, b)), implementation(transpose(b), transpose(a)))
 
@@ -134,7 +144,7 @@ class AlgorithmTests(unittest.TestCase):
         """Accept immutable input rows and return independent mutable output rows."""
         a, b = ((1, 2), (3, 4)), ((1, 0), (0, 1))
         self.assert_products(a, b, [[1, 2], [3, 4]])
-        for implementation in ALGORITHMS.values():
+        for implementation in available_algorithms().values():
             result = implementation(a, b)
             result[0][0] = 999
             self.assertEqual(implementation(a, b)[0][0], 1)
@@ -159,7 +169,7 @@ class AlgorithmTests(unittest.TestCase):
 
     def test_dispatch(self):
         """Route every registered algorithm and reject unsupported names."""
-        for name in ALGORITHMS:
+        for name in available_algorithms():
             self.assertEqual(multiply([[2]], [[3]], algorithm=name), [[6]])
         with self.assertRaisesRegex(ValueError, "unknown algorithm"):
             multiply([[1]], [[2]], algorithm="openai-2.25")
@@ -167,12 +177,14 @@ class AlgorithmTests(unittest.TestCase):
 
 class CoefficientTests(unittest.TestCase):
     """Guard full coefficient verification and actionable optional-data failures."""
+    @requires_coefficients("alphaevolve")
     def test_all_tensor_coefficients(self):
         """Check the full exact identity and retain a hash for data provenance."""
         data = json.loads(alphaevolve.DATA_PATH.read_text())
         alphaevolve.validate_factors(data["factors_doubled"])
         self.assertEqual(len(data["source_sha256"]), 64)
 
+    @requires_coefficients("alphaevolve")
     def test_corrupted_decomposition_rejected(self):
         """Ensure a changed coefficient cannot pass whole-identity verification."""
         data = json.loads(alphaevolve.DATA_PATH.read_text())
@@ -236,9 +248,12 @@ class VerificationTests(unittest.TestCase):
 
 class ImportTests(unittest.TestCase):
     """Ensure coefficient ingestion treats upstream notebooks exclusively as data."""
+    @requires_coefficients("alphaevolve")
     def test_import_notebook_without_executing_it(self):
         """Reextract literal notebook data and match the validated local factors."""
         from tools.import_alphaevolve import NOTEBOOK, extract
+        if not NOTEBOOK.is_file():
+            self.skipTest("optional source notebook missing; run python tools/import_alphaevolve.py --download")
         notebook = json.loads(NOTEBOOK.read_text())
         factors = extract(notebook)
         data = json.loads(alphaevolve.DATA_PATH.read_text())

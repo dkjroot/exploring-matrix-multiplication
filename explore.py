@@ -21,6 +21,7 @@ from matrix_multiplication.common import validate
 from matrix_multiplication.experiments import ExecutionMeasurement, arithmetic_model
 from matrix_multiplication.verification import check_product
 from matrix_multiplication.reporting import write_data_report
+from matrix_multiplication.composition import Composition
 
 
 def matrix_literal(text):
@@ -49,7 +50,9 @@ def experiment_metadata(args, name):
 def main(argv=None):
     """Run algorithms, validate results, optionally export measurements; return status."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--algorithm", choices=["all", *ALGORITHMS], default="all")
+    registry = ALGORITHMS
+    parser.add_argument("--algorithm", choices=["all", *registry], default="all")
+    parser.add_argument("--composition", help="repeating comma-separated cycle of built-in names or scheme JSON paths; replaces --algorithm")
     parser.add_argument("--a", type=matrix_literal, default=[[1, 2], [3, 4]], help="left matrix literal")
     parser.add_argument("--b", type=matrix_literal, default=[[5, 6], [7, 8]], help="right matrix literal")
     parser.add_argument("--cutoff", type=int, default=1, help="classical leaf size; default 1 exercises the full recursion")
@@ -76,11 +79,22 @@ def main(argv=None):
     if args.self_test:
         tests = unittest.defaultTestLoader.discover(str(Path(__file__).resolve().parent / "tests"))
         return 0 if unittest.TextTestRunner(verbosity=2).run(tests).wasSuccessful() else 1
-    implementations = ALGORITHMS if args.algorithm == "all" else {args.algorithm: ALGORITHMS[args.algorithm]}
+    implementations = ALGORITHMS if args.algorithm == "all" else {args.algorithm: registry[args.algorithm]}
+    plan = None
+    if args.composition is not None:
+        if args.algorithm != "all":
+            parser.error("--composition replaces --algorithm; specify only one")
+        try:
+            plan = Composition.from_spec(args.composition)
+        except (ValueError, TypeError, OSError) as exc:
+            print(f"ERROR: cannot load composition: {exc}", file=sys.stderr)
+            return 1
+        implementations = {"composition": plan.multiply}
     failed = False
     reports, traces = {}, {}
     for name, implementation in implementations.items():
-        print(f"{name}: {DESCRIPTIONS[name]}")
+        description = " -> ".join(s.name for s in plan.stages) + " (repeating cycle)" if plan else DESCRIPTIONS[name]
+        print(f"{name}: {description}")
         observer = (Instrumentation(profile=not args.counts_only,
                                     trace=args.trace is not None, trace_limit=args.trace_limit,
                                     capture_values=args.trace_values)
@@ -122,7 +136,23 @@ def main(argv=None):
     # Files contain measurements, not copied inputs or potentially non-JSON results.
     for name, report in reports.items():
         report["experiment"] = experiment_metadata(args, name)
-        report["mathematical_model"] = arithmetic_model(name)
+        report_plan = plan
+        if name == "smirnov" and report["status"] != "error":
+            from matrix_multiplication.smirnov import plan as smirnov_plan
+            report_plan = smirnov_plan()
+        report["mathematical_model"] = report_plan.model() if report_plan else arithmetic_model(name)
+        if report_plan and report["experiment"]["input_shapes"]:
+            shapes = report["experiment"]["input_shapes"]
+            budget = report_plan.budget(shapes[0][0], shapes[0][1], shapes[1][1], cutoff=args.cutoff)
+            report["composition_budget"] = budget
+            report["composition_budget_matches"] = {
+                "field_multiplications": report["counts"].get("field_multiplications", 0) == budget["field_multiplications"],
+                **{key: report[key] == budget[key] for key in
+                   ("field_arithmetic_operations", "atomic_arithmetic_operations")}}
+            if report["status"] == "passed" and not all(report["composition_budget_matches"].values()):
+                report["status"] = "failed"
+                report["error"] = "composition counts disagree with recurrence budget"
+                failed = True
         report["experiment"]["primitive_timing_enabled"] = not args.counts_only
     try:
         if args.report:
