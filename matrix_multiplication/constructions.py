@@ -3,8 +3,9 @@
 Run ``python -m matrix_multiplication.constructions --help``. Each construction
 writes a fresh dated directory below outputs, with data and an offline HTML
 summary. Matrix recipes enter the same composition, measurement, and portable
-certificate paths as imported schemes. CW artifacts remain labelled tensors,
-not usable matrix algorithms. No third-party implementation executes here.
+certificate paths as imported schemes. CW extraction can execute independent
+matrix products; a direct sum is not labelled a dense matrix algorithm. No
+third-party implementation executes here.
 """
 
 import argparse
@@ -21,6 +22,8 @@ from .certificates import formula_recipe, write_bundle
 from .composition import Composition
 from .decomposition_search import beats_exponent, replay, search
 from .degenerations import recover_cw
+from .cw_extraction import extract_cw
+from .dense_packing import pack_cw, pack_coarse_cw
 from .scheme_io import load_scheme_document, save_scheme, scheme_document, scheme_from_document
 from .tensors import from_scheme, classical, matrix_product, to_scheme
 
@@ -46,6 +49,7 @@ class ConstructionRequest:
     right: str = None
     q: int = 2
     power: int = 1
+    sector_words: tuple = None
     report: Path = None
 
 
@@ -118,6 +122,97 @@ def write_summary(directory, report):
                  f'<text x="35" y="45">{maximum}</text><text x="45" y="260">0</text></svg>'
                  '<p>The curve shows the replay path to the best recipe, not unsuccessful walk branches. '
                  'Attempt counts below include those branches and restarts.</p>')
+    packing = report.get("cw_packing")
+    extraction = report.get("cw_extraction") or (packing["extraction"] if packing else None)
+    if extraction:
+        # Expose the mathematical result before the raw evidence. In particular,
+        # a reader should see the paid finite cost, rather than mistake the much
+        # smaller polynomial rank for a working multiplication's product count.
+        rows = ''.join('<tr><td>'+escape(' / '.join(item['word']))+'</td><td>'
+                       +escape(' × '.join(map(str, item['shape'])))+'</td><td>'
+                       +str(item['classical_products'])+'</td></tr>' for item in extraction['components'])
+        curve += ('<h2>Verified independent matrix products</h2>'
+                  '<p>Each shape is (rows, inner dimension, columns). Both complete tensor identities '
+                  'and actual rational-input outputs have been checked. There are no shared variable '
+                  'groups or unwanted cross-sectors in this selection.</p>'
+                  '<table><thead><tr><th>Sector word</th><th>Product shape</th><th>Classical data products</th></tr></thead>'
+                  f'<tbody>{rows}</tbody></table>'
+                  f'<p>Classical sum: <strong>{extraction["classical_direct_sum_products"]}</strong> data products. '
+                  f'Finite recovered recipe, measured: <strong>{extraction["finite_recipe_products"]}</strong>. '
+                  f'Interpolation upper bound: <strong>{extraction["finite_rank_bound"]}</strong>. '
+                  'The recovered recipe includes coefficient recovery; its additions and coefficient '
+                  'products are in the execution counters below.</p>'
+                  + ('<p>The next section uses these products in verified finite dense packing.</p>' if packing else
+                     '<p>This is an extraction milestone. Combining these independent products into '
+                     'one efficient dense multiplication remains a separate construction.</p>'))
+    if packing:
+        recovery = extraction["optimized_recovery"]
+        stages = (("Exact interpolation baseline", recovery["interpolation_products"]),
+                  ("Direct coefficient expansion", recovery["coefficient_expansion_products"]),
+                  ("Expansion after replayed reductions", recovery["reduced_expansion_products"]),
+                  ("Chosen direct-sum recipe per batch", recovery["selected_products"]),
+                  ("Mapped dense recipe before packing reductions", packing["mapped_products_before_reductions"]),
+                  ("Packed dense recipe", packing["packed_products"]),
+                  ("Classical dense baseline", packing["classical_dense_products"]))
+        cost_rows = ''.join(f'<tr><td>{escape(label)}</td><td>{count}</td></tr>' for label, count in stages)
+        curve += ('<h2>Exact recovery and dense packing</h2>'
+                  '<p>The required coefficient is also expanded directly into rank-one terms, '
+                  'then exact dependency reductions are replayed and completely checked. '
+                  'The cheaper verified recovery recipe supplies the packing slots.</p>'
+                  '<table><thead><tr><th>Construction stage</th><th>Data products</th></tr></thead>'
+                  f'<tbody>{cost_rows}</tbody></table>'
+                  f'<p>The dense target is {escape(str(packing["target_shape"]))}. '
+                  f'It uses {packing["batch_count"]} batch(es). Every (row, inner, column) triple '
+                  'is covered exactly once. Partial slots are padded with zero; output contributions '
+                  'are added using explicit linear maps. The final dense tensor identity and actual '
+                  'rational outputs are verified separately.</p>'
+                  '<p>This finite tiling construction is executable. It does not implement the '
+                  'large-power conversion behind the asymptotic sum inequality. Its reported '
+                  'exponent comes solely from the exported dense recipe.</p>')
+    coarse = report.get("cw_coarse")
+    if coarse:
+        # Keep classification misses visible: the most interesting merged
+        # components can require another extraction rather than matrix packing.
+        rows = ''
+        selected = {tuple(s) for s in coarse["selected_sectors"]}
+        for item in coarse["catalog"]:
+            classification = item["classification"]
+            shape = ' × '.join(map(str, item["shape"])) if "shape" in item else 'Needs further extraction'
+            rows += ('<tr><td>'+escape(str(item["sector_weights"]))+'</td><td>'
+                     +escape(' × '.join(map(str, item["dimensions"])))+'</td><td>'
+                     +escape(shape)+'</td><td>'+escape(classification["status"])+'</td><td>'
+                     +('Yes' if tuple(item["sector_weights"]) in selected else 'No')+'</td></tr>')
+        recovery, packed = coarse["optimized_recovery"], coarse["packing"]
+        curve += ('<h2>Merged CW components</h2>'
+                  '<p>Fine group words with the same sum share a coarse space. '
+                  'The complete catalog recombines to the original CW tensor. Every recognized '
+                  'matrix product has an explicit permutation and complete coefficient proof. '
+                  'All other components keep their coefficients for further research.</p>'
+                  f'<p>{coarse["fine_sector_words"]} fine sector words become '
+                  f'{coarse["coarse_sector_count"]} coarse sectors: '
+                  f'{coarse["recognized_matrix_components"]} recognized matrix products and '
+                  f'{coarse["components_needing_further_work"]} needing further work. '
+                  'The catalog shares spaces; only the selected induced sum is independent.</p>'
+                  '<table><thead><tr><th>Weights X,Y,Z</th><th>Space dimensions X,Y,Z</th>'
+                  '<th>Matrix shape m,k,n</th><th>Classification</th><th>Selected</th></tr></thead>'
+                  f'<tbody>{rows}</tbody></table>'
+                  '<p>A dimension obstruction rules out a full-space ordinary matrix product. '
+                  'It does not rule out useful restrictions, tensor powers or subsequent extraction. '
+                  'Other non-recognition is limited to the coefficient-one basis-permutation test.</p>'
+                  '<h2>Verified finite recovery and packing costs</h2>'
+                  '<table><thead><tr><th>Stage</th><th>Data products</th></tr></thead><tbody>'
+                  + ''.join(f'<tr><td>{escape(label)}</td><td>{count}</td></tr>' for label, count in (
+                      ("Interpolation", recovery["interpolation_products"]),
+                      ("Coefficient expansion", recovery["coefficient_expansion_products"]),
+                      ("Replayed expansion reductions", recovery["reduced_expansion_products"]),
+                      ("Selected independent-sum recipe", recovery["selected_products"]),
+                      ("Mapped dense recipe", packed["mapped_products_before_reductions"]),
+                      ("Packed dense recipe", packed["packed_products"]),
+                      ("Classical dense baseline", packed["classical_dense_products"])))
+                  + '</tbody></table><p>The selected sum and packed dense call both pass exact '
+                  'rational execution checks and multiplication-count checks. All finite recovery '
+                  'costs are included. This is finite tiling, not a recursive laser construction '
+                  'or the asymptotic sum inequality conversion.</p>')
     display = {k: v for k, v in report.items() if k != "starting_recipe"}
     if "search" in display:
         display["search"] = {k: v for k, v in evidence.items() if k != "events"}
@@ -128,11 +223,13 @@ def write_summary(directory, report):
             '<title>Exact construction experiment</title><style>'
             'body{font:18px/1.6 system-ui;max-width:1000px;margin:2rem auto;padding:1rem;color:#17202a;background:#fff}'
             'pre{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;background:#f3f5f7;padding:1rem}'
-            'svg{width:100%;max-width:760px}a{color:#005a8d}</style>'
+            'svg{width:100%;max-width:760px}a{color:#005a8d}'
+            'table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.5rem;border-bottom:1px solid #bbb}</style>'
             '<h1>Exact construction experiment</h1>'
             f'<p>{escape(report["outcome"])}</p><p>{links}</p>{curve}'
-            '<p>Construction/search attempts are setup work. To measure the resulting matrix algorithm, '
-            'pass scheme.json to explore.py or sweep.py using their composition option.</p>'
+            '<p>Construction/search attempts are setup work. The combined suite measures its '
+            'selected generated recipes automatically. For an individual matrix recipe, pass '
+            'scheme.json to explore.py or sweep.py using their composition option.</p>'
             f'<pre>{escape(json.dumps(display, indent=2))}</pre></html>')
     (directory / "index.html").write_text(html, encoding="utf-8")
 
@@ -144,7 +241,7 @@ def run_experiment(args, directory=None):
     suite artifacts predictably named under one dated run, without nested dates.
     Existing directories are refused; callers retain earlier experiment output.
     """
-    if args.command not in ("search", "product", "replay", "cw"):
+    if args.command not in ("search", "product", "replay", "cw", "cw-extract", "cw-pack", "cw-coarse"):
         raise ValueError("unknown construction experiment")
     if args.command == "search" and args.target_rank is not None and args.target_exponent is not None:
         raise ValueError("choose a rank or exponent target")
@@ -200,9 +297,40 @@ def run_experiment(args, directory=None):
         report.update({"starting_recipe": prior["starting_recipe"], "search": prior["search"],
                        "replayed_report_sha256": sha256(args.report.read_bytes()).hexdigest()})
         provenance["parent_report"] = prior.get("provenance", {})
-    else:
+    elif args.command == "cw":
         tensor, evidence = recover_cw(args.q, args.power)
         report.update({"cw": evidence, "outcome": "Polynomial CW tensor recovered and exactly verified. This is not yet a matrix multiplier."})
+    elif args.command == "cw-extract":
+        tensor, evidence = extract_cw(args.q, args.power, args.sector_words)
+        report.update({"cw_extraction": evidence,
+                       "outcome": f"Extracted and executed {evidence['selected_components']} independent matrix products; "
+                                  f"the finite recovered recipe uses {tensor.rank} data products. Dense packing remains open."})
+        provenance["method_reference"] = evidence["source"]
+        provenance["polynomial_reference"] = "https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf"
+        # A single balanced component is already an ordinary matrix identity.
+        # Export only shapes supported by the existing recursive scheme engine.
+        # Several independent products must never be relabelled as one larger
+        # dense product, and unit-size axes remain executable tensor evidence.
+        if evidence["selected_components"] == 1:
+            shape = tuple(evidence["components"][0]["shape"])
+            if min(shape) >= 2:
+                scheme = to_scheme(tensor, shape, "cw-extracted-component")
+    elif args.command == "cw-pack":
+        tensor, evidence = pack_cw(args.q, args.power, args.size, args.sector_words)
+        report["cw_packing"] = evidence
+        scheme = to_scheme(tensor, (args.size,)*3, "cw-packed-dense")
+        provenance["method_reference"] = evidence["extraction"]["source"]
+        provenance["polynomial_reference"] = "https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf"
+        provenance["construction"] = "independent finite volume tiling, direct coefficient recovery, and replayed exact reductions"
+    else:
+        if args.sector_words is not None:
+            raise ValueError("fine sector words cannot select coarse components")
+        tensor, evidence = pack_coarse_cw(args.q, args.power, args.size)
+        report["cw_coarse"] = evidence
+        scheme = to_scheme(tensor, (args.size,)*3, "cw-coarse-packed-dense")
+        provenance["method_reference"] = evidence["source"]
+        provenance["polynomial_reference"] = "https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf"
+        provenance["construction"] = "independent sum-index coarsening, exact support classification, polynomial recovery and finite packing"
     if scheme is not None:
         report.update({"shape": list(scheme.shape), "rank": scheme.rank, "exact_matrix_identity_verified": True})
         if len(set(scheme.shape)) == 1:
@@ -217,6 +345,8 @@ def run_experiment(args, directory=None):
             result = "reached" if report["search"]["target_reached"] else "not reached"
             report["outcome"] += f" Requested rank target {report['search']['target_rank']}: {result}."
     report["provenance"] = provenance
+    if args.command == "cw-extract" and args.certificate and scheme is None:
+        raise ValueError("extraction certificate requires a single supported matrix component; a direct sum is tensor evidence")
     # Reject an unsupported certificate request before creating a partial output
     # directory. Rectangular certificate creation needs an explicitly balanced
     # cycle; the suite supplies that cycle in its separate integration stage.
@@ -264,6 +394,23 @@ def main(argv=None):
     cw_parser = commands.add_parser("cw", help="generate and exactly recover a CW polynomial tensor power")
     cw_parser.add_argument("--q", type=int, default=2)
     cw_parser.add_argument("--power", type=int, default=1)
+    extraction_parser = commands.add_parser("cw-extract", help="extract and execute verified independent products from a CW power")
+    extraction_parser.add_argument("--q", type=int, default=2)
+    extraction_parser.add_argument("--power", type=int, default=1)
+    extraction_parser.add_argument("--sector-word", dest="sector_words", action="append", type=parse_sector_word,
+                                   help="explicit comma-separated sectors, e.g. 101,110,011; repeat for independent components")
+    extraction_parser.add_argument("--certificate", action="store_true", help="certificate when a single extracted component is a supported square base")
+    packing_parser = commands.add_parser("cw-pack", help="optimize CW recovery and construct a verified dense matrix base")
+    packing_parser.add_argument("--q", type=int, default=2)
+    packing_parser.add_argument("--power", type=int, default=2)
+    packing_parser.add_argument("--size", type=int, default=2, help="finite square base to cover with component tiles")
+    packing_parser.add_argument("--sector-word", dest="sector_words", action="append", type=parse_sector_word)
+    packing_parser.add_argument("--certificate", action="store_true")
+    coarse_parser = commands.add_parser("cw-coarse", help="merge CW groups, classify all components, and pack verified matrix pieces")
+    coarse_parser.add_argument("--q", type=int, default=2)
+    coarse_parser.add_argument("--power", type=int, default=2)
+    coarse_parser.add_argument("--size", type=int, default=2)
+    coarse_parser.add_argument("--certificate", action="store_true")
     replay_parser = commands.add_parser("replay", help="replay a prior report.json independently of random search")
     replay_parser.add_argument("report", type=Path)
     replay_parser.add_argument("--certificate", action="store_true")
@@ -277,6 +424,15 @@ def main(argv=None):
         return 0
     except (ValueError, TypeError, KeyError, OSError) as exc:
         parser.error(str(exc))
+
+
+def parse_sector_word(value):
+    """Parse explicit CLI sectors without accepting truncated digits or booleans."""
+    from .cw_extraction import sector_word
+    try:
+        return sector_word(tuple(tuple(int(digit) for digit in token) for token in value.split(',')))
+    except (ValueError, TypeError) as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
 
 
 if __name__ == "__main__":

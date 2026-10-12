@@ -14,6 +14,8 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from time import perf_counter
 
+from .operand_costs import OperandCosts, exact_parts, integer_bits
+
 
 @dataclass
 class _Frame:
@@ -50,6 +52,7 @@ class Instrumentation:
         self.capture_values = capture_values
         self.sink = sink
         self.counts = Counter()
+        self.operand_costs = OperandCosts()
         self.primitive_calls = Counter()
         self.profiles = {}
         self.products_by_depth = Counter()
@@ -94,6 +97,7 @@ class Instrumentation:
         atomic = sum(value for key, value in self.counts.items()
                      if key.startswith(("real_", "native_complex_")) or key == "integer_divmods")
         return {
+            "operand_costs": self.operand_costs.snapshot(),
             "counts": dict(self.counts), "atomic_arithmetic_operations": atomic,
             "field_arithmetic_operations": sum(self.counts[key] for key in (
                 "field_multiplications", "coefficient_multiplications", "field_additions",
@@ -192,6 +196,25 @@ def count(category, amount=1):
             observer.products_by_depth[frame.depth if frame else 0] += amount
 
 
+def trace_value(value):
+    """Bound huge-number trace rendering without altering or rounding the value.
+
+    Python limits decimal conversion of enormous integers. A bit-width summary
+    avoids an observation failure after otherwise correct exact arithmetic. The
+    stored mathematical value is unchanged; a summary is explicitly not a value.
+    Exact Gaussian pairs are handled without importing scalars back into this
+    module, which would create a cycle in the primitive hierarchy.
+    """
+    parts = exact_parts(value)
+    if parts is not None and max(map(integer_bits, parts)) > 4096:
+        return f'<exact value summary: numerator {integer_bits(parts[0])} bits, denominator {integer_bits(parts[1])} bits>'
+    if type(value).__name__ == 'Gaussian' and hasattr(value, 'real') and hasattr(value, 'imag'):
+        return 'Gaussian('+trace_value(value.real)+', '+trace_value(value.imag)+')'
+    if isinstance(value, tuple):
+        return '('+', '.join(trace_value(item) for item in value)+')'
+    return repr(value)
+
+
 def evaluate(name, category, function, *operands, role=None):
     """Execute and observe one atomic operation, including failed attempts.
 
@@ -210,6 +233,7 @@ def evaluate(name, category, function, *operands, role=None):
     finally:
         elapsed = perf_counter() - start if observer.profile else 0.0
         observer.counts[category] += 1
+        observer.operand_costs.observe(name, operands, result, role, status)
         observer._profile(name, elapsed, elapsed, {category: 1})
         if frame is not None:
             frame.child_seconds += elapsed
@@ -218,6 +242,6 @@ def evaluate(name, category, function, *operands, role=None):
                      "primitive": name, "category": category, "role": role,
                      "depth": frame.depth if frame else 0, "seconds": elapsed, "status": status}
             if observer.capture_values:
-                event["operands"] = [repr(value) for value in operands]
-                event["result"] = repr(result)
+                event["operands"] = [trace_value(value) for value in operands]
+                event["result"] = trace_value(result)
             observer._emit(event)

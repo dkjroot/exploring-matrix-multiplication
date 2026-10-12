@@ -250,7 +250,9 @@ class WorkSweepTests(unittest.TestCase):
         report = visual.sweep_sample_report(data["series"][0], data["series"][0]["samples"][1])
         self.assertEqual(report["counts"]["field_multiplications"], 7)
         self.assertEqual(report["execution_measurements"]["accuracy"]["maximum_absolute_error"], 0)
-        self.assertNotIn("elapsed_algorithm_call_seconds", report["execution_measurements"])
+        self.assertEqual(report["execution_measurements"]["elapsed_algorithm_call_seconds"],
+                         data["series"][0]["samples"][1]["execution_measurements"]["elapsed_algorithm_call_seconds"])
+        self.assertEqual(report["execution_measurements"]["python_traced_peak_bytes"]["status"], "measured")
 
     def test_reference_report_is_preserved_and_separated_from_sweep_measurements(self):
         """Earlier diagnostics retain exact source text, scope, and measured values."""

@@ -120,7 +120,54 @@ impossibility result.
 uses exact interpolation to recover its leading tensor coefficient. Recovery
 explicitly pays its finite product cost. A smaller border-rank bound is a
 different mathematical statement and is not labelled an executable multiplier.
-See `CONSTRUCTIONS.md` for examples and remaining extraction/packing work.
+
+`cw_extraction.py` turns the six sector types into row/inner/column index rules.
+Read `component` for the coordinate permutation, then `selection_conflicts` for
+the independence check. Distinct variable groups can still leave an unintended
+cross-sector; checking just pairwise disjointness would be incorrect. `extract_cw`
+compares the entire literal restriction and finite polynomial recovery against
+independently constructed classical products, then checks actual rational calls.
+Its report keeps the greedy selection, explicit maps, and paid finite cost.
+
+`tensor_execution.py` is a reusable execution primitive for arbitrary rational
+bilinear recipes, including unit-size axes and direct sums. It evaluates sparse
+input combinations, multiplies them, and accumulates weighted output entries via
+`scalars.py`. It always counts fixed scaling, even by one, and every surviving
+data product, even on zero inputs. This simple schedule is explicitly labelled
+in reports, so it is not confused with the optimized matrix-scheme schedule.
+`tensors.coefficient_expansion` recovers sparse polynomial coefficient planes
+without evaluations. `optimize_cw_extraction` compares this with interpolation,
+reduces exact two-factor dependencies, replays them, and checks the full identity.
+The classical target is a verifier specification, not a substituted algorithm.
+`optimize_recovery` shares the coefficient expansion and replay checks between
+fine and coarse restrictions; it does not need to know a component's shape.
+
+`cw_coarsening.py` merges fine words by their summed group index. Start with
+`weight_groups` for the coordinate partition and `coarse_catalog` for its
+complete reconstruction check. The catalog is not an independent direct sum:
+many entries share spaces. Each entry retains exact coefficient support, including
+components that `tensor_classification.py` cannot recognize as matrix products.
+That classifier derives integer matrix dimensions, builds support neighborhoods,
+recovers explicit entry permutations, then checks every tensor coefficient.
+Its failure labels distinguish a full-space dimension obstruction from a limited
+basis-permutation test. General linear isomorphism is not searched.
+`choose_coarse_components` admits only proved layouts, checking shared spaces and
+unintended weight triples. `extract_coarse_cw` verifies the resulting independent
+sum against both literal coefficients and recovered polynomial coefficients.
+
+In `dense_packing.py`, start with `packing_schedule`, then `verify_schedule`.
+The planner partitions (row,inner,column) triples into rectangular component
+tiles. The verifier independently counts multiplicities, detecting holes and
+duplicate inner contributions. `batch_maps` connects slots to the dense inputs
+and adds outputs; `pack_tensor` applies those maps, replays any new dependencies,
+and checks every matrix tensor coefficient. Batches are added in shared spaces,
+not combined using `direct_sum`, which would give separate outputs.
+`pack_coarse_cw` and `pack_cw` use the same packing and
+`packed_execution_evidence` primitives, so their data-product counts and exact
+rational calls are checked on equal terms. Catalog construction is setup work.
+The exported recipe recurses through the existing scheme engine without runtime
+search or tensor expansion. See `CONSTRUCTIONS.md` for commands and the stronger
+large-power extraction/conversion that remains research work.
 
 `constructions.py` exposes these operations through one shared typed request API
 and a CLI. `research_suite.py` orchestrates that API, certificates, diagnostics,
@@ -129,6 +176,27 @@ identity must also have a supported repeating execution plan. Stage failures
 retain diagnostics, successful artifacts, and a nonzero final status.
 
 ## Add an algorithm without duplicating the machinery
+
+For operand-size observation, read `operand_costs.py` from `exact_parts` through
+`word_cost` and `OperandCosts.observe`. It is called after atomic execution by
+`instrumentation.evaluate`; it never chooses arithmetic results. Rational word
+costs and excluded GCD/division work are documented beside their expressions.
+`trace_value` protects enormous exact values from decimal trace-rendering limits.
+
+For non-executed growth, read `scaling.stage_counts`, `category_budget`, then
+`project_work`. Known formulas keep separate addition/subtraction counts; sparse
+descriptors use their three matrix areas. Recurrence category sums must equal the
+existing independent total budget. `work_sweep` compares them with observed
+primitives and keeps projections separate from measurements. Optional memory
+probes surround public calls, while the suite's setup probes have separate scopes.
+`reporting.resource_scaling_sections` preserves those distinctions in the charts.
+
+`size_effects.py` separates recorded stage divisions from zero-padding and cutoff
+choices. `describe_sample` reads the exact discrete geometry, including rectangular
+prefixes and padding-before-cutoff behavior. `describe_transition` compares adjacent
+sampled geometries, recording observed field-count equality separately. Unknown
+callbacks receive declared-model evidence, not a claimed reference traversal.
+`reporting.size_effects_section` puts these paths and caveats beside each graph.
 
 For an explicit formula, supply a block `step` using shared arithmetic and the
 provided child-product callback. For a coefficient recipe, supply exact U/V/W

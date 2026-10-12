@@ -51,14 +51,19 @@ class SuiteSettings:
     search_split_every: int = 50
     cw_parameters: tuple = (1, 2)
     cw_powers: tuple = (1, 2)
+    cw_packing_size: int = 2
     trace_limit: int = 200
+    measure_sweep_memory: bool = True
+    projection_cycles: int = 12
 
     def validate(self):
         """Reject invalid ranges before creating output or doing expensive work."""
         positive = (self.search_size, self.search_restarts, self.search_max_height, self.search_split_every,
-                    *self.cw_parameters, *self.cw_powers)
+                    self.cw_packing_size, self.projection_cycles, *self.cw_parameters, *self.cw_powers)
         if any(type(n) is not int or n < 1 for n in positive) or self.search_size < 2:
             raise ValueError("suite sizes/parameters/restarts/height must be positive; search size >= 2")
+        if self.cw_packing_size < 2:
+            raise ValueError("CW packing size must be at least two")
         if any(type(n) is not int or n < 0 for n in (self.search_steps, self.search_extra_rank, self.trace_limit)):
             raise ValueError("suite steps/extra rank/trace limit must be nonnegative integers")
         if not self.search_seeds or any(type(seed) is not int for seed in self.search_seeds):
@@ -97,7 +102,7 @@ def pair_evidence(implementations, plans, *, floating=False, trace_limit=200):
     """Observe one small pair per algorithm, with profiles, memory, and bounded traces.
 
     Integer and float cases have different arithmetic/accuracy scopes; neither
-    supplies wall-clock or memory observations to the count-only size sweep.
+    supplies wall-clock or memory observations to the separate size-sweep calls.
     Verification happens after the call and outside measurement. Partial errors
     retain their counters. Native complex atomic operations remain opaque.
     """
@@ -219,8 +224,18 @@ class SuiteRun:
         if self.progress:
             self.progress(f"Suite: {name}")
         stage = {"name": name, "family": family}
+        # Setup stages have their own resource scope, separate from algorithm
+        # calls and independent verification inside pair/growth measurements.
+        # Never nest memory probes around those calls: an existing tracer cannot
+        # provide a fresh per-call peak. These setup peaks include file/report
+        # creation and observer overhead, and do not pretend to count every raw
+        # Fraction operation in a construction/search implementation.
+        setup = family not in ("profiles, memory, accuracy, traces",
+                               "measured arithmetic and theoretical comparison", "report rendering")
+        measurement = ExecutionMeasurement(measure_memory=setup)
         try:
-            stage.update(operation())
+            with measurement:
+                stage.update(operation())
             stage.setdefault("status", "passed")
         except Exception as exc:
             stage["status"] = "error"
@@ -229,6 +244,11 @@ class SuiteRun:
             stage["traceback"] = format_exc()
             if self.progress:
                 self.progress(f"Suite stage failed: {name}: {exc}")
+        if setup:
+            stage["setup_measurements"] = {"elapsed_seconds": measurement.elapsed_seconds,
+                "python_traced_peak_bytes": {"status": measurement.memory_status, "value": measurement.python_peak_bytes},
+                "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+                "coefficient_arithmetic_operations": {"status": "not_counted", "value": None}}
         self.manifest["stages"].append(stage)
         self.checkpoint()
         return stage
@@ -256,6 +276,8 @@ class SuiteRun:
                   "outcome": report["outcome"]}
         if "search" in report:
             result.update(rank=report["rank"], target_reached=report["search"]["target_reached"])
+        if "rank" in report:
+            result["rank"] = report["rank"]
         if (folder / "scheme.json").exists():
             result["scheme"] = f"{name}/scheme.json"
         return result
@@ -291,6 +313,7 @@ class SuiteRun:
 def suite_panel(manifest, *, growth_available=True):
     """Render accessible suite navigation; keep every existing arithmetic section."""
     rows = []
+    setup_rows = []
     for stage in manifest["stages"]:
         links = ' · '.join(f'<a href="{escape(stage[key], quote=True)}">{label}</a>'
                            for key, label in (("report", "HTML"), ("data", "JSON"), ("scheme", "Recipe"), ("argument", "Argument"))
@@ -298,6 +321,11 @@ def suite_panel(manifest, *, growth_available=True):
         note = stage.get("error", stage.get("outcome", stage.get("scope", "")))
         rows.append(f'<tr><td>{escape(stage["name"])}</td><td>{escape(stage["family"])}</td>'
                     f'<td>{escape(stage["status"])}</td><td>{links}</td><td>{escape(note)}</td></tr>')
+        if 'setup_measurements' in stage:
+            measurement = stage['setup_measurements']
+            peak = measurement['python_traced_peak_bytes']
+            setup_rows.append(f'<tr><td>{escape(stage["name"])}</td><td>{measurement["elapsed_seconds"]:.6g}</td>'
+                              f'<td>{escape(str(peak["value"]))}</td><td>{escape(peak["status"])}</td></tr>')
     targets = manifest.get("finite_targets", {}).get("rows", [])
     target_rows = ''.join(f'<tr><td>{r["dimension"]}</td><td>{r["11/4"]:,}</td><td>{r["23/10"]:,}</td></tr>' for r in targets)
     growth_note = ('The full arithmetic growth report remains below.' if growth_available else
@@ -311,6 +339,12 @@ def suite_panel(manifest, *, growth_available=True):
             'CW tensors are construction evidence; their border rank is not an executable matrix exponent.</p>'
             '<div class="table-wrap"><table><thead><tr><th>Stage</th><th>Family</th><th>Status</th><th>Evidence</th><th>Scope/outcome</th></tr></thead>'
             f'<tbody>{"".join(rows)}</tbody></table></div>'
+            '<details><summary>Separate setup and construction costs</summary>'
+            '<p>Stage resources include generation, exact checks and artifact writing; cached inputs may already exist. '
+            'They are separate from matrix execution and are not coefficient-arithmetic counts. Search/power budgets '
+            'are independent of the matrix-size sweep; fixed recipe preparation is not charged at each scalar product.</p>'
+            '<div class="table-wrap"><table><thead><tr><th>Setup stage</th><th>Seconds</th><th>Traced peak bytes</th><th>Memory status</th></tr></thead>'
+            f'<tbody>{"".join(setup_rows)}</tbody></table></div></details>'
             '<h3>Finite product-count targets</h3><p>Maximum rank strictly below each exponent. '
             'These are thresholds, not discovered algorithms. The 2×2 target of six products is known to be infeasible.</p>'
             '<div class="table-wrap"><table><thead><tr><th>Square base size</th><th>Below 2.75</th><th>Below 2.30</th></tr></thead>'
@@ -345,7 +379,8 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
     plans = dict(compositions or {})
     if any(not isinstance(name, str) or not name or name in ALGORITHMS for name in plans):
         raise ValueError("custom composition names must be nonempty and distinct from registered algorithms")
-    reserved = {f"generated-search-{i}" for i in range(1, len(set(settings.search_seeds))+1)} | {"generated-tensor-product"}
+    reserved = {f"generated-search-{i}" for i in range(1, len(set(settings.search_seeds))+1)} | {
+        "generated-tensor-product", "generated-cw-packed"}
     if reserved & plans.keys():
         raise ValueError("custom compositions use a reserved suite name")
     configuration = {"sizes": sizes, "cutoffs": cutoffs, "algorithms": names, "input_seed": seed,
@@ -381,10 +416,63 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
     if product["status"] == "passed":
         run.perform("register-generated-tensor-product", "candidate integration", lambda: run.register_candidate(
             "generated-tensor-product", directory / product["scheme"], plans))
+    packing_candidates = []
     for q in dict.fromkeys(settings.cw_parameters):
         for power in dict.fromkeys(settings.cw_powers):
             label = f"cw-q{q}-power{power}"
             run.perform(label, "polynomial tensor recovery", lambda: run.construction(label, ConstructionRequest("cw", q=q, power=power)))
+            # Extraction is independent of the full recovery stage: it restricts
+            # polynomial factors before interpolation and checks its own full
+            # identity. Preserve this evidence even if full recovery fails.
+            extraction_label = f"cw-extraction-q{q}-power{power}"
+            run.perform(extraction_label, "verified independent product extraction", lambda: run.construction(
+                extraction_label, ConstructionRequest("cw-extract", q=q, power=power)))
+            packing_label = f"cw-packing-q{q}-power{power}"
+            packed = run.perform(packing_label, "exact recovery optimization and dense packing", lambda: run.construction(
+                packing_label, ConstructionRequest("cw-pack", q=q, power=power, size=settings.cw_packing_size)))
+            if packed["status"] == "passed":
+                packing_candidates.append((packing_label, directory / packed["scheme"], packed["rank"]))
+            # Coarsening is a separate experiment, so failure in fine extraction
+            # cannot suppress the merged-component catalog or vice versa. Only
+            # its completely verified dense scheme joins candidate comparison;
+            # unrecognized components remain visible in its own evidence report.
+            coarse_label = f"cw-coarse-q{q}-power{power}"
+            coarse = run.perform(coarse_label, "coarse CW classification and verified packing", lambda: run.construction(
+                coarse_label, ConstructionRequest("cw-coarse", q=q, power=power, size=settings.cw_packing_size)))
+            if coarse["status"] == "passed":
+                packing_candidates.append((coarse_label, directory / coarse["scheme"], coarse["rank"]))
+
+    def integrate_best_packing():
+        """Measure one best finite packing; keep all construction comparisons.
+
+        All candidates use the same recorded square base size, so comparing rank
+        is an exact comparison of their recursive data-product exponents. Break
+        ties by the declared arithmetic budget, then name, deterministically.
+        Admit only cubic-or-better recipes: a worse exponent can make an ordinary
+        growth grid unexpectedly enormous. Its base execution/cost report still
+        remains available, and users can measure it explicitly as a composition.
+        """
+        candidates, decisions = [], []
+        size = settings.cw_packing_size
+        for label, path, rank in packing_candidates:
+            decision = {"construction": label, "rank": rank, "base_dimension": size,
+                        "admitted_to_comparison": rank <= size**3}
+            decisions.append(decision)
+            if rank <= size**3:
+                plan = generated_plan(path)
+                steps = plan.budget(size, size, size)["field_arithmetic_operations"]
+                candidates.append((rank, steps, label, plan))
+        if not candidates:
+            return {"scope": "No cubic-or-better CW packing admitted to growth; finite construction evidence retained.",
+                    "candidates": decisions}
+        rank, steps, label, plan = min(candidates, key=lambda item: item[:3])
+        plans["generated-cw-packed"] = plan
+        return {"scope": f"Best finite CW packing from {label}; all candidate reports retained.",
+                "selected_construction": label, "base_dimension": size, "base_bilinear_rank": rank,
+                "base_field_arithmetic_operations": steps, "candidates": decisions}
+
+    if packing_candidates:
+        run.perform("register-generated-cw-packed", "candidate integration", integrate_best_packing)
     # Phase 2: independently check every plan before producing its certificate.
     # Build independent proof plans for registered algorithms. The naive bundle
     # certifies its classical identity, without pretending to certify its program.
@@ -421,7 +509,9 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
         """Count the original and generated algorithms over the requested grid."""
         nonlocal data
         measured = collect_work(sizes, cutoffs, algorithms=names, seed=seed, progress=progress,
-                                compositions=plans, reuse_equivalent_cutoffs=reuse_equivalent_cutoffs)
+                                compositions=plans, reuse_equivalent_cutoffs=reuse_equivalent_cutoffs,
+                                measure_memory=settings.measure_sweep_memory,
+                                projection_cycles=settings.projection_cycles)
         raw = (json.dumps(measured, indent=2, allow_nan=False)+"\n").encode("utf-8")
         # Save primary evidence before enriching it with secondary snapshots.
         # A missing earlier report must neither discard completed counts nor

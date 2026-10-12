@@ -311,3 +311,53 @@ def polynomial_coefficient(dimensions, terms, degree, coefficient):
                 factors.append(vector((i, weight*c) for i, c in evaluated) if leg == 2 else evaluated)
             recovered.append(tuple(factors))
     return Tensor(tuple(dimensions), tuple(recovered))
+
+
+def coefficient_expansion(dimensions, terms, coefficient):
+    """Recover a polynomial coefficient by explicit convolution of vector planes.
+
+    Write each factor as sum(e**a * U_a). Its rank-one product contributes
+    U_a tensor V_b tensor W_c when a+b+c equals the requested degree. Each
+    nonzero triple is a finite bilinear product; its cost is counted rather than
+    hidden in a border-rank annotation. Sparse degrees can make this cheaper than
+    interpolation, whereas dense polynomial factors can make it more expensive.
+    Subsequent exact dependency reductions may eliminate redundant terms.
+
+    This is independent of Lagrange recovery: no evaluations, small epsilon,
+    target tensor entries, or classical multiplication recipe are used to build
+    the result. Every coordinate is validated even if its polynomial is zero.
+    """
+    if type(coefficient) is not int or coefficient < 0:
+        raise ValueError("coefficient degree must be a nonnegative integer")
+    if len(dimensions) != 3 or any(type(d) is not int or d < 1 for d in dimensions):
+        raise ValueError("polynomial tensor needs three positive dimensions")
+    expanded = []
+    for term in terms:
+        if len(term) != 3 or any(not factor for factor in term):
+            raise ValueError("polynomial terms need three nonempty factors")
+        planes = []
+        for factor, bound in zip(term, dimensions):
+            entries = {}
+            for index, polynomial in factor:
+                if type(index) is not int or not 0 <= index < bound:
+                    raise ValueError("polynomial coordinate outside its vector space")
+                if not polynomial or any(type(c) not in (int, Fraction) for c in polynomial):
+                    raise ValueError("polynomial coefficients must be exact rationals")
+                for degree, value in enumerate(polynomial):
+                    if value and degree <= coefficient:
+                        entries.setdefault(degree, []).append((index, value))
+            # Collect duplicate coordinates before deciding whether a plane is
+            # zero. A cancellation is exact construction algebra, not a shortcut
+            # based on a particular matrix's input values.
+            factor_planes = {}
+            for degree, values in entries.items():
+                plane = vector(values)
+                if plane:
+                    factor_planes[degree] = plane
+            planes.append(factor_planes)
+        for a, u in sorted(planes[0].items()):
+            for b, v in sorted(planes[1].items()):
+                w = planes[2].get(coefficient-a-b)
+                if w:
+                    expanded.append((u, v, w))
+    return Tensor(tuple(dimensions), tuple(expanded))

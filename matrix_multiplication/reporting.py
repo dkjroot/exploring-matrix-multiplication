@@ -88,6 +88,11 @@ def display(value):
     return str(value)
 
 
+def axis_number(value):
+    """Shorten large graph ticks; exact integers remain in tables and tooltips."""
+    return f'{float(value):.3g}' if value >= 1_000_000 else display(value)
+
+
 def reject_constant(value):
     """Reject nonstandard NaN/Infinity tokens in input JSON with a clear diagnostic."""
     raise ValueError(f"nonstandard JSON number: {value}")
@@ -347,7 +352,7 @@ No value on a theoretical curve is represented as a captured execution count.
         xs = [xs[round(index * (len(xs) - 1) / 7)] for index in range(8)]
     for value in xs:
         x = left + (transform(value) - xmin) / (xmax - xmin) * width
-        parts.append(f'<line x1="{x}" x2="{x}" y1="{top}" y2="{top + height}" stroke="#e4e8ef"/><text x="{x}" y="{top + height + 23}" text-anchor="middle" font-size="14">{text(display(value))}</text>')
+        parts.append(f'<line x1="{x}" x2="{x}" y1="{top}" y2="{top + height}" stroke="#e4e8ef"/><text x="{x}" y="{top + height + 23}" text-anchor="middle" font-size="14">{text(axis_number(value))}</text>')
     for index in range(5):
         transformed = ymin + (ymax - ymin) * index / 4
         value = 10 ** transformed if logarithmic else transformed
@@ -405,7 +410,7 @@ def measured_series(lines, metric):
             if sample["status"] != "passed":
                 continue
             observation = sample["observation"]
-            value = observation["counts"].get(metric, 0) if metric == "field_multiplications" else observation.get(metric)
+            value = observation["counts"].get(metric, 0) if metric.startswith('field_') and metric != 'field_arithmetic_operations' else observation.get(metric)
             if number(value) is not None:
                 points.append((sample["size"], value))
         result.append({"label": f'{line["algorithm"]}, cutoff {line["cutoff"]}',
@@ -445,6 +450,128 @@ def measurement_label(sample, cutoff):
     return f"Reused from cutoff {source}" if kind == "reused" else f"Executed at cutoff {source}"
 
 
+def size_effects_section(lines):
+    """Show where each finite step originates, including unsupported attribution.
+
+    Geometry is discrete model evidence, not a memory/bit-work observation.
+    Preserve older report readability by leaving absent metadata unavailable;
+    do not rewrite old JSON or silently assert a callback's traversal from rank.
+    """
+    rows, transitions, cutoff_notes = [], [], []
+    for line in lines:
+        for sample in line['samples']:
+            evidence = sample.get('size_effects', {})
+            if evidence.get('status') not in ('known_reference_policy', 'declared_model_only'):
+                continue
+            padded = ' × '.join(map(str, evidence['padded_dimensions']))
+            leaf = ' × '.join(map(str, evidence['leaf_dimensions']))
+            trace = [evidence['padded_dimensions']]+[level['child_dimensions'] for level in evidence['levels']]
+            path = ' → '.join('×'.join(map(str, shape)) for shape in trace)
+            stages = ' → '.join(f"{level['stage']} ({level['child_products_per_node']} child products)" for level in evidence['levels'])
+            rows.append((line['cutoff'], sample['size'], padded, leaf, evidence['recursion_levels'],
+                         evidence['extra_zero_input_cells'], 'Yes' if evidence['padding_added'] else 'No',
+                         path, stages or 'Classical leaf', evidence['status']))
+            transition = evidence.get('transition_from_previous_sample')
+            if transition:
+                transitions.append((line['cutoff'], transition.get('from_requested_size'),
+                    transition.get('to_requested_size'), transition['kind'],
+                    transition.get('observed_data_products_equal'), transition['reason']))
+            if evidence.get('padding_triggered_recursion') and evidence['status'] == 'known_reference_policy':
+                cutoff_notes.append(f"n={sample['size']}, cutoff {line['cutoff']}: the requested matrix already fits the cutoff, "
+                    f"but padding to {padded} happens first and triggers recursion. This is our current ordering choice, not a mathematical requirement.")
+    if not rows:
+        return ''
+    body = ('<details><summary>Where this algorithm’s steps come from</summary>'
+            '<p>The table separates a stage’s prescribed integer block divisions from our choice of which problem to execute. '
+            'All sizes are (rows, inner dimension, columns). Geometry comes from the discrete budget; multiplication counters '
+            'and output checks independently test execution. Declared-model-only rows do not establish an unknown callback’s policy.</p>'
+            +table(('Cutoff', 'Requested n', 'Executed padded shape', 'Classical leaf shape', 'Levels',
+                    'Extra zero input cells', 'Padding added?', 'Dimension path', 'Stage path', 'Attribution'), rows))
+    if transitions:
+        body += table(('Cutoff', 'Previous n', 'Current n', 'Budget transition', 'Observed data counts equal?', 'Why'), transitions)
+    body += ''.join('<p class="callout">'+text(note)+'</p>' for note in cutoff_notes)
+    body += ('<p>Our interpreter pads to a covering stage prefix before testing the cutoff, even if a larger classical '
+             'leaf or a border-handling strategy could use fewer products. This keeps one uniform, verified traversal. '
+             'It is portable, not a Python/GPU/home-computer restriction. Alternatives require their own exact recipes, '
+             'counts and verification. Padding preserves the product and fixed-cutoff asymptotic exponent; it can add '
+             'substantial finite work. Equal field counts do not imply equal operand widths, word cost or memory.</p></details>')
+    return body
+
+
+def resource_scaling_sections(lines):
+    """Compare observed operand/memory costs and separately labelled projections.
+
+    Older JSON omits these fields and simply has no additional sections. No
+    measurement is backfilled from a model. The charts share the accessible
+    palette, markers, labelled axes and legend isolation of the original report.
+    """
+    parts, rows = [], []
+    baseline_cutoff = min(line['cutoff'] for line in lines)
+    baseline = [line for line in lines if line['cutoff'] == baseline_cutoff]
+    for category, label in (('field_additions', 'Measured additions'), ('field_subtractions', 'Measured subtractions')):
+        parts.append(panel(label, 'Captured field primitive calls. Negative-coefficient scales are counted as coefficient products, not subtraction calls.',
+                           curve_chart(label, measured_series(baseline, category), y_label=label+' (count)')))
+    for metric, heading, unit in (
+            ('equivalent_word_multiplications', '64-bit multiplication equivalents', '64-bit word products (model)'),
+            ('equivalent_word_additions_subtractions', '64-bit addition and subtraction equivalents', '64-bit word sums (model)'),
+            ('observed_max_operand_bits', 'Observed operand growth', 'Operand magnitude (bits)')):
+        curves = []
+        for index, line in enumerate(baseline):
+            points = [(s['size'], s['observation']['operand_costs'][metric]) for s in line['samples']
+                      if s['status'] == 'passed' and 'operand_costs' in s['observation']]
+            curves.append({'label': line['algorithm']+f", cutoff {line['cutoff']}", 'color': index, 'points': points})
+        if any(curve['points'] for curve in curves):
+            parts.append(panel(heading, 'Widths are captured from exact operands. Word work uses a declared schoolbook model of unreduced integer/rational arithmetic, including coefficient and combination work. It excludes GCD, cancellation, division and carry work. These are not CPU instructions or Python big-integer timings.',
+                curve_chart(heading, curves, logarithmic=True, y_label=unit)))
+    memory_curves = []
+    for index, line in enumerate(baseline):
+        points = []
+        for sample in line['samples']:
+            peak = sample.get('execution_measurements', {}).get('python_traced_peak_bytes', {})
+            if sample['status'] == 'passed' and peak.get('status') == 'measured':
+                points.append((sample['size'], peak['value']))
+        memory_curves.append({'label': line['algorithm'], 'color': index, 'points': points})
+    if any(curve['points'] for curve in memory_curves):
+        parts.append(panel('Measured Python memory growth', 'Allocation peaks during public calls, including observation and any cold setup; inputs already exist. Reused rows share the source measurement. This is not whole-process/GPU memory, isolated algorithm storage, or a prediction to infinity.',
+                           curve_chart('Python allocation peaks', memory_curves, y_label='Traced peak allocation (bytes)')))
+    for line in lines:
+        for sample in line['samples']:
+            cost = sample['observation'].get('operand_costs')
+            if cost:
+                rows.append((line['algorithm'], line['cutoff'], sample['size'],
+                    cost['observed_max_operand_bits'], cost['observed_max_result_bits'], cost['observed_max_denominator_bits'],
+                    cost['equivalent_word_multiplications'], cost['word_multiplications_by_role'].get('data', 0),
+                    cost['word_multiplications_by_role'].get('coefficient', 0), cost['status']))
+    if rows:
+        parts.append(panel('Operand-size and word-model evidence', 'Integers, numerators and denominators retain their exact precision. Zero uses one magnitude bit; signs are outside this model. Data/coefficient columns are portions of the total, not additional work. Partial means some calls, such as normalization division, remain unmodelled.',
+                           table(('Algorithm', 'Cutoff', 'n', 'Max operand bits', 'Max result bits', 'Max denominator bits',
+                                  'All word products', 'Data word products', 'Coefficient word products', 'Model status'), rows)))
+    for line in lines:
+        projection = line.get('scaling_projection', {})
+        if projection.get('status') != 'projected':
+            continue
+        # Each category uses an exact integer recurrence. Dashed curves and the
+        # explicit legend label prevent these huge, unexecuted sizes appearing as
+        # empirical measurements. Only display uses approximate log coordinates.
+        curves = [{'label': label+' · projection', 'color': index, 'kind': 'ideal',
+                   'points': [(p['size'], p['counts'][category]) for p in projection['points']]}
+                  for index, (category, label) in enumerate((
+                      ('field_multiplications', 'Data multiplications'), ('field_additions', 'Additions'),
+                      ('field_subtractions', 'Subtractions'), ('coefficient_multiplications', 'Coefficient products'),
+                      ('field_normalizations', 'Normalizations')))]
+        parts.append('<details><summary>'+text(f"{line['algorithm']}, cutoff {line['cutoff']} · beyond measured sizes")+'</summary>'
+            +panel('Exact recurrence projections', 'These matrices were not executed. Counts are evaluated with exact integers from the stage recipes, padding and fixed cutoff. The symbolic recurrence defines continuing growth; the graph illustrates a finite range. Operand widths and algorithm memory peaks have no justified projection here.',
+                   '<p><code>'+text(projection['recurrence'])+'</code></p>'
+                   +curve_chart('Projected arithmetic categories', curves, logarithmic=True, y_label='Projected field calls (count)')
+                   +table(('n', 'Data multiplications', 'Additions', 'Subtractions', 'Coefficient products', 'Normalizations',
+                           'Hypothetical 64-bit input/output bytes'),
+                          [(p['size'], *(p['counts'][key] for key in ('field_multiplications', 'field_additions',
+                           'field_subtractions', 'coefficient_multiplications', 'field_normalizations')),
+                           p['input_output_64bit_baseline_bytes']) for p in projection['points']])
+                   +'<p>The storage column is three n×n arrays of hypothetical 64-bit scalars. It is neither Fraction storage nor an algorithm peak. Fixed recipe preparation is reported separately; construction/search budgets are independent parameters.</p>')+'</details>')
+    return ''.join(parts)
+
+
 def render_work_sweep(data, *, title, source_name, source_hash, generated):
     """Show measured count growth, declared ideal curves, and padding/cutoff effects."""
     lines = data["series"]
@@ -465,6 +592,37 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
              '<p class="callout">Theoretical exponents are calculated from declared scheme parameters. Measured slopes below are finite-range fits to captured counters, not proofs of an asymptotic exponent. A power law is straight on log-log axes; padding can produce plateaus.</p>',
              panel("What does cutoff mean?", "The cutoff is the maximum block size at which recursion stops and ordinary row-by-column multiplication starts.",
                    '<p>For Strassen on a 16×16 matrix, cutoff 4 splits into 8×8 blocks, then 4×4 blocks, and multiplies those leaves classically. Cutoff 1 continues down to individual numbers. More recursion can save data multiplications while adding combination work.</p><p>The naive algorithm never recurses, so its cutoff does nothing and its curves overlap. AlphaEvolve splits in powers of four, so cutoff 2 still produces 1×1 leaves. The exact-count table records the actual leaf size.</p>')]
+    parts.append(panel('Why can the graphs have steps?',
+        'Recursion alone does not force a staircase. The exponent describes asymptotic growth, not an exact smooth cost at every integer size.',
+        table(('Source', 'What is inherent?', 'What is our choice?', 'Platform necessity'), (
+            ('Recursive recipe', 'Each stage prescribes integer equal-block divisions and a number of child products.',
+             'How arbitrary sizes are adapted to those stages.', 'The formula is mathematical; the adaptation is portable.'),
+            ('Zero padding', 'The current fixed-block traversal needs compatible dimensions before a stage executes.',
+             'Round the whole request up to a covering schedule prefix; keep computing padded entries.',
+             'Required by this traversal policy, not universally required by the algorithm or hardware.'),
+            ('Classical cutoff', 'Recursion must have a terminating base case.',
+             'The threshold and testing it after padding; a fixed cutoff preserves the family exponent.',
+             'A configurable interpreter choice, not a hardware constraint.'),
+            ('Smooth theory curve', 'The recurrence and asymptotic bound apply under their stated assumptions.',
+             'Draw an unpadded continuous comparison curve; it is not an executable matrix at fractional sizes.',
+             'A presentation model; discrete predictions describe the actual policy.'),
+            ('64-bit word-cost model', 'Exact operands can grow or shrink as arithmetic and cancellation change their values.',
+             'Round observed magnitude widths up to 64-bit words; crossing a word boundary changes the modelled word count.',
+             'A chosen cost unit, not a claim about native CPU/GPU limbs or an added field multiplication.'),
+            ('Memory and operand measurements', 'Exact representation needs enough space for the values actually produced.',
+             'Measure Python-traced allocation peaks, including observer overhead; record observed widths.',
+             'Memory can depend on interpreter/backend allocation behavior. This report does not attribute each memory jump to padding.'),
+            ('Sampled graph', 'Captured operation counts are integers.',
+             'Connect only requested sizes with straight guides; sparse sampling can hide boundaries.',
+             'A plotting choice, not extra algorithm work.')))
+        +'<p>For Strassen at cutoff one, n=5 through n=8 all pad to 8 and use 343 data products. '
+         'At n=9 the chosen padded size becomes 16, using 2,401. The equal-halves formula is inherent; '
+         'rounding 9 all the way to 16 is our size-handling choice. Natural sizes 8 and 16 follow the '
+         'same n<sup>log₂7</sup> product law without a padding penalty. Border handling could change '
+         'the off-grid counts while preserving the exponent.</p>'
+        '<p>Inspect “Where this algorithm’s steps come from” beside each comparison, when size metadata is available, for the actual stage and leaf path. '
+        'A plateau in field counts need not be a plateau in bit costs or memory. These policies and their alternatives '
+        'preserve exact arithmetic; no rounding of numerical values is involved.</p>'))
     models = {line["algorithm"]: line["mathematical_model"] for line in lines}
     schedules = [(name, " → ".join(model["schedule"]), model["base_dimension"],
                   model["base_bilinear_rank"], model["arithmetic_domain"])
@@ -473,7 +631,7 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
         parts.append(panel("Composition schedules", "Stages repeat by recursion depth. Each complete cycle multiplies its stage radices and ranks. These are executable constructions, not new exponent records.",
                            table(("Report name", "Repeating stage order", "Cycle radix", "Cycle rank", "Domain"), schedules)))
     parts.append(panel("Square arithmetic exponents · theoretical",
-                       "Calculated from declared base dimensions and ranks, independently of the executed sweep. Fixed leaf cutoffs preserve each family exponent.",
+                       "Each algorithm exponent p comes from its justified recurrence and supplies an upper bound on omega (ω), the infimum over matrix algorithms in the stated domain. These values are not omega itself or measured slopes. Fixed leaf cutoffs preserve each family exponent.",
                        bar_chart("Square arithmetic exponents", [(name, model.get("square_arithmetic_exponent")) for name, model in models.items()], "exponent", maximum=3)))
     baseline_cutoff = min(line["cutoff"] for line in lines)
     baseline = [line for line in lines if line["cutoff"] == baseline_cutoff]
@@ -493,6 +651,7 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
         body = f'<p>Theoretical family exponent: <strong>{text(display(model["square_arithmetic_exponent"]))}</strong> ({text(model["exponent_expression"])}). {text(model.get("parameter_source", "Declared scheme parameters"))}.</p>'
         body += curve_chart(f"{name} data multiplications", curves, y_label=metric_axis_label("field_multiplications"))
         body += '<details><summary>Log-log view of multiplications</summary>' + curve_chart(f"{name} data multiplications", curves, logarithmic=True, y_label=metric_axis_label("field_multiplications")) + '</details>'
+        body += size_effects_section(group)
         body += '<details><summary>All arithmetic steps for these block sizes</summary>'
         body += '<p>Total-work models include quadratic additions, coefficient scaling, and normalization at each recursive level. Their smooth curves retain these lower-order terms; they are not simply a rescaled n<sup>p</sup>. Model constants describe our primitive schedule and are not fitted to the captured counters.</p>'
         for metric, heading in (("field_arithmetic_operations", "Field steps"), ("atomic_arithmetic_operations", "Component / atomic steps")):
@@ -529,6 +688,7 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
     parts.append(panel("Exact sampled counts and effective blocks", "Data multiplications multiply data-dependent values. Coefficient multiplications multiply by fixed constants. Field and component totals overlap. The configured cutoff is a maximum leaf size; actual recursive leaf sizes follow the selected radix schedule.",
                        table(("Algorithm", "Cutoff", "n", "Padded n", "Actual leaf n", "Data multiplications", "Padded prediction", "Coefficient multiplications", "Field steps", "Component steps", "Output check", "Measurement source"), rows)))
     parts.append(sweep_evidence(data))
+    parts.append(resource_scaling_sections(lines))
     for line in lines:
         for sample in line["samples"]:
             if sample["status"] != "passed":
@@ -550,8 +710,8 @@ def sweep_sample_report(line, sample):
     """Adapt captured sweep evidence to the shared single-experiment view.
 
     Shapes and classical baseline follow the sweep's square input contract.
-    Accuracy and primitive counters are captured evidence. No wall-clock, memory,
-    or tolerance measurement is invented; unavailable fields remain unavailable.
+    Accuracy, primitive counters and optional per-call resources are captured
+    evidence. No absent measurement is invented; older fields stay unavailable.
     """
     size = sample["size"]
     budget = sample.get("prediction", {}).get("composition_budget")
@@ -567,7 +727,7 @@ def sweep_sample_report(line, sample):
             "experiment": {"input_shapes": [[size, size], [size, size]], "cutoff": line["cutoff"],
                            "input_repr_sha256": sample.get("input_repr_sha256"),
                            "classical_data_product_baseline": size ** 3, "primitive_timing_enabled": False},
-            "execution_measurements": {"accuracy": sample.get("verification", {})}}
+            "execution_measurements": {**sample.get('execution_measurements', {}), "accuracy": sample.get("verification", {})}}
 
 
 def sweep_evidence(data):
@@ -594,7 +754,7 @@ def sweep_evidence(data):
                    "Captured counts for every sample. Data and coefficient multiplications are separate; field and component totals overlap. Expand to inspect additions, subtractions, and normalization.",
                    '<details><summary>Full arithmetic breakdown across sizes and cutoffs</summary>' +
                    table(("Algorithm", "Cutoff", "n", "Data multiplications", "Coefficient multiplications", "Additions", "Subtractions", "Normalizations", "Field steps", "Atomic steps"), breakdown) + '</details>'),
-             panel("Accuracy and verification evidence", "Each actual output is checked by the independent exact oracle outside the observed algorithm. Equivalent cutoff rows reuse that verification and identify its source. Timing and memory probes are disabled for these sweep samples.",
+             panel("Accuracy and verification evidence", "Each output is checked by the independent exact oracle outside observation. Equivalent cutoff rows identify their source. Primitive timing is disabled; per-call allocation probes, when enabled, are separately scoped.",
                    '<details><summary>Accuracy for every executed sample</summary>' +
                    table(("Algorithm", "Cutoff", "n", "Status", "Verification mode", "Maximum absolute error", "Failed entries", "Error", "Measurement source"), accuracy) + '</details>'),
              '<section class="panel"><h2>Per-sample primitive and recursion evidence</h2><p class="note">Primitive clocks were disabled: zero profile seconds mean clocks were off. Call counts and inclusive arithmetic remain captured. Inclusive profiles overlap.</p>']
@@ -624,6 +784,30 @@ def arithmetic_count(report, category):
 def experiment_sections(reports):
     """Reuse the full single-pair evidence view inside a combined sweep report."""
     return render_html(reports, title="", source_name="", source_hash="", generated="", sections_only=True)
+
+
+def operand_evidence(reports):
+    """Expose word costs in individual-pair reports without inventing older data."""
+    rows, primitive_rows, products = [], [], []
+    for name, report in reports.items():
+        cost = report.get('operand_costs')
+        if not cost:
+            continue
+        rows.append((name, cost['status'], cost['observed_max_operand_bits'], cost['observed_max_result_bits'],
+                     cost['observed_max_denominator_bits'], cost['equivalent_word_multiplications'],
+                     cost['equivalent_word_additions_subtractions'], str(cost['unmodelled_calls'])))
+        products.append((name, cost['equivalent_word_multiplications'] if cost['modelled_atomic_operations'] else None))
+        for primitive, values in cost.get('primitive_word_costs', {}).items():
+            primitive_rows.append((name, primitive, values['calls'], values['word_multiplications'], values['word_additions_subtractions']))
+    if not rows:
+        return ''
+    return panel('Exact operand sizes and 64-bit word equivalents',
+        'Arithmetic stays exact. Widths are observed; word work is a schoolbook model of unreduced rational/integer expressions, including coefficient work. GCD, cancellation, division and carry propagation are excluded. These are not CPU instruction counts. Floating diagnostics remain unmodelled.',
+        bar_chart('64-bit multiplication equivalents', products, 'modelled word products')
+        +table(('Algorithm', 'Model status', 'Max operand bits', 'Max result bits', 'Max denominator bits',
+                'Word products', 'Word sums', 'Unmodelled calls'), rows)
+        +'<details><summary>Word-cost estimates by atomic primitive</summary>'
+        +table(('Algorithm', 'Primitive', 'Modelled calls', 'Word products', 'Word sums'), primitive_rows)+'</details>')
 
 
 def render_html(reports, *, title, source_name, source_hash, generated, sections_only=False):
@@ -677,6 +861,7 @@ def render_html(reports, *, title, source_name, source_hash, generated, sections
     parts.append(panel("Secondary · Python allocation peak", "Bytes traced during the call, including setup and observation; excludes pre-existing inputs and untraced native allocations. This is not GPU or whole-process memory.",
                        bar_chart("Traced Python allocation peak", memory, "bytes")))
     parts.append("</div>")
+    parts.append(operand_evidence(reports))
     diagnostics = []
     for name, report in reports.items():
         execution = report.get("execution_measurements", {})

@@ -292,8 +292,8 @@ Separate 2-by-2 integer and floating-point diagnostic pairs enable primitive
 profiles, Python allocation peaks, and bounded scalar/primitive traces. Those
 pair envelopes remain in their original JSON and are embedded as separately
 scoped references, never assigned to the larger size-sweep samples. Generated
-matrix recipes join the count-only comparison automatically. `--measurements-only`
-retains the original arithmetic-only workflow.
+matrix recipes join the arithmetic comparison automatically. `--measurements-only`
+skips construction/diagnostic stages while retaining growth measurements.
 
 `suite-manifest.json` records stage outcomes, requested budgets, source and
 artifact fingerprints. A failed identity/execution/budget check causes a failed
@@ -319,3 +319,92 @@ finite products required by exact interpolation. That is construction evidence
 for a generic tensor, not a measured square multiplier with the CW limiting
 exponent. Extraction and conversion to a verified matrix identity must precede
 such an execution claim.
+
+CW packing now compares that interpolation recipe with direct coefficient
+expansion and replayed dependency reductions. The reports retain each finite
+product count separately. Finite tiling compiles input/output maps into a dense
+recipe and replays additional mapped dependencies. Executing the resulting
+recipe pays every surviving data product and all coefficient/addition work;
+construction, tensor checks, and replay are setup and are not mixed into those
+measurements. The generic tensor kernel deliberately counts scaling by one.
+After export, the existing composition engine uses its documented coefficient
+shortcuts and independently checked budget. Each observation names its kernel.
+These small dense recipes currently have cubic exponents; no limiting CW/ASI
+bound is assigned to them.
+
+The automatic coarse CW experiment merges fine group words by summed weights,
+records every component's exact coefficients and classification witness, and
+verifies reconstruction of the full source tensor. Classification is setup;
+it does not count as matrix execution or imply a lower exponent. Only proved
+matrix components enter its induced sum and finite packing. Their actual
+direct-sum and dense calls use the same observable primitives as fine extraction.
+The reports retain interpolation, expansion, reduction and packing costs, plus
+unrecognized components that need further research. The selected best fine/coarse
+dense base joins arithmetic growth and certificates; every catalog is retained.
+
+## Exact operand costs and recurrence projections
+
+`Instrumentation` now observes atomic operands/results with `operand_costs.py`.
+It records magnitude bit widths, denominator growth, bounded word-width buckets,
+and declared schoolbook word costs by data/coefficient/combination role and atomic
+primitive. It never replaces integers, Fraction arithmetic or Gaussian pairs.
+Huge traced values use explicitly labelled bit summaries when decimal rendering
+would be excessive; the stored number is unchanged.
+
+The baseline is 64 bits per magnitude word. Integer multiplication models the
+product of the two word counts. Rational multiplication models numerator and
+denominator products; rational addition/subtraction models cross-products and
+the numerator sum. Unit denominators are copied. These unreduced expressions
+do not model Fraction's GCD, cross-cancellation, division, sign or carry handling.
+The estimate is neither Python's integer algorithm nor hardware instruction work.
+Unsupported floating/native-complex/division calls remain explicit, with partial
+coverage rather than invented costs. Do not add word estimates to field counts:
+they describe different levels of the same execution.
+
+Growth calls additionally use `ExecutionMeasurement` for a fresh optional Python
+allocation peak, including observation and any cold setup but excluding existing
+inputs, the oracle and untraced native/GPU storage. `--no-sweep-memory` disables
+this probe. Reused cutoff evidence includes its original resource scope. Suite
+setup stages have separate time/allocation scopes including generation, checking
+and artifact writing. Individual raw coefficient setup operations are not counted.
+
+`scaling.py` derives category budgets from formula schedules and sparse descriptor
+areas. Categories must match both the independent total budget and actual calls.
+`--projection-cycles` evaluates those recurrences at whole-cycle sizes without
+matrix execution. Projections and measured points have separate report fields;
+the symbolic recurrence, not a finite graph, describes asymptotic growth. Operand
+width and peak-memory projections are not derived. Three-array hypothetical
+64-bit storage is a comparison baseline, not actual Fraction or algorithm storage.
+
+For a concrete interpretation, Strassen with cutoff one and n=2^h performs 7^h
+data products. Its recursive combination area sum is (7^h-4^h)/3. Our schedule
+therefore has 6*(7^h-4^h)/3 subtractions and
+7^h+12*(7^h-4^h)/3 additions, including classical leaf accumulation from zero.
+The n² term is lower order, but additions/subtractions also have leading growth
+n^log_2(7); they are not merely a fixed startup penalty. Winograd changes their
+constants while retaining seven child products. The schoolbook baseline counts
+n³ products and n³ accumulations in our deliberately literal schedule. A stored
+finite recipe's preparation can be fixed relative to matrix n, while exploring
+larger construction powers or search budgets incurs separate growing setup work.
+
+## Explaining discrete graph steps
+
+Each sweep sample now saves `size_effects`: requested/padded dimensions, extra
+zero input cells, a rational padded-volume ratio (not a data-product overhead
+ratio), all stage/child dimensions, leaf dimensions and cutoff ordering. The
+recursion's prescribed block counts are mathematical. Whole-input padding to a
+covering schedule prefix and the classical cutoff are portable interpreter
+choices. Neither is attributed to GPU width, Python or limited home resources.
+
+At natural Strassen sizes 2^h with cutoff one, data products are exactly 7^h.
+The broad staircase for arbitrary n comes from our padding policy, not recursion
+alone. Size 5 through 8 share the padded size 8; size 9 changes it to 16. Mixed
+and rectangular schedules use recorded per-stage shapes rather than assuming
+powers of two or rounding to a whole-cycle radix. Padding occurs before the
+cutoff check; even a requested size already within the cutoff can trigger a
+split after padding. That is documented as an implementation choice.
+
+Transitions describe only adjacent sampled sizes. They cannot locate every
+intervening boundary or infer word-cost/memory plateaus from field-count equality.
+Replacement callbacks are not assigned our planner's policy merely because
+their totals match. Older JSON without the new metadata remains readable.

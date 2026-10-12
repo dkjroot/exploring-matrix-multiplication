@@ -8,6 +8,28 @@ GPL version 3; no license change is made by this research plan.
 
 ## Research priorities
 
+The README mission and AGENTS.md define the reference guardrails: exact
+arithmetic, our own readable primitive hierarchy, and comparable instrumentation
+take priority over execution speed. Research searches may use broader GPU or
+numerical proposal tooling, but accepted coefficients and identities require
+independent exact reconstruction/verification and our own reference execution.
+The exponent of one construction is an upper bound on omega, not omega itself.
+
+Secondary measurements now include observed operand/denominator growth and a
+declared 64-bit schoolbook word-cost model, separate growth-call Python allocation
+peaks and setup stage resources. Exact category recurrences project counts beyond
+executed sizes. Input-dependent bit-growth, GCD/division and algorithm peak-storage
+recurrences remain tasks to derive; no resource projection is inferred from rank.
+
+Finite-size reports now distinguish a recipe's equal-block divisions from our
+portable zero-padding and cutoff policies. Per-sample shapes and stage paths
+explain padded plateaus and geometry changes. Smooth curves and sparse connecting
+lines are presentation models, not proof that every integer size has that cost.
+Add exact optional fringe handling while preserving the current padded baseline;
+derive its budgets and recurrence before admitting its costs to comparisons.
+GCD, cancellation, division/normalization, and multiword carries/accumulation each
+remain explicit cost-model tasks in the README checklist.
+
 The primary result is an executable, verified construction approaching the best
 mathematical arithmetic bounds. Large constants, slow execution, high memory use,
 and historical difficulty are acceptable research costs. Readability, reusable
@@ -141,8 +163,16 @@ seven without being supplied a seven-product formula. This demonstrates a
 working generator, not a new exponent result. `degenerations.py` constructs the
 published CW polynomial family, powers it with a shared parameter, and exactly
 recovers its tensor coefficient with the full finite interpolation cost. Complete
-small tensor checks pass. The stronger matrix extraction/packing construction is
-still missing; CW tensors are not exported as ordinary matrix multipliers.
+small tensor checks pass. `cw_extraction.py` now selects sector words, rejects
+shared groups and unwanted cross-sectors, and completely verifies extracted
+independent matrix products. It restricts polynomial factors before recovery and
+executes the recovered recipe with measured arithmetic. A single component with
+supported dimensions can be exported as a matrix recipe. More effective
+selection is still greedy. Direct coefficient expansion and replayed dependency
+reductions now improve finite recovery. `dense_packing.py` verifies finite volume
+tilings, compiles explicit input/output maps, replays new mapped dependencies,
+and exports completely checked dense recipes. These small packings are cubic;
+the stronger large-power laser/ASI conversion remains open.
 
 Smirnov remains the verified 2.7742999804 baseline. Crossing 11/4 (2.75) needs
 new verified finite rank/extraction evidence. The rational search is incomplete
@@ -155,13 +185,30 @@ source attribution, finite work accounting, and the remaining milestones.
 
 The next implementation priorities are now more concrete:
 
-1. **CW sector selection and executable extraction/packing.** Generate index
-   restrictions on CW powers, verify that selected components are the intended
-   matrix tensors, and verify that components proposed as a direct sum have
-   disjoint variable spaces. Then implement the conversion from simultaneous
-   independent products to the desired dense multiplication. An asymptotic sum
-   inequality alone is not an executable packing algorithm; all finite recovery
-   and extraction costs must be included before assigning an exponent.
+1. **Stronger CW extraction and large-power constructive conversion.** The first exact
+   extraction milestone is implemented: explicit row-major restrictions, a
+   deterministic greedy induced matching, complete literal/recovered direct-sum
+   checks, and actual instrumented execution. For q=2, power=2, its four products
+   cost 10 classical multiplications but 176 in the recovered recipe. Restriction
+   lowers the verified polynomial degree bound from 20 to 11, reducing recovery
+   from 320 products at the original bound to 176. Direct coefficient expansion
+   now gives 42, reduced to 10 by replayed dependencies. Finite tile packing into
+   a 2-by-2 dense base gives 10 mapped products, reduced to eight. The resulting
+   cubic recipe is exported, measured, and certified by the combined suite.
+   Sum-index coarsening now builds a complete merged-component catalog, verifies
+   reconstruction, and recognizes matrix products with explicit basis permutations
+   and full coefficient identities. The same suite recovers and packs a selected
+   induced coarse sum. For CW₂ squared, twelve of fifteen components are matrix
+   products; the three interior components have dimension obstructions. Their
+   exact coefficients are retained. The coarse packing is still cubic.
+   Next, extract products from powers/restrictions of those interior tensors
+   rather than assigning them unsupported matrix shapes. Investigate more
+   effective sector selections,
+   larger powers, and recovery schedules that exploit their low rank relative
+   to extracted volume. Implement a constructive large-power conversion rather
+   than assign an asymptotic-sum bound to the current finite tiling. All finite
+   overhead must remain in the executable recipe and recurrence. The 2-by-2
+   packing is a correctness fixture, not a viable base for crossing 2.75.
 2. **Targeted reductions of existing recipes.** Start from verified explicit
    schemes rather than always from classical products. Smirnov's small real
    (3,3,6) base is a useful target: cyclic rank 40 gives 2.7742999804, rank 39

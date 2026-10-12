@@ -65,9 +65,25 @@ class ResearchSuiteTests(unittest.TestCase):
             manifest = json.loads((root / "suite-manifest.json").read_text())
             self.assertEqual(manifest["status"], "passed")
             self.assertTrue(all(s["status"] == "passed" for s in manifest["stages"]))
+            setup = next(s for s in manifest['stages'] if s['name'] == 'search-1')['setup_measurements']
+            self.assertEqual(setup['python_traced_peak_bytes']['status'], 'measured')
+            self.assertGreater(setup['elapsed_seconds'], 0)
+            self.assertEqual(setup['coefficient_arithmetic_operations']['status'], 'not_counted')
             families = {s["family"] for s in manifest["stages"]}
             self.assertTrue({"discovery", "replay", "construction", "polynomial tensor recovery", "exact certificate",
-                             "profiles, memory, accuracy, traces", "measured arithmetic and theoretical comparison"} <= families)
+                             "verified independent product extraction", "exact recovery optimization and dense packing",
+                             "coarse CW classification and verified packing",
+                             "profiles, memory, accuracy, traces",
+                             "measured arithmetic and theoretical comparison"} <= families)
+            extraction = json.loads((root / "cw-extraction-q1-power1" / "report.json").read_text())["cw_extraction"]
+            self.assertTrue(extraction["recovered_direct_sum_identity_verified"])
+            self.assertTrue(extraction["execution"]["exact_outputs_verified"])
+            self.assertIsNone(extraction["exponent"])
+            coarse = json.loads((root / "cw-coarse-q1-power1" / "report.json").read_text())["cw_coarse"]
+            self.assertTrue(coarse["partition_reconstruction_verified"])
+            self.assertTrue(coarse["packing"]["dense_matrix_identity_verified"])
+            integration = next(s for s in manifest["stages"] if s["name"] == "register-generated-cw-packed")
+            self.assertTrue(any(c["construction"] == "cw-coarse-q1-power1" for c in integration["candidates"]))
             for stage in manifest["stages"]:
                 for key in ("data", "report", "scheme", "argument"):
                     if key in stage:
@@ -80,6 +96,9 @@ class ResearchSuiteTests(unittest.TestCase):
             generated = next(line for line in data["series"] if line["algorithm"] == "generated-search-1" and line["cutoff"] == 1)
             self.assertEqual([s["observation"]["counts"]["field_multiplications"] for s in generated["samples"]], [7, 49])
             self.assertTrue(all(s["prediction_matches_observed_arithmetic_steps"] for s in generated["samples"]))
+            packed = next(line for line in data["series"] if line["algorithm"] == "generated-cw-packed" and line["cutoff"] == 1)
+            self.assertEqual([s["observation"]["counts"]["field_multiplications"] for s in packed["samples"]], [8, 64])
+            self.assertTrue(all(s["prediction_matches_observed_arithmetic_steps"] for s in packed["samples"]))
             pair = json.loads((root / "pair-exact" / "measurements.json").read_text())
             for name, report in pair["reports"].items():
                 self.assertEqual(report["status"], "passed", report)
@@ -126,6 +145,36 @@ class ResearchSuiteTests(unittest.TestCase):
         self.assertEqual(report["counts"]["field_multiplications"], 8)
         self.assertEqual(len(envelope["events"]["naive"]), 3)
 
+    def test_packing_identity_failure_retains_extraction_and_other_reports(self):
+        """A failed new construction must not hide its error or discard other work."""
+        with tempfile.TemporaryDirectory() as temp, patch("matrix_multiplication.constructions.pack_cw",
+                                                        side_effect=AssertionError("injected invalid packing")):
+            index, status = run_suite([2], [1], algorithms=["naive"], output_root=temp,
+                                      settings=self.settings(search_steps=0))
+            manifest = json.loads((index.parent / "suite-manifest.json").read_text())
+            stages = {stage["name"]: stage for stage in manifest["stages"]}
+            self.assertEqual(status, 1)
+            self.assertEqual(stages["cw-packing-q1-power1"]["status"], "error")
+            self.assertIn("invalid packing", stages["cw-packing-q1-power1"]["error"])
+            self.assertEqual(stages["cw-extraction-q1-power1"]["status"], "passed")
+            self.assertEqual(stages["arithmetic-growth"]["status"], "passed")
+            self.assertEqual(stages["cw-coarse-q1-power1"]["status"], "passed")
+            self.assertEqual(stages["register-generated-cw-packed"]["selected_construction"], "cw-coarse-q1-power1")
+
+    def test_coarse_classification_failure_keeps_fine_packing_and_diagnostics(self):
+        """A broken coarse identity fails its stage while fine evidence survives."""
+        with tempfile.TemporaryDirectory() as temp, patch("matrix_multiplication.cw_coarsening.classify_matrix_tensor",
+                                                        side_effect=AssertionError("injected classifier failure")):
+            index, status = run_suite([2], [1], algorithms=["naive"], output_root=temp,
+                                      settings=self.settings(search_steps=0))
+            stages = {s["name"]: s for s in json.loads((index.parent / "suite-manifest.json").read_text())["stages"]}
+            self.assertEqual(status, 1)
+            self.assertEqual(stages["cw-coarse-q1-power1"]["status"], "error")
+            self.assertIn("classifier failure", stages["cw-coarse-q1-power1"]["error"])
+            self.assertEqual(stages["cw-packing-q1-power1"]["status"], "passed")
+            self.assertEqual(stages["register-generated-cw-packed"]["selected_construction"], "cw-packing-q1-power1")
+            self.assertEqual(stages["arithmetic-growth"]["status"], "passed")
+
     def test_candidate_integration_failure_keeps_independent_stages(self):
         """A generated backend failure must produce a failed, navigable suite."""
         for error in (ValueError("unsupported candidate"), AssertionError("identity assertion"), RuntimeError("backend bug")):
@@ -136,7 +185,7 @@ class ResearchSuiteTests(unittest.TestCase):
                 self.assertEqual(status, 1)
                 manifest = json.loads((index.parent / "suite-manifest.json").read_text())
                 integration = [s for s in manifest["stages"] if s["family"] == "candidate integration"]
-                self.assertEqual(len(integration), 2)
+                self.assertEqual(len(integration), 3)
                 self.assertTrue(all(s["status"] == "error" for s in integration))
                 self.assertTrue(all(s["error_type"] == type(error).__name__ and "Traceback" in s["traceback"] for s in integration))
                 self.assertEqual(next(s for s in manifest["stages"] if s["name"] == "arithmetic-growth")["status"], "passed")
@@ -199,7 +248,7 @@ class ResearchSuiteTests(unittest.TestCase):
         self.assertEqual(next(r for r in table["rows"] if r["dimension"] == 32)["11/4"], 13777)
         self.assertIn("no existence claim", table["meaning"])
         self.assertEqual(self.settings(search_target_exponent=Fraction(11, 4)).document()["search_target_exponent"], "11/4")
-        for overrides in ({"search_steps": -1}, {"cw_parameters": ()}, {"cw_powers": (0,)},
+        for overrides in ({"search_steps": -1}, {"cw_parameters": ()}, {"cw_powers": (0,)}, {"cw_packing_size": 1},
                           {"search_seeds": ()}, {"search_target_rank": 0},
                           {"search_split_every": 0}, {"search_start": ""},
                           {"search_target_rank": 7, "search_target_exponent": Fraction(11, 4)}):

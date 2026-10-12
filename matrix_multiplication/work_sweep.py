@@ -16,7 +16,9 @@ from random import Random
 
 from . import ALGORITHMS, Instrumentation
 from .common import padded_size
-from .experiments import arithmetic_model
+from .experiments import ExecutionMeasurement, arithmetic_model
+from .scaling import CATEGORIES, category_budget, project_work
+from .size_effects import describe_sample, describe_transition
 from .verification import check_product
 
 
@@ -219,11 +221,12 @@ def cutoff_execution_structure(name, implementation, predicted, plan=None):
 
 
 def collect_work(sizes, cutoffs, *, algorithms=None, seed=1729, progress=None, compositions=None,
-                 reuse_equivalent_cutoffs=True):
+                 reuse_equivalent_cutoffs=True, measure_memory=True, projection_cycles=12):
     """Run all requested configurations with counting only and exact verification.
 
-Algorithms receive identical inputs at each size. No primitive clocks, memory
-probe, or wall-clock fit is enabled. Failures retain their attempted counters and
+Algorithms receive identical inputs at each size. Primitive clocks and wall-clock
+fits are disabled; an optional per-call Python allocation probe surrounds only
+the public execution. Failures retain their attempted counters and
 diagnostics; they are excluded from fitted growth slopes. Sizes have no arbitrary
 upper ceiling, but full recursive execution can require substantial resources.
 By default, proven-equivalent cutoff traversals share one successful measurement
@@ -233,6 +236,8 @@ independent executions of every cutoff, for example when checking the optimizer.
 """
     sizes = positive_integer_grid(sizes, "sizes")
     cutoffs = positive_integer_grid(cutoffs, "cutoffs")
+    if type(projection_cycles) is not int or projection_cycles < 1:
+        raise ValueError("projection cycles must be a positive integer")
     names = list(ALGORITHMS) if algorithms is None else list(dict.fromkeys(algorithms))
     if not names or any(name not in ALGORITHMS for name in names):
         raise ValueError("choose at least one registered algorithm")
@@ -253,6 +258,15 @@ independent executions of every cutoff, for example when checking the optimizer.
                plans[name].model() if name in plans else arithmetic_model(name),
                "work_model": costs[name], "samples": []}
               for name in names for cutoff in cutoffs]
+    for line in series:
+        # Projection setup must not replace successful/failed execution evidence.
+        # Unavailable optional coefficient data still leaves the declared model.
+        line["mathematical_model"]["exponent_notation"] = "algorithm exponent p; upper bound on omega, not omega itself"
+        try:
+            line["scaling_projection"] = project_work(line["algorithm"], line["cutoff"],
+                line["mathematical_model"], plans.get(line["algorithm"]), projection_cycles)
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            line["scaling_projection"] = {"status": "unavailable", "reason": str(exc)}
     for size in sizes:
         left, right = inputs(size, seed)
         input_hash = sha256(repr((left, right)).encode("utf-8")).hexdigest()
@@ -271,13 +285,19 @@ independent executions of every cutoff, for example when checking the optimizer.
                 structure = (cutoff_execution_structure(name, implementations[name], sample["prediction"],
                                                        plans.get(name))
                              if reuse_equivalent_cutoffs and "unavailable_reason" not in costs[name] else None)
+                # Attribution is independent of whether equivalent cutoffs are
+                # reused. A replaced callback with matching counts must not be
+                # credited with our planner's actual padding/leaf policy.
+                known_policy = cutoff_execution_structure(name, implementations[name], sample['prediction'], plans.get(name)) is not None
+                sample['size_effects'] = describe_sample(name, size, cutoff, sample['prediction'],
+                                                        line['mathematical_model'], known_policy=known_policy)
                 if structure is not None:
                     cache_key = (name, input_hash, json.dumps(structure, sort_keys=True))
                 source = measured.get(cache_key) if cache_key is not None else None
                 if source is not None:
                     if progress:
                         progress(f"Reusing {name}, n={size}, cutoff={cutoff} from cutoff={source['cutoff']}")
-                    for key in ("status", "verification", "observation"):
+                    for key in ("status", "verification", "observation", "execution_measurements"):
                         sample[key] = deepcopy(source["sample"][key])
                     sample["measurement"] = {"kind": "reused", "source_cutoff": source["cutoff"],
                                              "equivalent_execution_structure": structure}
@@ -287,7 +307,12 @@ independent executions of every cutoff, for example when checking the optimizer.
                     sample["measurement"] = {"kind": "executed", "source_cutoff": cutoff}
                     if structure is not None:
                         sample["measurement"]["equivalent_execution_structure"] = structure
-                    result = implementations[name](left, right, cutoff=cutoff, instrumentation=observer)
+                    measurement = ExecutionMeasurement(measure_memory=measure_memory)
+                    try:
+                        with measurement:
+                            result = implementations[name](left, right, cutoff=cutoff, instrumentation=observer)
+                    finally:
+                        sample["execution_measurements"] = measurement.snapshot()
                     verification = check_product(left, right, result)
                     sample.update(status="passed" if verification.passed else "failed",
                                   verification={"passed": verification.passed, "mode": "exact equality",
@@ -305,12 +330,26 @@ independent executions of every cutoff, for example when checking the optimizer.
                 all(sample["observation"][metric] == sample["prediction"][f"padded_{metric}"]
                     for metric in ("field_arithmetic_operations", "atomic_arithmetic_operations"))
                 if sample["status"] == "passed" and "unavailable_reason" not in costs[name] else None)
+            # Category predictions come from the formula/descriptor, never by
+            # allocating a second observed matrix execution or fitting a count.
+            if sample["status"] == "passed" and line["scaling_projection"]["status"] == "projected":
+                predicted_counts = category_budget(name, size, cutoff, plans.get(name))
+                sample["category_prediction"] = predicted_counts
+                sample["category_prediction_matches_observed"] = all(
+                    sample["observation"]["counts"].get(key, 0) == predicted_counts[key] for key in CATEGORIES)
+                if not sample["category_prediction_matches_observed"]:
+                    sample.update(status="failed", error="separate arithmetic category budget mismatch")
             if (cache_key is not None and sample["measurement"]["kind"] == "executed"
+                    and sample["status"] == "passed"
                     and sample["prediction_matches_observed_data_multiplications"] is True
                     and sample["prediction_matches_observed_arithmetic_steps"] is True):
                 measured[cache_key] = {"cutoff": cutoff, "sample": sample}
             line["samples"].append(sample)
     for line in series:
+        for index, sample in enumerate(line['samples']):
+            sample.setdefault('size_effects', {'status': 'unavailable', 'reason': 'size planner failed before attribution'})
+            if index:
+                sample['size_effects']['transition_from_previous_sample'] = describe_transition(line['samples'][index-1], sample)
         minimum, maximum = sizes[0], sizes[-1]
         curve_sizes = sorted(set(sizes + [minimum + (maximum - minimum) * index / 80 for index in range(81)]))
         if "ideal_curve_status" in line["work_model"]:
@@ -338,6 +377,7 @@ independent executions of every cutoff, for example when checking the optimizer.
     return {"schema": SCHEMA, "execution_summary": summary,
             "configuration": {"sizes": sizes, "cutoffs": cutoffs, "seed": seed,
             "reuse_equivalent_cutoffs": reuse_equivalent_cutoffs,
+            "memory_tracking_enabled": measure_memory, "projection_cycles": projection_cycles,
             "scalar_domain": "signed Python integers; complex intermediates where schemes require them",
             "primitive_timing_enabled": False, "focus": "executed arithmetic work, not elapsed time"},
             "series": series}

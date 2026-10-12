@@ -2,7 +2,8 @@
 
 This command executes our algorithms and counts their arithmetic, rather than
 estimating wall-clock complexity. The default suite also generates construction,
-search/replay, CW recovery, exact certificates, and separate pair diagnostics.
+search/replay, CW recovery/extraction/coarsening/packing, exact certificates, and separate
+pair diagnostics. A selected finite packed base joins the arithmetic comparison.
 All output shares one dated ignored directory. --measurements-only selects the
 original count-only report. Research budgets are independent of matrix sizes.
 """
@@ -47,8 +48,15 @@ def main(argv=None):
     parser.add_argument("--search-extra-rank", type=int, default=0)
     parser.add_argument("--search-split-every", type=int, default=50)
     parser.add_argument("--cw-parameters", type=int, nargs="+", default=[1, 2])
-    parser.add_argument("--cw-powers", type=int, nargs="+", default=[1, 2])
+    parser.add_argument("--cw-powers", type=int, nargs="+", default=[1, 2],
+                        help="powers for CW recovery, fine/coarse extraction and verified packing")
+    parser.add_argument("--cw-packing-size", type=int, default=2,
+                        help="square base for finite CW packing; independent of growth-grid sizes")
     parser.add_argument("--pair-trace-limit", type=int, default=200, help="retained scalar/primitive events per algorithm and diagnostic pair")
+    parser.add_argument("--projection-cycles", type=int, default=12,
+                        help="whole recurrence cycles to project without executing matrices")
+    parser.add_argument("--no-sweep-memory", action="store_true",
+                        help="disable allocation peaks for growth calls; retain exact counters and operand widths")
     args = parser.parse_args(argv)
     try:
         compositions = {f"composition-{i+1}": Composition.from_spec(spec)
@@ -61,7 +69,10 @@ def main(argv=None):
                                      search_seeds=tuple(args.search_seeds), search_max_height=args.search_max_height,
                                      search_extra_rank=args.search_extra_rank, search_split_every=args.search_split_every,
                                      cw_parameters=tuple(args.cw_parameters),
-                                     cw_powers=tuple(args.cw_powers), trace_limit=args.pair_trace_limit)
+                                     cw_powers=tuple(args.cw_powers), cw_packing_size=args.cw_packing_size,
+                                     trace_limit=args.pair_trace_limit,
+                                     measure_sweep_memory=not args.no_sweep_memory,
+                                     projection_cycles=args.projection_cycles)
             destination, status = run_suite(args.sizes, args.cutoffs, algorithms=args.algorithms,
                                            compositions=compositions, settings=settings, seed=args.seed,
                                            output_root=args.output_root, reference_reports=args.reference_report,
@@ -72,7 +83,8 @@ def main(argv=None):
         data = collect_work(args.sizes, args.cutoffs, algorithms=args.algorithms,
                             seed=args.seed, progress=print_progress,
                             reuse_equivalent_cutoffs=not args.repeat_equivalent_cutoffs,
-                            compositions=compositions)
+                            compositions=compositions, measure_memory=not args.no_sweep_memory,
+                            projection_cycles=args.projection_cycles)
         raw = (json.dumps(data, indent=2, allow_nan=False) + "\n").encode("utf-8")
         destination = write_data_report(raw, source_name="work-sweep.json",
                                         output_root=args.output_root, title="Measured arithmetic growth",

@@ -34,6 +34,34 @@ def polynomial_tensor_product(dimensions_a, terms_a, dimensions_b, terms_b):
     return tuple(x*y for x, y in zip(dimensions_a, dimensions_b)), tuple(terms)
 
 
+def polynomial_degree_bound(terms):
+    """Bound a tensor polynomial's degree from its actual retained factors.
+
+    A rank-one term's degree is at most the sum of its three factor degrees;
+    adding terms cannot increase the maximum. Cancellations can lower the true
+    degree, so this is a safe upper bound rather than a minimal-degree claim.
+    Restricting coordinates can delete the highest-degree entries, allowing
+    fewer exact interpolation points without assuming additional cancellations.
+    Coordinates and coefficients are checked here; destination-space bounds
+    are checked separately by polynomial_coefficient when it constructs a tensor.
+    """
+    maximum = 0
+    for term in terms:
+        if len(term) != 3 or any(not factor for factor in term):
+            raise ValueError("polynomial terms need three nonempty factors")
+        term_degree = 0
+        for factor in term:
+            factor_degree = 0
+            for coordinate, polynomial in factor:
+                if (type(coordinate) is not int or coordinate < 0 or not polynomial
+                        or any(type(c) not in (int, Fraction) for c in polynomial)):
+                    raise ValueError("polynomial factors need exact rational coefficients and nonnegative coordinates")
+                factor_degree = max(factor_degree, max((j for j, c in enumerate(polynomial) if c), default=0))
+            term_degree += factor_degree
+        maximum = max(maximum, term_degree)
+    return maximum
+
+
 def cw_family(q, power=1):
     """Generate P(e)=e^(3*power) CW_q^power + higher powers, in (q+2)^power terms.
 

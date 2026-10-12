@@ -1,5 +1,54 @@
 # Exploring matrix multiplication
 
+Our mission is to make advanced matrix-multiplication algorithms understandable
+as working code. We explore their real implementation costs so that readers can
+see how the mathematics becomes a computation, where savings arise, and what
+those savings require in additions, operand growth, setup and memory. The same
+platform supports research into constructions that push beyond what has already
+been implemented publicly, even if a modern home computer can execute only small
+instances. A lower verified exponent is our research ambition; mathematical
+fidelity, human understanding and instrumentability take priority over speed.
+
+Every algorithm should be a hierarchy of small, documented, reusable mathematical
+recipes. Our authoritative arithmetic uses arbitrary-precision integers, exact
+fractions and supported exact complex pairs. Observation must not change it.
+Exactness avoids rounding error; it does not make huge integers free or represent
+every real/algebraic number automatically. Memory and time remain finite resources.
+
+## Research rules
+
+- Own the reference algorithms and their primitive schedules. Ordinary scalar
+  arithmetic is allowed; another library must not multiply matrices or perform
+  hidden tensor contractions for us. GPU reference kernels may batch explicit
+  atomic operations only when exactness, readability and instrumentation survive.
+- Research searches may use broader GPU/numerical tools to propose candidates.
+  Approximate proposals are never accepted evidence. Reconstruct exact coefficients
+  and independently check the complete identity before a recipe enters the reference
+  implementations. Record dependency licenses, provenance and accuracy limits.
+- Keep mathematics and cost models separate. Multiplication/addition counts use
+  unit-cost field arithmetic. The 64-bit word model observes exact operand widths
+  and estimates a declared schoolbook integer/rational schedule. It does not narrow
+  our numbers or claim to count processor instructions. GCD, cancellation, division
+  and carry work excluded by that model remain explicitly unmodelled.
+- Distinguish captured executions, exact recurrence projections, finite-range fits
+  and asymptotic arguments. Memory peaks and operand widths are measured properties
+  of particular inputs and representations; do not silently extend them to infinity.
+  Construction/search, recipe preparation, execution and verification need named scopes.
+- Use **omega (ω)** for the infimum of achievable matrix-multiplication exponents
+  over a stated arithmetic domain. Each implemented algorithm has its own exponent
+  p, providing an upper bound on ω when its construction is justified. A plotted
+  log-log slope from small experiments is neither ω nor an asymptotic proof.
+  “Naive”, “classical” and “schoolbook” all describe our direct row-by-column
+  baseline; the existing `naive` command/interface name stays stable.
+- Preserve complete independent verification and all useful report families.
+  Explain every module and function, index convention and cancellation. Prefer
+  reusable mathematical structure over opaque execution optimizations. Credit
+  sources and comply with licenses even when downloads are ignored by Git.
+
+Contributor/agent requirements are recorded in [AGENTS.md](AGENTS.md).
+
+## Current implementation
+
 Five implementations, including the Smirnov baseline, use Python arithmetic
 and lists, without NumPy, SciPy,
 BLAS, or another matrix multiplication library. Python 3.10 or newer is required;
@@ -8,7 +57,8 @@ there are no third-party runtime or test dependencies.
 The research goal is to own the algorithm implementations and expose their steps
 for composition, instrumentation, and profiling. The current Python reference
 implementations use primitive arithmetic, but future execution backends may use
-compiled code, custom CUDA kernels, packed arrays, and runtime/compiler libraries.
+compiled code, custom exact CUDA primitives, packed arrays, and runtime/compiler libraries
+within the reference rules above.
 Published formulas and coefficient data are specifications; another library's
 implementation of a studied multiplication algorithm must not replace our own.
 
@@ -37,10 +87,10 @@ terms is reference material rather than a release dependency.
 | Algorithm | Module | Recursive scheme | Square arithmetic exponent |
 | --- | --- | --- | --- |
 | Naive | `matrix_multiplication/naive.py` | Row-by-column dot products | 3 |
-| Strassen | `matrix_multiplication/strassen.py` | Seven products; 18 additions/subtractions per 2-by-2 block level | log₂(7), about 2.8074 |
-| Strassen-Winograd | `matrix_multiplication/strassen_winograd.py` | Seven products; 15 additions/subtractions per level | log₂(7), about 2.8074 |
-| AlphaEvolve | `matrix_multiplication/alphaevolve.py` | 48 complex-field products per 4-by-4 block level | log₄(48), about 2.7925 |
-| Smirnov | `matrix_multiplication/smirnov.py` | Three 40-product rectangular orientations form a 54-by-54 square base | log₅₄(64000), about 2.7743 |
+| Strassen | `matrix_multiplication/strassen.py` | Seven products; 18 additions/subtractions per 2-by-2 block level | logâ‚‚(7), about 2.8074 |
+| Strassen-Winograd | `matrix_multiplication/strassen_winograd.py` | Seven products; 15 additions/subtractions per level | logâ‚‚(7), about 2.8074 |
+| AlphaEvolve | `matrix_multiplication/alphaevolve.py` | 48 complex-field products per 4-by-4 block level | logâ‚„(48), about 2.7925 |
+| Smirnov | `matrix_multiplication/smirnov.py` | Three 40-product rectangular orientations form a 54-by-54 square base | logâ‚…â‚„(64000), about 2.7743 |
 
 ## Run the explorer
 
@@ -236,6 +286,14 @@ table, then adds links to these automatically generated artifacts:
   the measured size/cutoff comparison.
 - CW polynomial recovery experiments for q = 1, 2 and powers = 1, 2, with finite
   interpolation cost distinguished from border rank.
+- CW sector extraction at those same parameters: independent products, complete
+  coefficient checks, explicit coordinate maps, and observed finite recovery work.
+- Exact coefficient expansion and replayed reductions, followed by finite dense
+  packing. The best cubic-or-better packed base automatically joins measurements
+  and certificates; every packing comparison retains its own report.
+- CW sum-index coarsening at the same parameters: a complete merged-component
+  catalog, exact matrix-layout witnesses, retained coefficients for unrecognized
+  components, and independently verified recovery/packing of recognized pieces.
 - Portable exact certificates for selected algorithms, custom compositions,
   and generated matrix recipes.
 - Separate integer and floating-point diagnostic pairs, with primitive profiles,
@@ -245,9 +303,10 @@ table, then adds links to these automatically generated artifacts:
 
 The default arithmetic sizes remain 1, 2, 4, 8, 16, with cutoffs 1, 2, 4.
 Discovery defaults to the bounded 2-by-2 experiment; increasing `--sizes` does
-not automatically increase search sizes or CW powers. Profiles and memory are
-secondary measurements of the separate small pairs, not of the count-only size
-sweep. A search that misses its target is reported honestly as a completed
+not automatically increase search sizes or CW powers. Each growth call captures
+operand widths and a separate optional Python allocation peak. Small pairs retain
+primitive timing profiles; setup/construction stages have separate resource scopes.
+A search that misses its target is reported honestly as a completed
 experiment; invalid identities, wrong products, and arithmetic mismatches cause
 a failed suite and nonzero exit status. All outputs remain ignored by Git.
 
@@ -257,9 +316,42 @@ python sweep.py --search-seeds 0 1 2 --search-steps 5000 --search-restarts 20
 python sweep.py --search-size 3 --search-target-rank 23 --search-max-height 4 --search-extra-rank 2
 python sweep.py --search-start path/to/real-rational-scheme.json --search-target-rank 38 --search-max-height 8
 python sweep.py --cw-parameters 2 --cw-powers 1 2 --pair-trace-limit 1000
+python sweep.py --cw-parameters 2 --cw-powers 2 --cw-packing-size 4
+python sweep.py --sizes 2 4 8 --projection-cycles 20
+python sweep.py --no-sweep-memory
 ```
 
 These search settings are finite budgets, not promises of new discoveries.
+`--projection-cycles` evaluates each fixed-cutoff recurrence at whole-cycle sizes
+without allocating or executing those matrices. Data products, coefficient
+products, additions, subtractions and normalizations use exact integer counts
+and appear in separate dashed graphs and tables. The symbolic recurrence defines
+unbounded growth; the graph illustrates a finite range. `--no-sweep-memory`
+disables growth-call allocation probes, preserving arithmetic and operand/word
+cost observations. `--measurements-only` skips other research suite stages.
+
+The 64-bit baseline is a **cost unit**, not a precision limit. A magnitude of b
+bits needs ceil(b/64) words; schoolbook multiplication of u and v words costs u*v
+word-pair products. Two 4,096-bit integers therefore model 4,096 word products.
+Rational operations include numerator/denominator work; even a field addition
+may contain integer cross-products. Exact complex pairs expose real-component
+costs. GCD/cancellation, division, sign and carry work are unmodelled. Python may
+use faster integer algorithms. These estimates are not processor instructions.
+
+Memory peaks include Python-traced allocations during execution, observer
+overhead and any cold setup; pre-existing inputs and untraced native/GPU storage
+are outside the probe. Reused rows identify their source. We do not project
+operand widths or algorithm memory peaks from small samples. Projection tables
+include a hypothetical three-array 64-bit input/output baseline, separate from
+Fraction storage or peak memory. Setup tables report generation/check/export
+stage resources; raw coefficient-arithmetic counts remain unmeasured.
+`--cw-packing-size` selects a dense construction's base size, independently of
+the arithmetic growth grid. Current small CW packings match cubic work; they
+do not improve Smirnov's exponent. Their reports compare interpolation,
+coefficient expansion, reductions, and final dense costs separately.
+Fine and coarse packings compete for the same `generated-cw-packed` comparison
+slot; every catalog and construction report remains available. A component that
+needs further extraction is a recorded research result, not a failed suite stage.
 `--search-start` accepts a verified real rational square or rectangular recipe.
 For a rectangular result, the suite verifies its two cyclic orientations and
 automatically measures/certifies the balanced square cycle. This connects searches
@@ -350,6 +442,42 @@ recursion, cutoff 2 or 3 still gives size-1 leaves; cutoff 4 permits size-4 leav
 Both an 8-by-8 and a 16-by-16 AlphaEvolve input pad to size 16, producing a measured
 plateau. The report shows actual padded sizes and leaf sizes to explain this.
 
+The report's **Why can the graphs have steps?** section distinguishes prescribed
+block divisions from our size-handling decisions. Expand **Where this algorithm’s
+steps come from** for each comparison: its table records requested/padded shapes,
+extra zero input cells, every stage and child shape, leaf dimensions and
+transitions between the sampled sizes.
+
+Recursion alone does not force a staircase. For Strassen at cutoff one, natural
+sizes n=2^h have 7^h data products and lie on the n^log₂7 product curve. Our choice
+to pad arbitrary requests to the next schedule prefix produces plateaus: n=5
+through n=8 execute at size 8, costing 343 products; n=9 executes at size 16,
+costing 2,401. Equal-half block divisions are mathematical. Padding the whole
+request to this grid is a portable implementation choice, not a requirement
+imposed by Python, CUDA or a home computer.
+
+The current interpreter pads before comparing the cutoff. Size 3 with cutoff 3
+therefore pads to 4 and recurses; size 6 with cutoff 3 pads to 8, even though an
+unpadded split 6→3 could use classical leaves. These choices keep one uniform,
+verified traversal; they are not universally necessary. Border handling, peeling,
+generalized blocks or recipe dispatch could reduce finite work while keeping
+exact arithmetic and the asymptotic exponent. Alternatives need their own budgets
+and verification and are on the checklist. We already accept arbitrary square
+sizes correctly; a new policy would change their work, not add missing correctness.
+
+The exponent is an asymptotic bound, not a promise of exactly n^p operations at
+every integer size. A smooth unpadded comparison curve does not execute
+fractional-size matrices. Straight lines connecting a sparse sample grid are
+plotting guides, not observations of every intermediate size. Matching field
+counts do not guarantee matching operand widths, word cost or memory.
+
+The 64-bit cost graph can have its own steps when an exact operand crosses a
+word-width boundary. Rounding a bit width up to whole words is our chosen cost
+model, not a change to field arithmetic or proof that hardware uses those limbs.
+Memory peaks can reflect interpreter/backend allocation behavior and observer
+overhead as well as algorithm storage. The report states those scopes without
+assigning every memory/operand jump to matrix padding.
+
 ## Import and compose schemes
 
 ### Verified lower-exponent Smirnov baseline
@@ -423,13 +551,13 @@ to compare multiple plans. Both commands automatically generate dated HTML repor
 in `outputs/`. Create `outputs/` first if requesting a JSON path in a fresh checkout.
 
 The comma-separated stages repeat by recursion depth. For example, Strassen then
-AlphaEvolve splits 16 → 8 → 2 → 1 at cutoff 1. Padding follows the smallest prefix
+AlphaEvolve splits 16 â†’ 8 â†’ 2 â†’ 1 at cutoff 1. Padding follows the smallest prefix
 product of that same radix schedule covering every input dimension. The cutoff
 still means the largest square block handled by the classical leaf algorithm.
 All recursive child products at a given depth use the same stage.
 
-One complete Strassen/AlphaEvolve cycle has radix 2×4 = 8 and rank 7×48 = 336.
-Its exponent is log₈(336), about 2.7974, derived from the **repeating** schedule,
+One complete Strassen/AlphaEvolve cycle has radix 2Ã—4 = 8 and rank 7Ã—48 = 336.
+Its exponent is logâ‚ˆ(336), about 2.7974, derived from the **repeating** schedule,
 not fitted from executions. This creates no new exponent record: mixing existing
 schemes cannot beat the best constituent exponent. It lets us explore constructions
 and their actual arithmetic costs without duplicating the execution engine.
@@ -538,6 +666,7 @@ recovery, with the finite interpolation overhead explicitly reported.
 python -m matrix_multiplication.constructions search --target-rank 7 --certificate
 python -m matrix_multiplication.constructions product --left strassen --right strassen --certificate
 python -m matrix_multiplication.constructions cw --q 2 --power 2
+python -m matrix_multiplication.constructions cw-coarse --q 2 --power 2 --size 2 --certificate
 ```
 
 Each command automatically writes its data and an HTML research summary to a
@@ -564,7 +693,7 @@ work, and the distinction from generating the OpenAI witness.
 - [x] Build our own sparse scheme evaluator, recursive composition engine, and operation accounting. Version-1 square scheme import verifies exact identities; configurable repeating schedules share the existing traversal and include independent work budgets.
 - [x] Establish complete exact identity verification with reproducible certificates. Exact square recipes and repeating cycles have portable Python packages, an independent basis checker, fingerprint binding, and a documented composition argument; these are not Lean proofs.
 - [ ] Reproduce a licensed baseline, then investigate the stronger aggregation constructions. The verified Smirnov baseline now achieves exponent 2.7742999804; stronger aggregation constructions remain research work.
-- [ ] Add custom CUDA execution and memory scheduling when needed to run larger mathematical constructions; hardware tuning is secondary.
+- [ ] Add custom CUDA execution and memory scheduling where this can provide performance benefits without compromising the core principles of mathematical accuracy, readability, instrumentability, and ownership of our implementation - do not use any libraries (GPU or otherwise) that might hide optimisations; Code that is used for searches can be more optimised as long as the source remains educational, but we must own and be able to measure every aspect of the reference implementations.
 - [ ] Search for product-count reductions or better constructions, independently verifying every candidate. The exact rational generator, flip/reduction/split search, replay logs, and CW polynomial recovery are implemented; a stronger exponent result remains open.
 
 The new construction machinery opens these more specific tasks, in research
@@ -573,9 +702,35 @@ recurrences can establish a better exponent:
 
 - [x] Run every supported report family from one `python sweep.py` command, with
   a combined report, generated recipes measured automatically, and stage outcomes.
-- [ ] Implement a CW sector/extraction generator, verify surviving independent
-  matrix products, then implement their packing/recovery into dense multiplication.
-  Keep the finite extraction and interpolation overhead in the recurrence.
+- [x] Observe exact operand widths and declared 64-bit word equivalents; measure
+  per-call Python allocation peaks and separate setup resources; project arithmetic
+  categories from exact recurrences without executing enormous matrices.
+- [ ] Derive input/representation-dependent bit-growth and peak-storage recurrences,
+  before projecting those resources.
+- [ ] Model and instrument GCD work in exact rational normalization.
+- [ ] Account for cancellation and cross-cancellation, including their cost and
+  the reduction in operand sizes before multiplication.
+- [ ] Model exact division and normalization work separately from products.
+- [ ] Account for multiword carries and accumulation when combining word products.
+- [x] Explain graph steps with requested/padded dimensions and stage/leaf paths;
+  distinguish recipe constraints, portable size policies and presentation artifacts.
+- [ ] Add a verified optional border/fringe strategy for arbitrary square sizes,
+  retaining zero-padding as a comparison baseline. Derive operation budgets and
+  recurrence evidence, including avoiding unnecessary root padding when a request
+  already fits a classical leaf under the alternative policy.
+- [x] Implement a CW sector/extraction generator and verify surviving independent
+  matrix products, including absence of unwanted cross-products. Execute the
+  recovered recipe with observable arithmetic and report its finite overhead.
+- [x] Compare interpolation with direct coefficient expansion, replay exact
+  dependency reductions, and implement fully verified finite tile packing into
+  dense matrix recipes. Include the chosen recovery cost in the final recipe.
+- [x] Implement sum-index CW coarsening, exact matrix classification with explicit
+  basis permutations, and complete catalog reconstruction. Retain unrecognized
+  tensors and compare verified coarse recovery/packing in the automatic suite.
+- [ ] Extract useful products from powers of the unrecognized coarse components,
+  improve selection and large-power recovery,
+  then implement the stronger constructive conversion behind the asymptotic sum
+  inequality. The finite tiling milestone currently gives cubic dense work.
 - [ ] Search reductions of existing explicit real schemes, especially the smaller
   Smirnov rectangular base. A cyclic rank-39 base would give about 2.7553; rank
   38 would give about 2.7357. These are targets, not discovered coefficients.
@@ -714,17 +869,19 @@ Research findings dated 11 October 2026 are saved locally in
 - [OpenAI's arithmetic-program model](https://github.com/openai/math/blob/main/lean/OAI/LinearAlgebra/MatrixMultiplication/Model.lean)
 - [Practical recursive 48-product algorithms (2026)](https://arxiv.org/abs/2609.12027v2)
 - [Williams's matrix multiplication paper, corrected 2014 version of the 2012 work](https://cs.stanford.edu/~virgi/matrixmult-f.pdf)
-- [Schönhage's Partial and Total Matrix Multiplication (1981)](https://epubs.siam.org/doi/abs/10.1137/0210032)
+- [SchÃ¶nhage's Partial and Total Matrix Multiplication (1981)](https://epubs.siam.org/doi/abs/10.1137/0210032)
 - [Benson and Ballard's practical parallel implementation study](https://www.cs.cornell.edu/~arb/papers/fast-matmul-ppopp2015.pdf)
 - [Benson and Ballard's study, arXiv download mirror](https://arxiv.org/pdf/1409.2908)
-- [Bläser's Fast Matrix Multiplication survey](https://theoryofcomputing.org/articles/gs005/gs005.pdf)
+- [BlÃ¤ser's Fast Matrix Multiplication survey](https://theoryofcomputing.org/articles/gs005/gs005.pdf)
 - [Flip Graphs for Matrix Multiplication](https://arxiv.org/abs/2212.01175), Manuel Kauers and Jakob Moosbauer: mathematical background for our independently written exact search engine; no external search implementation is used.
-- [On Degeneration of Tensors and Algebras](https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf), Markus Bläser and Vladimir Lysikov, MFCS 2016, equation (2): credited source of the CW polynomial formula; publication licensed CC-BY. Our code implements the algebra independently.
-- [More Asymmetry Yields Faster Matrix Multiplication](https://arxiv.org/abs/2404.16349), Josh Alman and coauthors: primary background for CW tensor powers and extraction; its limiting exponent is not claimed for our finite experiments.
+- [On Degeneration of Tensors and Algebras](https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf), Markus BlÃ¤ser and Vladimir Lysikov, MFCS 2016, equation (2): credited source of the CW polynomial formula; publication licensed CC-BY. Our code implements the algebra independently.
+- [More Asymmetry Yields Faster Matrix Multiplication](https://arxiv.org/abs/2404.16349), Josh Alman and coauthors: primary background for CW powers and extraction; sections 2.2 and 3.7 motivate our independently implemented sum-index coarsening. Its recursive laser analysis and limiting exponent are not claimed for our finite experiments.
+- [An overview of the recent progress on matrix multiplication](https://theory.stanford.edu/~virgi/sigactcolumn.pdf), Virginia Vassilevska Williams: omega terminology and matrix-multiplication bounds.
+- [Python numeric types](https://docs.python.org/3/library/stdtypes.html#numeric-types-int-float-complex) and [Fraction](https://docs.python.org/3/library/fractions.html): arbitrary-precision integers and rational arithmetic.
 
 ### Record audit and implementation attribution
 
-- [Local Improvements to Trilinear Aggregation (LITA)](https://github.com/khoruzhii/lita), Kirill Khoruzhii, Luzian Serafin, Patrick Gelß, and Sebastian Pokutta. [Pinned revision](https://github.com/khoruzhii/lita/tree/472a79fbc8248423a97bebb3aacbc89e769b9b3e), dated 7 October 2026: public rational schemes and an evaluator; the 32-by-32 scheme has 14,196 products, implying exponent 2.7586393718. No clear license was found in the inspected repository; downloaded coefficients are retained only as local research references and are not distributed here. Independent exact modular sample checks are recorded in `Background Research/lita-audit-results.json`; these are not a complete identity proof.
+- [Local Improvements to Trilinear Aggregation (LITA)](https://github.com/khoruzhii/lita), Kirill Khoruzhii, Luzian Serafin, Patrick GelÃŸ, and Sebastian Pokutta. [Pinned revision](https://github.com/khoruzhii/lita/tree/472a79fbc8248423a97bebb3aacbc89e769b9b3e), dated 7 October 2026: public rational schemes and an evaluator; the 32-by-32 scheme has 14,196 products, implying exponent 2.7586393718. No clear license was found in the inspected repository; downloaded coefficients are retained only as local research references and are not distributed here. Independent exact modular sample checks are recorded in `Background Research/lita-audit-results.json`; these are not a complete identity proof.
 - [Towards Faster Feasible Matrix Multiplication by Trilinear Aggregation](https://arxiv.org/abs/2508.01748), Oded Schwartz and Eyal Zwecher. Primary background for the recent aggregation constructions.
 - [fast-matmul](https://github.com/arbenson/fast-matmul), Austin R. Benson and Grey Ballard: [BSD 2-Clause license](https://github.com/arbenson/fast-matmul/blob/master/LICENSE), copyright Sandia Corporation. The source snapshot and its license are stored locally for reference; upstream execution code is not incorporated into our libraries.
 - [AlphaTensor](https://github.com/google-deepmind/alphatensor), Google DeepMind: [Apache 2.0 license](https://github.com/google-deepmind/alphatensor/blob/main/LICENSE). Referenced implementations and data have not been incorporated into our current libraries.
