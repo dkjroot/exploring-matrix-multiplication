@@ -24,6 +24,7 @@ from .decomposition_search import beats_exponent, replay, search
 from .degenerations import recover_cw
 from .cw_extraction import extract_cw
 from .dense_packing import pack_cw, pack_coarse_cw
+from .report_explanations import construction_guide, terminology_guide
 from .scheme_io import load_scheme_document, save_scheme, scheme_document, scheme_from_document
 from .tensors import from_scheme, classical, matrix_product, to_scheme
 
@@ -120,8 +121,32 @@ def write_summary(directory, report):
                  '<text transform="translate(20,150) rotate(-90)" text-anchor="middle">Products in decomposition</text>'
                  f'<text x="52" y="277">0</text><text x="630" y="277">{len(ranks)-1}</text>'
                  f'<text x="35" y="45">{maximum}</text><text x="45" y="260">0</text></svg>'
-                 '<p>The curve shows the replay path to the best recipe, not unsuccessful walk branches. '
-                 'Attempt counts below include those branches and restarts.</p>')
+                 '<p>The search tries algebraic changes that preserve the computation while looking for a recipe '
+                 'with fewer products. This curve shows only the sequence of accepted changes leading to the best '
+                 'recipe it found. Other trial paths and restarts may have failed to improve it; those attempts '
+                 'are included in the counts below, rather than in this curve. We can replay each recorded change '
+                 'without repeating the random search. Failing to reach a target within this budget does not '
+                 'prove that a better recipe is impossible.</p>')
+    cw = report.get('cw')
+    if cw:
+        curve += ('<h2>Recovering an exact CW building block</h2>'
+                  '<p>The CW formula used here has coefficients that are polynomials in a formal parameter. '
+                  'We want the coefficient of one particular power of that parameter. Instead of choosing a '
+                  'tiny floating approximation, we recover that coefficient exactly by evaluating the polynomial '
+                  'at enough rational points and combining the results. That procedure is called interpolation. '
+                  'Its extra products belong to the finite executable recipe and cannot be ignored.</p>'
+                  '<p>The q parameter controls the size of the basic CW structure. The power parameter combines '
+                  'that many copies into a larger tensor; it is not the matrix-growth exponent p. This page checks '
+                  'the whole recovered tensor against an independent literal definition. It has not yet converted '
+                  'that tensor into one ordinary square matrix multiplication.</p>'
+                  '<table><thead><tr><th>Quantity</th><th>Recorded value</th></tr></thead><tbody>'
+                  + ''.join(f'<tr><td>{label}</td><td>{cw[key]}</td></tr>' for label, key in (
+                      ('CW size parameter q', 'q'), ('Number of copies combined', 'power'),
+                      ('Polynomial rank-one products before recovery', 'polynomial_rank'),
+                      ('Interpolation evaluation points', 'interpolation_points'),
+                      ('Products in the finite recovered recipe', 'finite_recipe_products'),
+                      ('Products in the independent literal recipe', 'literal_recipe_products')))
+                  + '</tbody></table>')
     packing = report.get("cw_packing")
     extraction = report.get("cw_extraction") or (packing["extraction"] if packing else None)
     if extraction:
@@ -132,19 +157,27 @@ def write_summary(directory, report):
                        +escape(' × '.join(map(str, item['shape'])))+'</td><td>'
                        +str(item['classical_products'])+'</td></tr>' for item in extraction['components'])
         curve += ('<h2>Verified independent matrix products</h2>'
-                  '<p>Each shape is (rows, inner dimension, columns). Both complete tensor identities '
-                  'and actual rational-input outputs have been checked. There are no shared variable '
-                  'groups or unwanted cross-sectors in this selection.</p>'
+                  '<p>Here we keep selected coordinates of the CW structure and set the others to zero, looking '
+                  'for separate ordinary matrix products inside it. Each shape lists the number of rows, shared '
+                  'inner entries, and output columns. For example, (2,3,4) describes a 2×3 input multiplied by a '
+                  '3×4 input. The selected products must remain independent: reusing the wrong coordinate groups '
+                  'could accidentally leave cross-products between different components. We check the complete '
+                  'algebraic identity to exclude those terms, then run actual rational-input examples too.</p>'
+                  '<p>The “sector word” identifies a sequence of coordinate-group choices in the tensor power. '
+                  'It is a mathematical label, unrelated to the 64-bit machine words used in our cost model.</p>'
                   '<table><thead><tr><th>Sector word</th><th>Product shape</th><th>Classical data products</th></tr></thead>'
                   f'<tbody>{rows}</tbody></table>'
                   f'<p>Classical sum: <strong>{extraction["classical_direct_sum_products"]}</strong> data products. '
                   f'Finite recovered recipe, measured: <strong>{extraction["finite_recipe_products"]}</strong>. '
                   f'Interpolation upper bound: <strong>{extraction["finite_rank_bound"]}</strong>. '
-                  'The recovered recipe includes coefficient recovery; its additions and coefficient '
-                  'products are in the execution counters below.</p>'
+                  'The first count is the cost of doing the selected products by ordinary multiplication. '
+                  'The measured count pays for our exact coefficient-recovery recipe too. The upper bound '
+                  'is a conservative construction estimate, not a smaller measured cost. Additions and '
+                  'fixed-coefficient products are retained in the execution counters below.</p>'
                   + ('<p>The next section uses these products in verified finite dense packing.</p>' if packing else
-                     '<p>This is an extraction milestone. Combining these independent products into '
-                     'one efficient dense multiplication remains a separate construction.</p>'))
+                     '<p>We can now execute several independent products. That is a useful extraction milestone, '
+                     'but it is not yet an efficient multiplier for one larger, unrestricted matrix pair. '
+                     'Connecting those products to a single dense multiplication requires another construction.</p>'))
     if packing:
         recovery = extraction["optimized_recovery"]
         stages = (("Exact interpolation baseline", recovery["interpolation_products"]),
@@ -156,19 +189,29 @@ def write_summary(directory, report):
                   ("Classical dense baseline", packing["classical_dense_products"]))
         cost_rows = ''.join(f'<tr><td>{escape(label)}</td><td>{count}</td></tr>' for label, count in stages)
         curve += ('<h2>Exact recovery and dense packing</h2>'
-                  '<p>The required coefficient is also expanded directly into rank-one terms, '
-                  'then exact dependency reductions are replayed and completely checked. '
-                  'The cheaper verified recovery recipe supplies the packing slots.</p>'
+                  '<p>We compare two ways to obtain the exact polynomial coefficient. Interpolation combines '
+                  'evaluations at several parameter values. Direct coefficient expansion instead multiplies '
+                  'the relevant coefficient vectors from the polynomial factors. Each resulting rank-one term '
+                  'describes one product of an input combination from A and one from B, with weights assigning '
+                  'its contribution to the output. Some terms have exact algebraic dependencies, which let us '
+                  'remove products while preserving every tensor coefficient. We record and replay those '
+                  'reductions, then use the less expensive verified recipe.</p>'
                   '<table><thead><tr><th>Construction stage</th><th>Data products</th></tr></thead>'
                   f'<tbody>{cost_rows}</tbody></table>'
                   f'<p>The dense target is {escape(str(packing["target_shape"]))}. '
-                  f'It uses {packing["batch_count"]} batch(es). Every (row, inner, column) triple '
-                  'is covered exactly once. Partial slots are padded with zero; output contributions '
-                  'are added using explicit linear maps. The final dense tensor identity and actual '
-                  'rational outputs are verified separately.</p>'
-                  '<p>This finite tiling construction is executable. It does not implement the '
-                  'large-power conversion behind the asymptotic sum inequality. Its reported '
-                  'exponent comes solely from the exported dense recipe.</p>')
+                  f'We use {packing["batch_count"]} batch(es) of the available component products. '
+                  'Think of ordinary multiplication as contributions A[i,j]×B[j,k] to output C[i,k]. '
+                  'Our packing assigns rectangular groups of these contributions to the component slots. '
+                  'Every (row, inner, column) triple must occur exactly once: a missing triple loses a term, '
+                  'and a repeated one double-counts it. A partly used slot receives zeros in its unused entries. '
+                  'Explicit coordinate maps reuse the appropriate inputs and add contributions into shared '
+                  'outputs. We check this coverage and the final complete identity, then separately check '
+                  'actual rational outputs.</p>'
+                  '<p>This finite tiling construction is executable, so its exported square recipe can be '
+                  'repeated in recursion and measured. The more powerful asymptotic sum inequality is a '
+                  'theoretical bridge from many independent products to a long-term multiplication bound. '
+                  'Our current tiling does not implement that full bridge. Its exponent comes from the dense '
+                  'recipe we actually export, not from the stronger bound reported for a related theory.</p>')
     coarse = report.get("cw_coarse")
     if coarse:
         # Keep classification misses visible: the most interesting merged
@@ -184,21 +227,31 @@ def write_summary(directory, report):
                      +('Yes' if tuple(item["sector_weights"]) in selected else 'No')+'</td></tr>')
         recovery, packed = coarse["optimized_recovery"], coarse["packing"]
         curve += ('<h2>Merged CW components</h2>'
-                  '<p>Fine group words with the same sum share a coarse space. '
-                  'The complete catalog recombines to the original CW tensor. Every recognized '
-                  'matrix product has an explicit permutation and complete coefficient proof. '
-                  'All other components keep their coefficients for further research.</p>'
+                  '<p>The first CW partition keeps many coordinate groups separate. In this experiment we '
+                  'merge groups whose sequences of group labels have the same total. This makes a coarser '
+                  'partition: fewer, larger components that may contain useful structure. We check that '
+                  'putting all their coefficients back in their original positions reconstructs the complete '
+                  'CW tensor. A bigger component is not automatically a bigger matrix multiplication, so '
+                  'we classify each one separately. Every recognized matrix product has a recorded '
+                  'reordering of its coordinates and a complete coefficient check.</p>'
                   f'<p>{coarse["fine_sector_words"]} fine sector words become '
                   f'{coarse["coarse_sector_count"]} coarse sectors: '
                   f'{coarse["recognized_matrix_components"]} recognized matrix products and '
                   f'{coarse["components_needing_further_work"]} needing further work. '
-                  'The catalog shares spaces; only the selected induced sum is independent.</p>'
+                  'The catalog shares coordinate spaces between entries; its rows cannot all be executed '
+                  'as independent products at once. Only the selected induced sum is independent: that means '
+                  'the selected pieces have disjoint spaces and leave no unintended cross-products between '
+                  'them. Unrecognized components keep all their exact coefficients for further research.</p>'
                   '<table><thead><tr><th>Weights X,Y,Z</th><th>Space dimensions X,Y,Z</th>'
                   '<th>Matrix shape m,k,n</th><th>Classification</th><th>Selected</th></tr></thead>'
                   f'<tbody>{rows}</tbody></table>'
-                  '<p>A dimension obstruction rules out a full-space ordinary matrix product. '
-                  'It does not rule out useful restrictions, tensor powers or subsequent extraction. '
-                  'Other non-recognition is limited to the coefficient-one basis-permutation test.</p>'
+                  '<p>A “dimension obstruction” means the component’s three space sizes cannot be written '
+                  'as (m×k, k×n, m×n) for positive integer matrix dimensions. The full component therefore '
+                  'cannot simply be relabelled as an ordinary matrix product. Smaller restrictions or '
+                  'further combinations may still be useful. Other non-recognition has a narrower meaning: '
+                  'our test looks for coefficient-one matrix structure by reordering coordinates, not by '
+                  'searching every possible linear change of basis. Failure of that test is not a general '
+                  'proof that no useful transformation exists.</p>'
                   '<h2>Verified finite recovery and packing costs</h2>'
                   '<table><thead><tr><th>Stage</th><th>Data products</th></tr></thead><tbody>'
                   + ''.join(f'<tr><td>{escape(label)}</td><td>{count}</td></tr>' for label, count in (
@@ -209,10 +262,13 @@ def write_summary(directory, report):
                       ("Mapped dense recipe", packed["mapped_products_before_reductions"]),
                       ("Packed dense recipe", packed["packed_products"]),
                       ("Classical dense baseline", packed["classical_dense_products"])))
-                  + '</tbody></table><p>The selected sum and packed dense call both pass exact '
-                  'rational execution checks and multiplication-count checks. All finite recovery '
-                  'costs are included. This is finite tiling, not a recursive laser construction '
-                  'or the asymptotic sum inequality conversion.</p>')
+                  + '</tbody></table><p>The selected independent products and the packed dense recipe '
+                  'both pass actual rational-input checks, and their counted products match their saved '
+                  'recipes. All finite recovery costs are included. This is finite tiling, not a recursive '
+                  'laser construction or the asymptotic sum inequality conversion: the stronger theoretical '
+                  'methods still need a constructive implementation. Successful classification and packing '
+                  'are therefore research steps, not permission to attach the paper’s limiting exponent '
+                  'to this small executable example.</p>')
     display = {k: v for k, v in report.items() if k != "starting_recipe"}
     if "search" in display:
         display["search"] = {k: v for k, v in evidence.items() if k != "events"}
@@ -226,10 +282,13 @@ def write_summary(directory, report):
             'svg{width:100%;max-width:760px}a{color:#005a8d}'
             'table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:.5rem;border-bottom:1px solid #bbb}</style>'
             '<h1>Exact construction experiment</h1>'
-            f'<p>{escape(report["outcome"])}</p><p>{links}</p>{curve}'
-            '<p>Construction/search attempts are setup work. The combined suite measures its '
-            'selected generated recipes automatically. For an individual matrix recipe, pass '
-            'scheme.json to explore.py or sweep.py using their composition option.</p>'
+            f'<p>{escape(report["outcome"])}</p><p>{links}</p>'
+            +construction_guide()+terminology_guide()+curve+
+            '<p>Building or searching for a recipe is preparation work. Applying the finished recipe to '
+            'input matrices is a separate calculation, with its own arithmetic and resource measurements. '
+            'The combined suite automatically measures the generated recipes it admits to comparison. '
+            'For a standalone matrix recipe, its scheme.json file can be supplied to explore.py or sweep.py '
+            'with the composition option; generic tensor evidence is not automatically a matrix algorithm.</p>'
             f'<pre>{escape(json.dumps(display, indent=2))}</pre></html>')
     (directory / "index.html").write_text(html, encoding="utf-8")
 

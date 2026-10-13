@@ -30,6 +30,12 @@ exact-arithmetic reference and a constructive mathematics research project.
   module, class and function needs documentation. Explain index conventions,
   cancellations, mathematical role and the reason for non-obvious steps. Share
   mathematical primitives without adding products to the algorithm's recurrence.
+- Write report explanations for readers who have not studied this repository.
+  Define specialized terms when introduced, use concrete examples, and explain
+  what a result establishes and why its limitations matter. Prefer connected
+  explanatory prose over compressed phrases such as "cycles multiply ranks".
+  Keep raw evidence available, but do not make source-code knowledge a condition
+  for understanding the HTML. Share definitions across report families.
 - Distinguish a verified algorithm exponent from omega, the infimum across all
   matrix algorithms over a stated arithmetic domain. Keep symbolic recurrence
   evidence, measured counts, finite-range fits and projections separate.

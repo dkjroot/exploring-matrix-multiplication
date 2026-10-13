@@ -44,7 +44,7 @@ class VisualizationTests(unittest.TestCase):
         html = self.render(self.fixture())
         for phrase in ("Square arithmetic exponents", "Observed data multiplications", "Data products by recursion depth",
                        "Secondary · elapsed time", "Secondary · Python allocation peak",
-                       "not actual work or hardware FLOP/s", "Primitive timing was disabled",
+                       "not a count of this algorithm’s actual work", "Primitive timing was disabled",
                        "Do not sum those layers", "Unavailable"):
             self.assertIn(phrase, html)
         self.assertIn('role="img"', html)

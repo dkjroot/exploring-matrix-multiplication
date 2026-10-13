@@ -47,6 +47,13 @@ every real/algebraic number automatically. Memory and time remain finite resourc
 
 Contributor/agent requirements are recorded in [AGENTS.md](AGENTS.md).
 
+The HTML reports are written for readers who have not studied the code. A starting
+guide and a fold-out glossary explain blocks, recursion, stages, ranks, cutoffs,
+counting layers and exponents. Specialized construction pages introduce their
+mathematical objects before presenting results. Worked examples explain what a
+calculation means, while the saved JSON and expandable tables retain the full
+evidence for readers who want to investigate further.
+
 ## Current implementation
 
 Five implementations, including the Smirnov baseline, use Python arithmetic

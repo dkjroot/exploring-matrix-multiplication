@@ -198,6 +198,13 @@ sampled geometries, recording observed field-count equality separately. Unknown
 callbacks receive declared-model evidence, not a claimed reference traversal.
 `reporting.size_effects_section` puts these paths and caveats beside each graph.
 
+`report_explanations.py` holds shared educational introductions, the glossary and
+worked composition explanation. Keep these independent of measurement/model
+arithmetic. Report captions should introduce vocabulary, connect it to a concrete
+example and explain the evidence boundary; a short warning alone rarely teaches
+the reader how to interpret a result. Experiment-derived labels still need HTML
+escaping, even when surrounded by fixed explanatory prose.
+
 For an explicit formula, supply a block `step` using shared arithmetic and the
 provided child-product callback. For a coefficient recipe, supply exact U/V/W
 data and verify it before execution. Define its independent operation budget and

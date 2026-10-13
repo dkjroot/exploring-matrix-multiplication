@@ -13,6 +13,8 @@ import json
 from math import isfinite, log10
 from pathlib import Path
 
+from .report_explanations import composition_guide, reading_guide, terminology_guide
+
 
 ROOT = Path(__file__).resolve().parents[1]
 # Okabe and Ito's Color Universal Design palette, reordered so the first four
@@ -253,6 +255,7 @@ def algorithm_details(name, report):
     if model.get("schedule"):
         body += '<h4>Repeating composition schedule</h4>'
         body += f'<p>{text(" → ".join(model["schedule"]))} → repeat</p>'
+        body += '<p>Follow the names from left to right as the calculation moves to smaller blocks. When the last named stage has been used, the next deeper level starts again with the first. Each stage performs the recipe on all the problems at that depth.</p>'
         budget = report.get("composition_budget")
         if budget:
             body += table(("Depth", "Stage", "Nodes", "Square size", "Radix", "Rank"),
@@ -263,7 +266,7 @@ def algorithm_details(name, report):
                             if key == "field_multiplications" else report.get(key),
                             report.get("composition_budget_matches", {}).get(key))
                            for key in ("field_multiplications", "field_arithmetic_operations", "atomic_arithmetic_operations")])
-        body += '<p class="note">The exponent comes from the ranks and radices of the repeating cycle. Finite padding and cutoff phases can change its observed growth.</p>'
+        body += '<p class="note">To calculate the family exponent, we first work out how much one complete cycle shrinks the dimensions and how many descendant products it creates. Padding and stopping part-way through a cycle can make small measured examples grow differently from that long-term model. See the size and leaf tables before interpreting a fitted slope.</p>'
     if accuracy.get("failures"):
         body += f'<p class="callout">Failed entries: {text(json.dumps(accuracy["failures"]))}</p>'
     assumptions = model.get("assumptions")
@@ -274,6 +277,7 @@ def algorithm_details(name, report):
     body += table(("Counter", "Count"), counts) + "</details>"
     if report.get("primitive_calls"):
         body += '<details><summary>Primitive call counts</summary>'
+        body += '<p>A primitive is a reusable building block in our code, such as adding scalar numbers, splitting a matrix into blocks, or evaluating one recipe. These counts tell you how often each building block was called. Different levels of the hierarchy call one another, so adding every primitive’s count would not give a total arithmetic cost.</p>'
         body += table(("Primitive", "Calls"), sorted(report["primitive_calls"].items())) + '</details>'
     profiles = report.get("profiles", {})
     if profiles:
@@ -285,6 +289,7 @@ def algorithm_details(name, report):
         rows = [(primitive, profile.get("calls"), profile.get("inclusive_seconds"), profile.get("exclusive_seconds"))
                 for primitive, profile in sorted(profiles.items(), key=lambda item: number(item[1].get("exclusive_seconds")) or 0, reverse=True)]
         body += "<details><summary>Primitive profiles (inclusive times overlap)</summary>"
+        body += '<p>Inclusive time covers a function and the child functions it calls. Exclusive time removes the measured child-call time. For example, a block multiplication includes the scalar work inside it; that scalar work also has its own profile. Do not add inclusive times across the hierarchy, because they overlap. These timings include our reference interpreter and measurement machinery, rather than describing an optimized hardware kernel.</p>'
         body += table(("Primitive", "Calls", "Inclusive seconds", "Exclusive seconds"), rows) + "</details>"
     return body
 
@@ -482,19 +487,24 @@ def size_effects_section(lines):
     if not rows:
         return ''
     body = ('<details><summary>Where this algorithm’s steps come from</summary>'
-            '<p>The table separates a stage’s prescribed integer block divisions from our choice of which problem to execute. '
-            'All sizes are (rows, inner dimension, columns). Geometry comes from the discrete budget; multiplication counters '
-            'and output checks independently test execution. Declared-model-only rows do not establish an unknown callback’s policy.</p>'
+            '<p>A recipe tells us how to split a block once we have chosen to apply it. Our implementation separately decides '
+            'whether to enlarge the original matrix with zeros and when to stop splitting. This table lets you follow those '
+            'decisions from the requested size to the final leaf. Each three-number shape means (rows, shared inner dimension, '
+            'columns), as explained in the glossary. The path is calculated from the recorded schedule; the arithmetic counters '
+            'and output checks provide separate execution evidence. A row marked “declared_model_only” describes the model '
+            'but does not prove how an unfamiliar replacement function actually handled sizes.</p>'
             +table(('Cutoff', 'Requested n', 'Executed padded shape', 'Classical leaf shape', 'Levels',
                     'Extra zero input cells', 'Padding added?', 'Dimension path', 'Stage path', 'Attribution'), rows))
     if transitions:
         body += table(('Cutoff', 'Previous n', 'Current n', 'Budget transition', 'Observed data counts equal?', 'Why'), transitions)
     body += ''.join('<p class="callout">'+text(note)+'</p>' for note in cutoff_notes)
-    body += ('<p>Our interpreter pads to a covering stage prefix before testing the cutoff, even if a larger classical '
-             'leaf or a border-handling strategy could use fewer products. This keeps one uniform, verified traversal. '
-             'It is portable, not a Python/GPU/home-computer restriction. Alternatives require their own exact recipes, '
-             'counts and verification. Padding preserves the product and fixed-cutoff asymptotic exponent; it can add '
-             'substantial finite work. Equal field counts do not imply equal operand widths, word cost or memory.</p></details>')
+    body += ('<p>We currently enlarge the whole request until its dimensions fit a prefix of the repeating stage schedule, '
+             'then compare that enlarged problem with the cutoff. This gives one uniform calculation whose rules we can verify. '
+             'It can be wasteful for some sizes: we could instead handle a leftover border separately, or stop at a larger '
+             'classical leaf that already fits the recipe. Those alternatives require their own exact recipes, counts and checks. '
+             'This is a portable size-handling choice, not a Python/GPU/home-computer restriction. Zero padding preserves the '
+             'answer and the fixed-cutoff asymptotic exponent, while sometimes adding substantial work in a finite example. '
+             'Two requests with equal field counts can still produce different-sized numbers or different memory peaks.</p></details>')
     return body
 
 
@@ -509,7 +519,7 @@ def resource_scaling_sections(lines):
     baseline_cutoff = min(line['cutoff'] for line in lines)
     baseline = [line for line in lines if line['cutoff'] == baseline_cutoff]
     for category, label in (('field_additions', 'Measured additions'), ('field_subtractions', 'Measured subtractions')):
-        parts.append(panel(label, 'Captured field primitive calls. Negative-coefficient scales are counted as coefficient products, not subtraction calls.',
+        parts.append(panel(label, 'Each point counts calls to the addition or subtraction operation while the code was running. This is useful because saving products often requires extra sums. A recipe may also express a subtraction by multiplying by a negative coefficient and then adding; our counters record the operations that actually ran, so that form appears as a coefficient product and an addition.',
                            curve_chart(label, measured_series(baseline, category), y_label=label+' (count)')))
     for metric, heading, unit in (
             ('equivalent_word_multiplications', '64-bit multiplication equivalents', '64-bit word products (model)'),
@@ -521,7 +531,7 @@ def resource_scaling_sections(lines):
                       if s['status'] == 'passed' and 'operand_costs' in s['observation']]
             curves.append({'label': line['algorithm']+f", cutoff {line['cutoff']}", 'color': index, 'points': points})
         if any(curve['points'] for curve in curves):
-            parts.append(panel(heading, 'Widths are captured from exact operands. Word work uses a declared schoolbook model of unreduced integer/rational arithmetic, including coefficient and combination work. It excludes GCD, cancellation, division and carry work. These are not CPU instructions or Python big-integer timings.',
+            parts.append(panel(heading, 'We inspect the exact numbers used by each scalar operation and record how many bits they need. The word-cost graphs then estimate work using 64-bit chunks: multiplying two 128-bit integers means two chunks times two chunks, or four word-pair products in this model. Fractions also need numerator and denominator work. This schoolbook estimate includes data, coefficient and combination arithmetic, but excludes GCD, cancellation, division and carry work. Those missing costs are on the research checklist. The estimate is not a measurement of CPU instructions or the faster big-integer methods Python may use.',
                 curve_chart(heading, curves, logarithmic=True, y_label=unit)))
     memory_curves = []
     for index, line in enumerate(baseline):
@@ -532,7 +542,7 @@ def resource_scaling_sections(lines):
                 points.append((sample['size'], peak['value']))
         memory_curves.append({'label': line['algorithm'], 'color': index, 'points': points})
     if any(curve['points'] for curve in memory_curves):
-        parts.append(panel('Measured Python memory growth', 'Allocation peaks during public calls, including observation and any cold setup; inputs already exist. Reused rows share the source measurement. This is not whole-process/GPU memory, isolated algorithm storage, or a prediction to infinity.',
+        parts.append(panel('Measured Python memory growth', 'We start a Python allocation probe around the public multiplication call and record its highest traced allocation total. The input matrices already exist before the probe starts. Temporary matrices, newly created numbers, any preparation done inside the call and our measurement machinery can all contribute. A reused row copies the original measurement rather than making a fresh observation. Python cannot see all native or GPU allocations this way, so this is not a whole-process memory peak or a prediction of memory use for arbitrarily large matrices.',
                            curve_chart('Python allocation peaks', memory_curves, y_label='Traced peak allocation (bytes)')))
     for line in lines:
         for sample in line['samples']:
@@ -543,7 +553,7 @@ def resource_scaling_sections(lines):
                     cost['equivalent_word_multiplications'], cost['word_multiplications_by_role'].get('data', 0),
                     cost['word_multiplications_by_role'].get('coefficient', 0), cost['status']))
     if rows:
-        parts.append(panel('Operand-size and word-model evidence', 'Integers, numerators and denominators retain their exact precision. Zero uses one magnitude bit; signs are outside this model. Data/coefficient columns are portions of the total, not additional work. Partial means some calls, such as normalization division, remain unmodelled.',
+        parts.append(panel('Operand-size and word-model evidence', 'This table shows the largest values seen during each call, including the numerator and denominator sizes of fractions. We keep those values exact; recording their bit widths does not round them or convert them to 64-bit numbers. A zero uses one magnitude bit in our storage convention, and sign-handling work is not estimated. The data and coefficient columns are parts of the “All word products” total, so do not add them to that total again. “Partial” means some operations, such as an exact division used for normalization, do not yet have a word-cost model.',
                            table(('Algorithm', 'Cutoff', 'n', 'Max operand bits', 'Max result bits', 'Max denominator bits',
                                   'All word products', 'Data word products', 'Coefficient word products', 'Model status'), rows)))
     for line in lines:
@@ -560,7 +570,7 @@ def resource_scaling_sections(lines):
                       ('field_subtractions', 'Subtractions'), ('coefficient_multiplications', 'Coefficient products'),
                       ('field_normalizations', 'Normalizations')))]
         parts.append('<details><summary>'+text(f"{line['algorithm']}, cutoff {line['cutoff']} · beyond measured sizes")+'</summary>'
-            +panel('Exact recurrence projections', 'These matrices were not executed. Counts are evaluated with exact integers from the stage recipes, padding and fixed cutoff. The symbolic recurrence defines continuing growth; the graph illustrates a finite range. Operand widths and algorithm memory peaks have no justified projection here.',
+            +panel('Exact recurrence projections', 'These matrices were not executed. Instead, we evaluate the recipe’s counting rule using exact integers: how many child products each stage requests, how many entries its combinations touch, and where the fixed cutoff stops recursion. This lets us inspect counts for sizes too large to run here. The recurrence printed below explains how the construction continues beyond the graph; a finite graph does not itself prove the exponent. We do not extend the measured operand widths or memory peaks to these sizes, because they need further input- and representation-dependent models.',
                    '<p><code>'+text(projection['recurrence'])+'</code></p>'
                    +curve_chart('Projected arithmetic categories', curves, logarithmic=True, y_label='Projected field calls (count)')
                    +table(('n', 'Data multiplications', 'Additions', 'Subtractions', 'Coefficient products', 'Normalizations',
@@ -568,7 +578,7 @@ def resource_scaling_sections(lines):
                           [(p['size'], *(p['counts'][key] for key in ('field_multiplications', 'field_additions',
                            'field_subtractions', 'coefficient_multiplications', 'field_normalizations')),
                            p['input_output_64bit_baseline_bytes']) for p in projection['points']])
-                   +'<p>The storage column is three n×n arrays of hypothetical 64-bit scalars. It is neither Fraction storage nor an algorithm peak. Fixed recipe preparation is reported separately; construction/search budgets are independent parameters.</p>')+'</details>')
+                   +'<p>For a simple storage comparison, the last column imagines keeping the two inputs and one output as three n×n arrays of 64-bit numbers. Our exact integers and fractions can take more space, and an algorithm may need temporary arrays too. That column is therefore neither Fraction storage nor an algorithm’s peak memory. Preparing a fixed recipe is reported separately from applying it. Asking the generator to search harder or build a higher tensor power is another experiment with its own parameters.</p>')+'</details>')
     return ''.join(parts)
 
 
@@ -585,11 +595,12 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
     reused = sum(sample.get("measurement", {}).get("kind") == "reused" for sample in samples)
     parts = ['<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">',
              f'<title>{text(title)}</title><style>{STYLE}</style></head><body><main><header><div class="eyebrow">Measured arithmetic growth</div>',
-             f'<h1>{text(title)}</h1><p>Executed multiplication and arithmetic-step counts across matrix sizes and classical leaf blocks. Wall-clock time is not plotted.</p>',
+             f'<h1>{text(title)}</h1><p>This report runs matrix-multiplication recipes at several sizes and counts the work they perform. Changing the classical leaf cutoff lets us explore how far to continue splitting before using direct row-by-column multiplication. Wall-clock time is not plotted in these growth comparisons; the main question is how the arithmetic work changes.</p>',
              f'<p class="note">Generated {text(generated)} · Sizes {text(configuration.get("sizes"))} · Cutoffs {text(configuration.get("cutoffs"))} · Seed {text(configuration.get("seed"))}</p>',
              f'<div class="summary"><span class="badge">{len(samples)} requested configurations</span><span class="badge">{executed} actual executions</span><span class="badge">{reused} reused measurements</span><span class="badge">{passed} configurations verified</span><span class="badge">{matches} multiplication budgets match the recurrence</span><span class="badge">{step_matches} full arithmetic budgets match</span></div></header>',
-             '<p class="note">Equivalent cutoffs can share one verified execution for the same algorithm and input. Reused rows retain its measured counters and verification and identify the executed cutoff in the Measurement source column. Equivalence requires identical padding, recursion stages, and leaf dimensions. Each requested cutoff retains its own theoretical predictions and graph.</p>',
-             '<p class="callout">Theoretical exponents are calculated from declared scheme parameters. Measured slopes below are finite-range fits to captured counters, not proofs of an asymptotic exponent. A power law is straight on log-log axes; padding can produce plateaus.</p>',
+             '<p class="note">Sometimes two cutoff settings lead to exactly the same calculation. For example, a radix-four recipe may reach 1×1 leaves at both cutoff 1 and cutoff 2. When we know that the padding, stage sequence and leaf dimensions are identical, we run that calculation once and copy its verified evidence into the equivalent rows. The Measurement source column identifies which cutoff actually ran. Every requested setting still has its own model and graph; a copied row is not presented as a second independent execution.</p>',
+             reading_guide(), terminology_guide(),
+             '<p class="callout">The theoretical exponent comes from the recipe and its justified counting rule. The measured slopes below describe only the finite range we executed; they are not proofs of an asymptotic exponent. A log-log graph makes a pure power law appear straight, which helps compare growth rates. Padding, leaf choices and extra additions can make the observed points depart from that straight line.</p>',
              panel("What does cutoff mean?", "The cutoff is the maximum block size at which recursion stops and ordinary row-by-column multiplication starts.",
                    '<p>For Strassen on a 16×16 matrix, cutoff 4 splits into 8×8 blocks, then 4×4 blocks, and multiplies those leaves classically. Cutoff 1 continues down to individual numbers. More recursion can save data multiplications while adding combination work.</p><p>The naive algorithm never recurses, so its cutoff does nothing and its curves overlap. AlphaEvolve splits in powers of four, so cutoff 2 still produces 1×1 leaves. The exact-count table records the actual leaf size.</p>')]
     parts.append(panel('Why can the graphs have steps?',
@@ -628,10 +639,10 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
                   model["base_bilinear_rank"], model["arithmetic_domain"])
                  for name, model in models.items() if model.get("schedule")]
     if schedules:
-        parts.append(panel("Composition schedules", "Stages repeat by recursion depth. Each complete cycle multiplies its stage radices and ranks. These are executable constructions, not new exponent records.",
-                           table(("Report name", "Repeating stage order", "Cycle radix", "Cycle rank", "Domain"), schedules)))
+        parts.append(panel("Composition schedules", "A schedule lets different recipes take turns as recursion reaches smaller problems. One cycle means following every stage in that schedule once, after which the same order begins again. The worked example below explains how their size reductions and product counts combine.",
+                           composition_guide()+table(("Report name", "Recipes used in order", "Size reduction after a full cycle", "Descendant products after a full cycle", "Kinds of numbers supported"), schedules)))
     parts.append(panel("Square arithmetic exponents · theoretical",
-                       "Each algorithm exponent p comes from its justified recurrence and supplies an upper bound on omega (ω), the infimum over matrix algorithms in the stated domain. These values are not omega itself or measured slopes. Fixed leaf cutoffs preserve each family exponent.",
+                       "Each algorithm has a growth exponent p calculated from its justified recurrence. Roughly, its leading arithmetic grows like n raised to p as square matrices become large. A smaller exponent can eventually save work, even if its recipe has expensive constants at small sizes. Each justified algorithm provides an upper bound on omega (ω), the infimum over matrix algorithms in the stated arithmetic setting. The values here are not omega itself and are not measured slopes. Keeping the leaf cutoff fixed preserves each family exponent; changing it with matrix size would change the assumptions.",
                        bar_chart("Square arithmetic exponents", [(name, model.get("square_arithmetic_exponent")) for name, model in models.items()], "exponent", maximum=3)))
     baseline_cutoff = min(line["cutoff"] for line in lines)
     baseline = [line for line in lines if line["cutoff"] == baseline_cutoff]
@@ -640,9 +651,9 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
         curves = measured_series(baseline, metric)
         body = curve_chart(heading, curves, y_label=metric_axis_label(metric))
         body += '<details><summary>Log-log view</summary>' + curve_chart(heading, curves, logarithmic=True, y_label=metric_axis_label(metric)) + '</details>'
-        explanation = (f"Cutoff {baseline_cutoff}. Field steps include data and coefficient multiplications, additions, subtractions, and normalization. Complex-field operations differ from real-field operations."
+        explanation = (f"These runs use cutoff {baseline_cutoff}. A field step acts on one mathematical number: a data product, multiplication by a recipe coefficient, addition, subtraction, or normalization that removes a known scale factor. This total shows work that the data-product count alone would miss. A complex field step may need several real scalar calls, so comparisons across real and complex recipes need the component graph too."
                        if metric == "field_arithmetic_operations" else
-                       f"Cutoff {baseline_cutoff}. Exposed component calls include real arithmetic, exact divmods, and any opaque native complex operations. This overlaps the field layer: do not add the two totals.")
+                       f"These runs use cutoff {baseline_cutoff}. We count the smaller scalar calls exposed by the implementation, including real arithmetic and exact integer quotient/remainder operations. Exact complex pairs expose their real components; a native Python complex call stays opaque because we do not observe its internal instructions. The field and component graphs describe the same calculation at different levels, so do not add the two totals.")
         parts.append(panel(heading, explanation, body))
     for name in names:
         group = [line for line in lines if line["algorithm"] == name]
@@ -653,7 +664,7 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
         body += '<details><summary>Log-log view of multiplications</summary>' + curve_chart(f"{name} data multiplications", curves, logarithmic=True, y_label=metric_axis_label("field_multiplications")) + '</details>'
         body += size_effects_section(group)
         body += '<details><summary>All arithmetic steps for these block sizes</summary>'
-        body += '<p>Total-work models include quadratic additions, coefficient scaling, and normalization at each recursive level. Their smooth curves retain these lower-order terms; they are not simply a rescaled n<sup>p</sup>. Model constants describe our primitive schedule and are not fitted to the captured counters.</p>'
+        body += '<p>The product count is only one part of the bill. At each level, we also form input combinations and assemble outputs. Those operations touch block entries, and some recipes multiply them by fixed coefficients or remove a common scale factor. The total-work model adds these costs at every level. Its smooth curve is therefore more informative than drawing a rescaled n<sup>p</sup> line. The constants come from our explicit operation schedule, rather than being adjusted to make the graph fit the measurements.</p>'
         for metric, heading in (("field_arithmetic_operations", "Field steps"), ("atomic_arithmetic_operations", "Component / atomic steps")):
             step_curves = comparison_series(group, metric)
             body += f'<h3>{heading}</h3>' + curve_chart(heading, step_curves, y_label=metric_axis_label(metric))
@@ -667,12 +678,12 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
                          fits.get("field_arithmetic_operations", {}).get("slope"),
                          fits.get("atomic_arithmetic_operations", {}).get("slope")))
         body += table(("Leaf cutoff", "Theoretical exponent", "Measured multiplication slope", "Measured field-step slope", "Measured component-step slope"), rows)
-        body += '<p class="note">Fits use successful executed samples over the requested size range. Multiplication slopes can change with padding; total-step slopes also include coefficient work and lower-order terms. No finite fitted slope establishes a new mathematical bound.</p>'
+        body += '<p class="note">A fitted slope summarizes how quickly the successful measured counts grow across the sizes in this experiment. It can be misleading if several sizes share one padded problem, or if combination work is still a large part of the cost. Multiplication slopes and total-step slopes answer different questions for that reason. No finite fitted slope establishes a new mathematical bound; the recurrence must justify the long-term exponent separately.</p>'
         if model.get("schedule"):
-            body += '<p class="note">Repeating stage schedules use exact discrete predictions at each sample. A smooth ideal curve is omitted because cutoff constants depend on the stage where recursion ends.</p>'
+            body += '<p class="note">This recipe repeats several stages, so stopping at different points in that order can give different finite costs. We show exact discrete predictions at each sampled size. A smooth ideal curve is omitted rather than pretending one uniform stage describes all those phases. The dimension and stage paths above show which phase each calculation reaches.</p>'
         if group[0]["work_model"].get("unavailable_reason"):
             body += '<p class="callout">Coefficient setup unavailable: ' + text(group[0]["work_model"]["unavailable_reason"]) + '</p>'
-        parts.append(panel(f"{name} · measured versus theoretical multiplications", "Solid points are captured counts; connecting lines are visual guides. Dashed curves, where present, predict ideal unpadded growth with the effective radix-power leaf. Crosses predict the padded recurrence at sampled sizes; matching crosses and points check that execution follows the model. Fixed cutoffs can change constants and finite work without changing the asymptotic family exponent.", body))
+        parts.append(panel(f"{name} · measured versus theoretical multiplications", "Solid points are the counts captured while this algorithm ran; the lines between them are visual guides, not measurements of every intervening size. Dashed curves, when available, show the smooth ideal model without the whole-input padding used by our interpreter. Crosses show what the discrete counting rule predicts after applying the actual padding and cutoff. When a cross lands on a measured point, that is evidence that execution followed the model. The size-path table explains the difference between the requested problem and the one we actually executed.", body))
     rows = []
     for line in lines:
         for sample in line["samples"]:
@@ -685,7 +696,7 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
                          predicted.get("padded_data_multiplications"), counts.get("coefficient_multiplications", 0),
                          observation.get("field_arithmetic_operations"), observation.get("atomic_arithmetic_operations"), sample["status"],
                          measurement_label(sample, line["cutoff"])))
-    parts.append(panel("Exact sampled counts and effective blocks", "Data multiplications multiply data-dependent values. Coefficient multiplications multiply by fixed constants. Field and component totals overlap. The configured cutoff is a maximum leaf size; actual recursive leaf sizes follow the selected radix schedule.",
+    parts.append(panel("Exact sampled counts and effective blocks", "Use this table when you want the exact values behind the graph. Data multiplications act on input-dependent values; coefficient multiplications use the fixed numbers in the recipe. Field steps and component steps overlap, so they must not be added. The cutoff is a maximum leaf size, not a promise to reach a block of exactly that size: the stage’s integer divisions determine which leaf sizes are available.",
                        table(("Algorithm", "Cutoff", "n", "Padded n", "Actual leaf n", "Data multiplications", "Padded prediction", "Coefficient multiplications", "Field steps", "Component steps", "Output check", "Measurement source"), rows)))
     parts.append(sweep_evidence(data))
     parts.append(resource_scaling_sections(lines))
@@ -751,13 +762,13 @@ def sweep_evidence(data):
                              json.dumps(check.get("failures", [])), sample.get("error"),
                              measurement_label(sample, line["cutoff"])))
     parts = [panel("Arithmetic work breakdown",
-                   "Captured counts for every sample. Data and coefficient multiplications are separate; field and component totals overlap. Expand to inspect additions, subtractions, and normalization.",
+                   "Expand the table to inspect all the operations for every requested size and cutoff. A smaller data-product count may come with many more coefficient products or sums, so those categories are kept separate. Normalization means removing a known scale factor from the result. The field and component totals describe the same calculation at different levels and must not be added together.",
                    '<details><summary>Full arithmetic breakdown across sizes and cutoffs</summary>' +
                    table(("Algorithm", "Cutoff", "n", "Data multiplications", "Coefficient multiplications", "Additions", "Subtractions", "Normalizations", "Field steps", "Atomic steps"), breakdown) + '</details>'),
-             panel("Accuracy and verification evidence", "Each output is checked by the independent exact oracle outside observation. Equivalent cutoff rows identify their source. Primitive timing is disabled; per-call allocation probes, when enabled, are separately scoped.",
+             panel("Accuracy and verification evidence", "After an algorithm returns its answer, an independently written row-by-column calculation checks it. The checker’s work is outside the algorithm’s observed arithmetic. Integer and fraction results must agree exactly; separately labelled floating-point diagnostics use a tolerance. Equivalent-cutoff rows identify the original execution whose evidence they reuse. The primitive clocks are disabled in this size sweep, while optional per-call allocation probes have their own measurement boundaries.",
                    '<details><summary>Accuracy for every executed sample</summary>' +
                    table(("Algorithm", "Cutoff", "n", "Status", "Verification mode", "Maximum absolute error", "Failed entries", "Error", "Measurement source"), accuracy) + '</details>'),
-             '<section class="panel"><h2>Per-sample primitive and recursion evidence</h2><p class="note">Primitive clocks were disabled: zero profile seconds mean clocks were off. Call counts and inclusive arithmetic remain captured. Inclusive profiles overlap.</p>']
+             '<section class="panel"><h2>Per-sample primitive and recursion evidence</h2><p class="note">Open an algorithm, then a matrix size, to see the building blocks that ran. Primitive clocks were disabled in this sweep, so zero profile seconds mean we did not time those calls—not that they took no time. Call counts and arithmetic totals were still recorded. A parent primitive includes work done by its children; those inclusive profiles overlap and must not be summed.</p>']
     for line in data["series"]:
         parts.append(f'<details><summary>{text(line["algorithm"])} · cutoff {text(line["cutoff"])} · {len(line["samples"])} samples</summary>')
         for sample in line["samples"]:
@@ -802,7 +813,7 @@ def operand_evidence(reports):
     if not rows:
         return ''
     return panel('Exact operand sizes and 64-bit word equivalents',
-        'Arithmetic stays exact. Widths are observed; word work is a schoolbook model of unreduced rational/integer expressions, including coefficient work. GCD, cancellation, division and carry propagation are excluded. These are not CPU instruction counts. Floating diagnostics remain unmodelled.',
+        'Our numbers stay exact while we record their bit widths. To compare a small multiplication with a much larger one, this model imagines breaking integers into 64-bit chunks and multiplying the chunk pairs. Fractions need numerator and denominator work too, and coefficient work is included. GCD, cancellation, division and carry propagation are excluded for now: the mathematical calculation still performs whatever exact arithmetic it needs, but this estimate does not yet describe all of it. These are not CPU instruction counts. Floating diagnostics remain unmodelled rather than being treated as exact integers.',
         bar_chart('64-bit multiplication equivalents', products, 'modelled word products')
         +table(('Algorithm', 'Model status', 'Max operand bits', 'Max result bits', 'Max denominator bits',
                 'Word products', 'Word sums', 'Unmodelled calls'), rows)
@@ -833,22 +844,24 @@ def render_html(reports, *, title, source_name, source_hash, generated, sections
              '<div class="summary">' + "".join(badges) + "</div></header>"]
     if sections_only:
         parts = []
+    else:
+        parts.extend([reading_guide(), terminology_guide()])
     parts.extend([f'<p class="callout">{text(comparison_warning(reports))}</p>', '<div class="grid">',
-             panel("Square arithmetic exponents · theoretical", "Declared base dimensions and product counts determine log(rank)/log(base size); classical multiplication is cubic. These are calculated family exponents, not inferred from executions. Missing models stay unavailable.",
+             panel("Square arithmetic exponents · theoretical", "These values describe the algorithm families, not the time or growth of this single input pair. For a repeating square recipe, we calculate the exponent from the number of descendant products and the factor by which their dimensions shrink. Ordinary row-by-column multiplication has exponent three. A successful small run checks an implementation, but cannot determine its asymptotic exponent. If the source data has no mathematical model, we leave that value unavailable.",
                    bar_chart("Square arithmetic exponents", exponents, "exponent", maximum=3)),
-             panel("Observed data multiplications", "Executed data-dependent multiplications, including padding and classical leaves. Complex-field and real-field products have different component costs; multiplying by fixed coefficients is shown separately.",
+             panel("Observed data multiplications", "This is the number of input-dependent field products counted while each algorithm ran on this input pair. It includes work on any padded zeros and the direct products at classical leaves. Fixed-coefficient products appear in the breakdown below. A complex field product may need several real scalar operations, so this chart alone does not compare all the work of real and complex recipes.",
                    bar_chart("Observed data products", products, "field products")), "</div>"])
     rows = []
     for name, report in reports.items():
         rows.append((name, arithmetic_count(report, "field_multiplications"), arithmetic_count(report, "coefficient_multiplications"),
                      arithmetic_count(report, "field_additions"), arithmetic_count(report, "field_subtractions"), arithmetic_count(report, "field_normalizations"),
                      report.get("atomic_arithmetic_operations")))
-    parts.append(panel("Arithmetic work breakdown", "Field and atomic counters are overlapping descriptions of the same work. Do not sum those layers. Omitted categories are zero only when the report explicitly declares that counting convention; older missing counters remain unavailable.",
+    parts.append(panel("Arithmetic work breakdown", "The table shows the work that a data-product count alone would hide: coefficient products, sums, differences and normalization. Field and atomic counters are overlapping descriptions of the same work. Do not sum those layers. In new reports, an omitted arithmetic category means no calls were observed only when the report explicitly declares that convention. Older reports may simply lack the counter; those missing values remain unavailable instead of being presented as zero.",
                        table(("Algorithm", "Data multiplications", "Coefficient multiplications", "Additions", "Subtractions", "Normalizations", "Atomic steps"), rows)))
     depth_entries = [(f"{name} · depth {depth}", value) for name, report in reports.items()
                      for depth, value in sorted(report.get("products_by_depth", {}).items(), key=lambda item: str(item[0]).zfill(10))]
     if depth_entries:
-        parts.append(panel("Data products by recursion depth", "Counts show where leaf products actually execute, not hypothetical work at every internal node. Cutoff and padding determine the observed depth.",
+        parts.append(panel("Data products by recursion depth", "Depth zero is the original problem, depth one is its child problems, and each further split increases the depth. This chart counts the field products that actually execute, usually in the leaves where splitting stops. It does not count a larger block-product request again as if it were an extra scalar product. Padding and the cutoff determine how deep this particular run goes.",
                            bar_chart("Data products by recursion depth", depth_entries, "field products", category_label="Algorithm and recursion depth")))
     parts.append('<div class="grid">')
     runtime = [(name, report.get("execution_measurements", {}).get("elapsed_algorithm_call_seconds")) for name, report in reports.items()]
@@ -856,9 +869,9 @@ def render_html(reports, *, title, source_name, source_hash, generated, sections
     for name, report in reports.items():
         metric = report.get("execution_measurements", {}).get("python_traced_peak_bytes", {})
         memory.append((name, metric.get("value") if metric.get("status") == "measured" else None))
-    parts.append(panel("Secondary · elapsed time", "Seconds for the public Python call, including cold setup and observation; excluding the correctness oracle. A single observed run is not a production benchmark.",
+    parts.append(panel("Secondary · elapsed time", "This clock surrounds the public Python multiplication call. Its reading includes input checks, padding, any recipe preparation done inside the call and our observation machinery. The independent answer checker runs afterward, outside this clock. Cache state and measurement overhead can affect the result, so a single observed run is not a production benchmark or a measure of an optimized GPU implementation.",
                        bar_chart("Elapsed algorithm call time", runtime, "seconds")))
-    parts.append(panel("Secondary · Python allocation peak", "Bytes traced during the call, including setup and observation; excludes pre-existing inputs and untraced native allocations. This is not GPU or whole-process memory.",
+    parts.append(panel("Secondary · Python allocation peak", "We record the highest Python-traced allocation total during the call. The inputs already exist when tracking starts, while temporary arrays, numbers, setup and observation may create new allocations. Native libraries and GPU storage may be invisible to this probe. Treat the value as a measurement with those boundaries, not the total memory of the process or the exact storage required by the mathematical algorithm.",
                        bar_chart("Traced Python allocation peak", memory, "bytes")))
     parts.append("</div>")
     parts.append(operand_evidence(reports))
@@ -869,7 +882,7 @@ def render_html(reports, *, title, source_name, source_hash, generated, sections
         memory_status = execution.get("python_traced_peak_bytes", {}).get("status", "not_recorded")
         diagnostics.append((name, accuracy.get("mode"), accuracy.get("maximum_absolute_error"), memory_status,
                             execution.get("classical_equivalent_field_operations_per_second")))
-    parts.append(panel("Accuracy and diagnostic scope", "The conventional equivalent rate is 2*M*N*K / elapsed seconds, not actual work or hardware FLOP/s. Accuracy uses the independent oracle. Missing and infinite display errors remain explicit.",
+    parts.append(panel("Accuracy and diagnostic scope", "The answer checker independently compares the returned matrix with ordinary row-by-column multiplication. Exact results require equality; floating diagnostics report their error and tolerance. The equivalent rate divides the conventional classical work estimate, 2*M*N*K, by elapsed seconds. It is a common comparison unit, not a count of this algorithm’s actual work or the chip’s floating-point instructions. Missing measurements and nonfinite errors stay explicit rather than being converted into reassuring zeros.",
                        table(("Algorithm", "Verification mode", "Maximum absolute error", "Memory probe status", "Equivalent field ops/s"), diagnostics)))
     hardware_rows = []
     for name, report in reports.items():
