@@ -25,10 +25,10 @@ DESCRIPTIONS = {
 }
 
 
-def multiply(a, b, *, algorithm="naive", cutoff=1, instrumentation=None):
+def multiply(a, b, *, algorithm="naive", cutoff=1, instrumentation=None, size_policy="fringe"):
     """Dispatch a named formula, optionally collecting counters/timings/traces."""
     try:
         implementation = ALGORITHMS[algorithm]
     except KeyError as exc:
         raise ValueError(f"unknown algorithm {algorithm!r}; choose from {', '.join(ALGORITHMS)}") from exc
-    return implementation(a, b, cutoff=cutoff, instrumentation=instrumentation)
+    return implementation(a, b, cutoff=cutoff, instrumentation=instrumentation, size_policy=size_policy)

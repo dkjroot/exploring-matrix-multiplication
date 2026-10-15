@@ -5,14 +5,15 @@ m-by-k times k-by-n product it performs m*k*n products and the same number of
 accumulation additions. No padding is used; square arithmetic exponent is 3.
 """
 
-from .common import classical, validate
+from .common import classical, validate, validate_size_policy
 from .instrumentation import count, scope, session
 
 
-def multiply(a, b, *, cutoff=1, instrumentation=None):
+def multiply(a, b, *, cutoff=1, instrumentation=None, size_policy="fringe"):
     """Validate and multiply; cutoff is accepted for interface consistency only."""
     with session(instrumentation), scope("naive.multiply", cutoff=cutoff):
         rows, inner, columns = validate(a, b, cutoff)
+        validate_size_policy(size_policy)
         count("input_cells", rows * inner + inner * columns)
         count("classical_leaves")
         return classical(a, b)

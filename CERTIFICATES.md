@@ -64,8 +64,21 @@ For an induction on recursion depth, classical multiplication is the correct
 leaf case. At a non-leaf node, assume every child call correctly multiplies its
 two blocks. Substituting those correct block products into the verified base
 identity gives the correct parent product. Repeating this argument proves the
-mathematical recursive construction correct at every finite depth. Zero-padding
-and cropping preserve the requested rectangular product.
+mathematical recursive construction correct at every finite depth. The optional
+zero-padding and cropping baseline preserves the requested rectangular product.
+
+The default core/fringe extension uses the same identities on divisible cores.
+For a node of shape (m,k,n) with core (M,K,N), output indices i<M and j<N
+already contain the sum over shared indices t<K. Completing them with t≥K
+adds precisely the missing terms. Every output outside those core rows or
+columns receives its full length-k dot product. These two cases are disjoint
+and cover the result, proving the exact extension without introducing zeros.
+There are m*k*n−M*K*N boundary products and additions. Each remainder is less
+than its fixed stage block count, so square-node boundary work is O(n²).
+For a fixed balanced repeating schedule it preserves the justified family
+exponent and any existing borderline logarithmic factor. The certificate checks
+the finite identities and cycle; execution tests independently check the Python
+boundary implementation and its counts.
 
 A cycle with stage radices d1,...,dk and ranks r1,...,rk has radix D equal to
 their product and rank R equal to their product. The checker recomputes these

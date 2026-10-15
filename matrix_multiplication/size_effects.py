@@ -1,7 +1,7 @@
 """Explain discrete size effects without confusing a recipe with its size policy.
 
-An equal-block formula fixes the divisions at a recursive node. Padding arbitrary
-inputs to a schedule prefix and choosing a classical cutoff are separate choices
+An equal-block formula fixes the divisions at a recursive node. Adapting arbitrary
+inputs with divisible cores/fringes or padding, and choosing a cutoff, are separate choices
 made by our reference interpreter. They preserve exact identities and fixed-cutoff
 asymptotic exponents, but can change finite counts substantially. These choices
 are portable and are not imposed by Python, a particular GPU or a home computer.
@@ -29,6 +29,7 @@ def describe_sample(name, size, cutoff, predicted, model, *, known_policy=False)
     leaf = tuple(predicted.get('composition_budget', {}).get('leaf_dimensions',
                  (predicted['effective_leaf_dimension'],)*3))
     budget = predicted.get('composition_budget')
+    fringe = budget is not None and budget.get('size_policy') == 'fringe'
     levels = []
     if budget:
         for level in budget['levels']:
@@ -36,6 +37,8 @@ def describe_sample(name, size, cutoff, predicted, model, *, known_policy=False)
             radix = tuple(level['radix']) if isinstance(level['radix'], list) else (level['radix'],)*3
             levels.append({'stage': level['stage'], 'parent_dimensions': list(parent),
                            'block_counts': list(radix), 'child_dimensions': [p//r for p, r in zip(parent, radix)],
+                           'core_dimensions': level.get('core_dimensions', list(parent)),
+                           'fringe_data_products': level.get('fringe_data_products', 0),
                            'child_products_per_node': level['rank']})
     elif model.get('base_dimension') is not None:
         radix = model['base_dimension']
@@ -55,19 +58,23 @@ def describe_sample(name, size, cutoff, predicted, model, *, known_policy=False)
             'padded_volume_ratio': [ratio.numerator, ratio.denominator],
             'volume_ratio_is_multiplication_overhead': False,
             'configured_cutoff': cutoff, 'leaf_dimensions': list(leaf),
+            'size_policy': 'fringe' if fringe else 'padded' if recursive else 'none',
+            'fringe_data_products': budget.get('fringe_data_products', 0) if budget else 0,
             'recursion_levels': len(levels), 'levels': levels,
-            'padding_precedes_cutoff': recursive,
+            'padding_precedes_cutoff': recursive and not fringe,
             'requested_fits_cutoff': size <= cutoff,
             'padded_fits_cutoff': max(padded) <= cutoff,
             'padding_triggered_recursion': recursive and size <= cutoff and max(padded) > cutoff,
             'recipe_constraint': 'integer equal-block divisions prescribed by each stage' if recursive else 'direct row-by-column products; no recursive division',
-            'padding_policy': 'zero-pad to the first covering prefix of the repeating stage schedule' if recursive else 'none',
+            'padding_policy': 'none' if fringe or not recursive else 'zero-pad to the first covering prefix of the repeating stage schedule',
             'padding_is_universal_mathematical_requirement': False,
-            'cutoff_policy': 'stop when every block dimension is at most the cutoff' if recursive else 'ignored',
+            'cutoff_policy': ('test requested blocks before splitting; classical fallback when any core dimension is empty'
+                              if fringe else 'stop when every block dimension is at most the cutoff' if recursive else 'ignored'),
             'platform_constraint': 'none identified; these are portable reference size-handling choices',
-            'alternatives': ['handle fringes separately', 'peel rows/columns', 'use uneven/generalized blocks',
-                             'dispatch to another verified recipe'] if recursive else [],
-            'alternatives_implemented': False,
+            'alternatives': ['divisible core with explicit fringe dot terms',
+                             'whole-input padded comparison baseline'] if recursive else [],
+            'alternatives_implemented': True if known_policy and recursive else False,
+            'size_adaptation_is_exact': True if known_policy else None,
             'padding_and_cropping_are_exact': True if known_policy else None,
             'output_verification_scope': 'sample.verification supplies the actual product check',
             'fixed_cutoff_family_exponent_preserved': True if known_policy else None,
@@ -89,7 +96,9 @@ def describe_transition(previous, current):
     same_geometry = (before['padded_dimensions'] == after['padded_dimensions']
                      and before['leaf_dimensions'] == after['leaf_dimensions']
                      and before['levels'] == after['levels'])
-    if after['padding_policy'] == 'none':
+    if after.get('size_policy') == 'fringe':
+        kind, reason = 'core_and_fringe_change', 'The request is unpadded. Equal-block recipes act on divisible cores; all remaining dot terms are counted explicitly. Core/stage changes can still change the finite counts.'
+    elif after['padding_policy'] == 'none':
         kind, reason = 'schoolbook_growth', 'No padding or recursive cutoff; field work follows the requested dimensions.'
     elif same_geometry:
         kind, reason = 'padding_plateau', 'Different requested sizes use the same padded geometry, stages and leaf dimensions under our size policy.'

@@ -220,7 +220,7 @@ class CompositionTests(unittest.TestCase):
         page = render_html(data, title="Composition", source_name="test.json", source_hash="test", generated="test")
         self.assertIn("mixed", page)
         self.assertIn("Composition schedules", page)
-        self.assertIn("cutoff constants depend on the stage", page)
+        self.assertIn("stopping at different points in that order can give different finite costs", page)
 
 
 if __name__ == "__main__":

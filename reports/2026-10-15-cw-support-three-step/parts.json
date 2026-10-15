@@ -1,0 +1,5836 @@
+{
+  "schema": "exact-recipe-parts-v1",
+  "provenance": {
+    "implementation": "independent rational tensor construction primitives",
+    "implementation_license": "GPL-3.0; repository LICENSE",
+    "method_reference": "https://arxiv.org/abs/2404.16349",
+    "polynomial_reference": "https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf",
+    "search_reference": "https://arxiv.org/abs/2212.01175",
+    "construction": "seed-pool support, full-space balanced targets, paid recovery and replayed rank reduction",
+    "source_parameters": {
+      "q": 2,
+      "cw_power": 2,
+      "component_power": 2
+    }
+  },
+  "parts": [
+    {
+      "evidence": {
+        "name": "support-part-0",
+        "q": 2,
+        "source_cw_power": 2,
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "component_power": 2,
+        "source_kind": "step-two full support",
+        "shape": [
+          2,
+          2,
+          2
+        ],
+        "products": 8,
+        "classical_products": 8,
+        "coordinates_outside_seed_pool": [
+          [],
+          [],
+          [
+            11,
+            23,
+            17,
+            29
+          ]
+        ],
+        "witness": {
+          "schema": "matrix-restriction-witness-v1",
+          "source_dimensions": [
+            16,
+            16,
+            36
+          ],
+          "shape": [
+            2,
+            2,
+            2
+          ],
+          "source_coordinates_in_matrix_order": [
+            [
+              0,
+              1,
+              4,
+              5
+            ],
+            [
+              8,
+              12,
+              9,
+              13
+            ],
+            [
+              11,
+              23,
+              17,
+              29
+            ]
+          ]
+        },
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            65,
+            129,
+            66,
+            130
+          ],
+          [
+            92,
+            156,
+            108,
+            172
+          ]
+        ],
+        "recovery": {
+          "interpolation_products": 432,
+          "coefficient_expansion_products": 8,
+          "reduced_expansion_products": 8,
+          "selected_method": "coefficient expansion with replayed dependency reductions",
+          "selected_products": 8,
+          "reduction_events": [],
+          "reduction_count": 0,
+          "complete_identity_verified": true,
+          "replay_verified": true,
+          "minimum_rank_claim": false,
+          "degree_bound": 16,
+          "coefficient": 12,
+          "retained_polynomial_products": 27,
+          "classical_products": 8,
+          "complete_matrix_identity_verified": true
+        },
+        "execution": {
+          "exact_outputs_verified": true,
+          "kernel": "tensor.evaluate; counts coefficient-one scaling",
+          "finite_recipe_products": 8,
+          "observation": {
+            "operand_costs": {
+              "schema": "exact-operand-word-cost-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+              "is_hardware_instruction_count": false,
+              "excluded_work": [
+                "GCD and cancellation",
+                "division",
+                "carry propagation",
+                "sign handling",
+                "allocation"
+              ],
+              "observed_max_operand_bits": 4,
+              "observed_max_result_bits": 4,
+              "observed_max_denominator_bits": 4,
+              "operand_word_bucket_upper_bounds": {
+                "1": 112
+              },
+              "modelled_atomic_operations": {
+                "multiply": 32,
+                "add": 24
+              },
+              "primitive_word_costs": {
+                "real.multiply": {
+                  "calls": 32,
+                  "word_multiplications": 35,
+                  "word_additions_subtractions": 0
+                },
+                "real.add": {
+                  "calls": 24,
+                  "word_multiplications": 20,
+                  "word_additions_subtractions": 24
+                }
+              },
+              "unmodelled_calls": {},
+              "equivalent_word_multiplications": 55,
+              "equivalent_word_additions_subtractions": 24,
+              "word_multiplications_by_role": {
+                "coefficient": 24,
+                "combination": 20,
+                "data": 11
+              },
+              "word_additions_subtractions_by_role": {
+                "coefficient": 0,
+                "combination": 24,
+                "data": 0
+              }
+            },
+            "counts": {
+              "coefficient_multiplications": 24,
+              "real_multiplications": 32,
+              "field_additions": 24,
+              "real_additions": 24,
+              "field_multiplications": 8
+            },
+            "atomic_arithmetic_operations": 56,
+            "field_arithmetic_operations": 56,
+            "counter_convention": "omitted arithmetic categories have zero observed calls",
+            "primitive_calls": {
+              "real.multiply": 32,
+              "scalar.scale": 24,
+              "real.add": 24,
+              "scalar.add": 24,
+              "tensor.linear_form": 16,
+              "scalar.multiply": 8,
+              "tensor.evaluate": 1
+            },
+            "profiles": {
+              "real.multiply": {
+                "calls": 32,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 32
+                }
+              },
+              "scalar.scale": {
+                "calls": 24,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 24,
+                  "real_multiplications": 24
+                }
+              },
+              "real.add": {
+                "calls": 24,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_additions": 24
+                }
+              },
+              "scalar.add": {
+                "calls": 24,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 24,
+                  "real_additions": 24
+                }
+              },
+              "tensor.linear_form": {
+                "calls": 16,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 16,
+                  "real_multiplications": 16,
+                  "field_additions": 16,
+                  "real_additions": 16
+                }
+              },
+              "scalar.multiply": {
+                "calls": 8,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 8,
+                  "field_multiplications": 8
+                }
+              },
+              "tensor.evaluate": {
+                "calls": 1,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 24,
+                  "real_multiplications": 32,
+                  "field_additions": 24,
+                  "real_additions": 24,
+                  "field_multiplications": 8
+                }
+              }
+            },
+            "products_by_depth": {
+              "0": 8
+            },
+            "maximum_depth": 0,
+            "retained_trace_events": 0,
+            "dropped_trace_events": 0
+          }
+        }
+      },
+      "tensor": {
+        "schema": "rational-tensor-v1",
+        "dimensions": [
+          4,
+          4,
+          4
+        ],
+        "terms": [
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "evidence": {
+        "name": "support-part-0-reduced",
+        "q": 2,
+        "source_cw_power": 2,
+        "shape": [
+          2,
+          2,
+          2
+        ],
+        "products": 7,
+        "classical_products": 8,
+        "source_kind": "replayed exact rank reduction of recovered support part",
+        "parent_part": "support-part-0",
+        "campaign_index": 0,
+        "complete_identity_verified": true,
+        "execution": {
+          "exact_outputs_verified": true,
+          "kernel": "tensor.evaluate; counts coefficient-one scaling",
+          "finite_recipe_products": 7,
+          "observation": {
+            "operand_costs": {
+              "schema": "exact-operand-word-cost-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+              "is_hardware_instruction_count": false,
+              "excluded_work": [
+                "GCD and cancellation",
+                "division",
+                "carry propagation",
+                "sign handling",
+                "allocation"
+              ],
+              "observed_max_operand_bits": 4,
+              "observed_max_result_bits": 4,
+              "observed_max_denominator_bits": 4,
+              "operand_word_bucket_upper_bounds": {
+                "1": 174
+              },
+              "modelled_atomic_operations": {
+                "multiply": 47,
+                "add": 40
+              },
+              "primitive_word_costs": {
+                "real.multiply": {
+                  "calls": 47,
+                  "word_multiplications": 51,
+                  "word_additions_subtractions": 0
+                },
+                "real.add": {
+                  "calls": 40,
+                  "word_multiplications": 51,
+                  "word_additions_subtractions": 40
+                }
+              },
+              "unmodelled_calls": {},
+              "equivalent_word_multiplications": 102,
+              "equivalent_word_additions_subtractions": 40,
+              "word_multiplications_by_role": {
+                "coefficient": 40,
+                "combination": 51,
+                "data": 11
+              },
+              "word_additions_subtractions_by_role": {
+                "coefficient": 0,
+                "combination": 40,
+                "data": 0
+              }
+            },
+            "counts": {
+              "coefficient_multiplications": 40,
+              "real_multiplications": 47,
+              "field_additions": 40,
+              "real_additions": 40,
+              "field_multiplications": 7
+            },
+            "atomic_arithmetic_operations": 87,
+            "field_arithmetic_operations": 87,
+            "counter_convention": "omitted arithmetic categories have zero observed calls",
+            "primitive_calls": {
+              "real.multiply": 47,
+              "scalar.scale": 40,
+              "real.add": 40,
+              "scalar.add": 40,
+              "tensor.linear_form": 14,
+              "scalar.multiply": 7,
+              "tensor.evaluate": 1
+            },
+            "profiles": {
+              "real.multiply": {
+                "calls": 47,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 47
+                }
+              },
+              "scalar.scale": {
+                "calls": 40,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 40,
+                  "real_multiplications": 40
+                }
+              },
+              "real.add": {
+                "calls": 40,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_additions": 40
+                }
+              },
+              "scalar.add": {
+                "calls": 40,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 40,
+                  "real_additions": 40
+                }
+              },
+              "tensor.linear_form": {
+                "calls": 14,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 26,
+                  "real_multiplications": 26,
+                  "field_additions": 26,
+                  "real_additions": 26
+                }
+              },
+              "scalar.multiply": {
+                "calls": 7,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 7,
+                  "field_multiplications": 7
+                }
+              },
+              "tensor.evaluate": {
+                "calls": 1,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 40,
+                  "real_multiplications": 47,
+                  "field_additions": 40,
+                  "real_additions": 40,
+                  "field_multiplications": 7
+                }
+              }
+            },
+            "products_by_depth": {
+              "0": 7
+            },
+            "maximum_depth": 0,
+            "retained_trace_events": 0,
+            "dropped_trace_events": 0
+          }
+        }
+      },
+      "tensor": {
+        "schema": "rational-tensor-v1",
+        "dimensions": [
+          4,
+          4,
+          4
+        ],
+        "terms": [
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "evidence": {
+        "name": "support-part-1",
+        "q": 2,
+        "source_cw_power": 2,
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "component_power": 2,
+        "source_kind": "step-two full support",
+        "shape": [
+          2,
+          2,
+          2
+        ],
+        "products": 8,
+        "classical_products": 8,
+        "coordinates_outside_seed_pool": [
+          [],
+          [],
+          [
+            6,
+            18,
+            12,
+            24
+          ]
+        ],
+        "witness": {
+          "schema": "matrix-restriction-witness-v1",
+          "source_dimensions": [
+            16,
+            16,
+            36
+          ],
+          "shape": [
+            2,
+            2,
+            2
+          ],
+          "source_coordinates_in_matrix_order": [
+            [
+              2,
+              3,
+              6,
+              7
+            ],
+            [
+              10,
+              14,
+              11,
+              15
+            ],
+            [
+              6,
+              18,
+              12,
+              24
+            ]
+          ]
+        },
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            68,
+            132,
+            72,
+            136
+          ],
+          [
+            83,
+            147,
+            99,
+            163
+          ]
+        ],
+        "recovery": {
+          "interpolation_products": 432,
+          "coefficient_expansion_products": 8,
+          "reduced_expansion_products": 8,
+          "selected_method": "coefficient expansion with replayed dependency reductions",
+          "selected_products": 8,
+          "reduction_events": [],
+          "reduction_count": 0,
+          "complete_identity_verified": true,
+          "replay_verified": true,
+          "minimum_rank_claim": false,
+          "degree_bound": 16,
+          "coefficient": 12,
+          "retained_polynomial_products": 27,
+          "classical_products": 8,
+          "complete_matrix_identity_verified": true
+        },
+        "execution": {
+          "exact_outputs_verified": true,
+          "kernel": "tensor.evaluate; counts coefficient-one scaling",
+          "finite_recipe_products": 8,
+          "observation": {
+            "operand_costs": {
+              "schema": "exact-operand-word-cost-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+              "is_hardware_instruction_count": false,
+              "excluded_work": [
+                "GCD and cancellation",
+                "division",
+                "carry propagation",
+                "sign handling",
+                "allocation"
+              ],
+              "observed_max_operand_bits": 4,
+              "observed_max_result_bits": 4,
+              "observed_max_denominator_bits": 4,
+              "operand_word_bucket_upper_bounds": {
+                "1": 112
+              },
+              "modelled_atomic_operations": {
+                "multiply": 32,
+                "add": 24
+              },
+              "primitive_word_costs": {
+                "real.multiply": {
+                  "calls": 32,
+                  "word_multiplications": 35,
+                  "word_additions_subtractions": 0
+                },
+                "real.add": {
+                  "calls": 24,
+                  "word_multiplications": 20,
+                  "word_additions_subtractions": 24
+                }
+              },
+              "unmodelled_calls": {},
+              "equivalent_word_multiplications": 55,
+              "equivalent_word_additions_subtractions": 24,
+              "word_multiplications_by_role": {
+                "coefficient": 24,
+                "combination": 20,
+                "data": 11
+              },
+              "word_additions_subtractions_by_role": {
+                "coefficient": 0,
+                "combination": 24,
+                "data": 0
+              }
+            },
+            "counts": {
+              "coefficient_multiplications": 24,
+              "real_multiplications": 32,
+              "field_additions": 24,
+              "real_additions": 24,
+              "field_multiplications": 8
+            },
+            "atomic_arithmetic_operations": 56,
+            "field_arithmetic_operations": 56,
+            "counter_convention": "omitted arithmetic categories have zero observed calls",
+            "primitive_calls": {
+              "real.multiply": 32,
+              "scalar.scale": 24,
+              "real.add": 24,
+              "scalar.add": 24,
+              "tensor.linear_form": 16,
+              "scalar.multiply": 8,
+              "tensor.evaluate": 1
+            },
+            "profiles": {
+              "real.multiply": {
+                "calls": 32,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 32
+                }
+              },
+              "scalar.scale": {
+                "calls": 24,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 24,
+                  "real_multiplications": 24
+                }
+              },
+              "real.add": {
+                "calls": 24,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_additions": 24
+                }
+              },
+              "scalar.add": {
+                "calls": 24,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 24,
+                  "real_additions": 24
+                }
+              },
+              "tensor.linear_form": {
+                "calls": 16,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 16,
+                  "real_multiplications": 16,
+                  "field_additions": 16,
+                  "real_additions": 16
+                }
+              },
+              "scalar.multiply": {
+                "calls": 8,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 8,
+                  "field_multiplications": 8
+                }
+              },
+              "tensor.evaluate": {
+                "calls": 1,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 24,
+                  "real_multiplications": 32,
+                  "field_additions": 24,
+                  "real_additions": 24,
+                  "field_multiplications": 8
+                }
+              }
+            },
+            "products_by_depth": {
+              "0": 8
+            },
+            "maximum_depth": 0,
+            "retained_trace_events": 0,
+            "dropped_trace_events": 0
+          }
+        }
+      },
+      "tensor": {
+        "schema": "rational-tensor-v1",
+        "dimensions": [
+          4,
+          4,
+          4
+        ],
+        "terms": [
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "evidence": {
+        "name": "support-recombined-square",
+        "shape": [
+          4,
+          4,
+          4
+        ],
+        "products": 49,
+        "classical_products": 64,
+        "source_kind": "tensor square of refined support part in separate source copies",
+        "input_parts": [
+          "support-part-0-reduced",
+          "support-part-0-reduced"
+        ],
+        "complete_identity_verified": true,
+        "execution": {
+          "exact_outputs_verified": true,
+          "kernel": "tensor.evaluate; counts coefficient-one scaling",
+          "finite_recipe_products": 49,
+          "observation": {
+            "operand_costs": {
+              "schema": "exact-operand-word-cost-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+              "is_hardware_instruction_count": false,
+              "excluded_work": [
+                "GCD and cancellation",
+                "division",
+                "carry propagation",
+                "sign handling",
+                "allocation"
+              ],
+              "observed_max_operand_bits": 5,
+              "observed_max_result_bits": 5,
+              "observed_max_denominator_bits": 4,
+              "operand_word_bucket_upper_bounds": {
+                "1": 2242
+              },
+              "modelled_atomic_operations": {
+                "multiply": 585,
+                "add": 536
+              },
+              "primitive_word_costs": {
+                "real.multiply": {
+                  "calls": 585,
+                  "word_multiplications": 597,
+                  "word_additions_subtractions": 0
+                },
+                "real.add": {
+                  "calls": 536,
+                  "word_multiplications": 840,
+                  "word_additions_subtractions": 536
+                }
+              },
+              "unmodelled_calls": {},
+              "equivalent_word_multiplications": 1437,
+              "equivalent_word_additions_subtractions": 536,
+              "word_multiplications_by_role": {
+                "coefficient": 536,
+                "combination": 840,
+                "data": 61
+              },
+              "word_additions_subtractions_by_role": {
+                "coefficient": 0,
+                "combination": 536,
+                "data": 0
+              }
+            },
+            "counts": {
+              "coefficient_multiplications": 536,
+              "real_multiplications": 585,
+              "field_additions": 536,
+              "real_additions": 536,
+              "field_multiplications": 49
+            },
+            "atomic_arithmetic_operations": 1121,
+            "field_arithmetic_operations": 1121,
+            "counter_convention": "omitted arithmetic categories have zero observed calls",
+            "primitive_calls": {
+              "real.multiply": 585,
+              "scalar.scale": 536,
+              "real.add": 536,
+              "scalar.add": 536,
+              "tensor.linear_form": 98,
+              "scalar.multiply": 49,
+              "tensor.evaluate": 1
+            },
+            "profiles": {
+              "real.multiply": {
+                "calls": 585,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 585
+                }
+              },
+              "scalar.scale": {
+                "calls": 536,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 536,
+                  "real_multiplications": 536
+                }
+              },
+              "real.add": {
+                "calls": 536,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_additions": 536
+                }
+              },
+              "scalar.add": {
+                "calls": 536,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 536,
+                  "real_additions": 536
+                }
+              },
+              "tensor.linear_form": {
+                "calls": 98,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 340,
+                  "real_multiplications": 340,
+                  "field_additions": 340,
+                  "real_additions": 340
+                }
+              },
+              "scalar.multiply": {
+                "calls": 49,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 49,
+                  "field_multiplications": 49
+                }
+              },
+              "tensor.evaluate": {
+                "calls": 1,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "coefficient_multiplications": 536,
+                  "real_multiplications": 585,
+                  "field_additions": 536,
+                  "real_additions": 536,
+                  "field_multiplications": 49
+                }
+              }
+            },
+            "products_by_depth": {
+              "0": 49
+            },
+            "maximum_depth": 0,
+            "retained_trace_events": 0,
+            "dropped_trace_events": 0
+          }
+        }
+      },
+      "tensor": {
+        "schema": "rational-tensor-v1",
+        "dimensions": [
+          16,
+          16,
+          16
+        ],
+        "terms": [
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                6,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                6,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                9,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                9,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                4,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                13,
+                [
+                  -1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  -1,
+                  1
+                ]
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                1,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                2,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                3,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                4,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                5,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                6,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                7,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                8,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                9,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                10,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                11,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                0,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ],
+            [
+              [
+                12,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                13,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                14,
+                [
+                  1,
+                  1
+                ]
+              ],
+              [
+                15,
+                [
+                  1,
+                  1
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

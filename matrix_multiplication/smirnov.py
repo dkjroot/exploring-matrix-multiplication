@@ -30,8 +30,8 @@ def plan():
     return RectangularCycle((base, second, cyclic_rotation(second)), provenance=provenance)
 
 
-def multiply(a, b, *, cutoff=1, instrumentation=None):
+def multiply(a, b, *, cutoff=1, instrumentation=None, size_policy="fringe"):
     """Multiply through our primitives with optional arithmetic instrumentation."""
     from .common import validate
     validate(a, b, cutoff)
-    return plan().multiply(a, b, cutoff=cutoff, instrumentation=instrumentation)
+    return plan().multiply(a, b, cutoff=cutoff, instrumentation=instrumentation, size_policy=size_policy)

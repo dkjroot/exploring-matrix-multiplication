@@ -8,3 +8,6 @@
 *.ico -text
 *.ttf -text
 *.otf -text
+# Original evidence carries byte hashes; do not normalize its captured newlines.
+reports/**/*.json -text
+reports/**/*.log -text

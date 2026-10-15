@@ -23,7 +23,8 @@ class SizeEffectsTests(unittest.TestCase):
 
     def test_strassen_plateau_and_next_boundary_follow_padded_geometry(self):
         """Real calls at 4,5,8,9 expose the off-grid policy without time fitting."""
-        data = collect_work([4, 5, 8, 9], [1], algorithms=['strassen'], measure_memory=False, projection_cycles=3)
+        data = collect_work([4, 5, 8, 9], [1], algorithms=['strassen'], measure_memory=False, projection_cycles=3,
+                            size_policy='padded')
         samples = data['series'][0]['samples']
         self.assertEqual([s['observation']['counts']['field_multiplications'] for s in samples], [49, 343, 343, 2401])
         self.assertEqual([s['size_effects']['padded_dimensions'] for s in samples], [[4]*3, [8]*3, [8]*3, [16]*3])
@@ -41,7 +42,8 @@ class SizeEffectsTests(unittest.TestCase):
 
     def test_padding_before_cutoff_is_explicit_not_called_mathematically_necessary(self):
         """A request fitting cutoff three still splits after rounding up first."""
-        data = collect_work([3, 6], [3], algorithms=['strassen'], measure_memory=False, projection_cycles=2)
+        data = collect_work([3, 6], [3], algorithms=['strassen'], measure_memory=False, projection_cycles=2,
+                            size_policy='padded')
         first, second = data['series'][0]['samples']
         effect = first['size_effects']
         self.assertTrue(effect['requested_fits_cutoff'])
@@ -59,7 +61,7 @@ class SizeEffectsTests(unittest.TestCase):
         """A binary then radix-four cycle pads size three to eight, not two or four."""
         scheme = to_scheme(classical((4, 4, 4)), (4, 4, 4), 'classical-four')
         plan = Composition(['strassen', scheme])
-        prediction = schedule_prediction(plan, 3, 1)
+        prediction = schedule_prediction(plan, 3, 1, size_policy='padded')
         effect = describe_sample('mixed', 3, 1, prediction, plan.model(), known_policy=True)
         self.assertEqual(effect['padded_dimensions'], [8]*3)
         self.assertEqual([stage['block_counts'] for stage in effect['levels']], [[2]*3, [4]*3])
@@ -70,7 +72,7 @@ class SizeEffectsTests(unittest.TestCase):
         """A balanced cycle can stop before its square full-cycle radix is reached."""
         shapes = ((2, 2, 3), (2, 3, 2), (3, 2, 2))
         plan = RectangularCycle(tuple(to_scheme(classical(shape), shape, 'rectangular') for shape in shapes))
-        prediction = schedule_prediction(plan, 3, 1)
+        prediction = schedule_prediction(plan, 3, 1, size_policy='padded')
         effect = describe_sample('rectangular', 3, 1, prediction, plan.model(), known_policy=True)
         self.assertEqual(plan.radix, 12)
         self.assertEqual(effect['padded_dimensions'], [4, 6, 6])
@@ -111,7 +113,7 @@ class SizeEffectsTests(unittest.TestCase):
         html = render_html(data, title='Steps', source_name='test', source_hash='abc', generated='today')
         for phrase in ('Why can the graphs have steps?', 'Recursion alone does not force a staircase',
                        'Where this algorithm’s steps come from', 'Extra zero input cells',
-                       'padding_plateau', 'Dimension path', 'Stage path', 'not a Python/GPU/home-computer restriction'):
+                       'Fringe data products', 'Dimension path', 'Stage path', 'not a Python/GPU/home-computer restriction'):
             self.assertIn(phrase, html)
         legacy = json.loads(json.dumps(data))
         for sample in legacy['series'][0]['samples']:

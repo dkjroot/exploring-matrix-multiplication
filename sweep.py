@@ -24,8 +24,10 @@ from matrix_multiplication.research_suite import SuiteSettings, run_suite
 def main(argv=None):
     """Collect a reproducible sweep and retain both JSON and its visualization."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sizes", type=int, nargs="+", default=[1, 2, 4, 8, 16])
+    parser.add_argument("--sizes", type=int, nargs="+", default=list(range(1, 17)))
     parser.add_argument("--cutoffs", type=int, nargs="+", default=[1, 2, 4])
+    parser.add_argument("--size-policy", choices=("fringe", "padded"), default="fringe",
+                        help="unpadded recursive cores and exact fringes, or historical padded comparison")
     parser.add_argument("--algorithms", choices=list(ALGORITHMS), nargs="+", default=list(ALGORITHMS))
     parser.add_argument("--seed", type=int, default=1729)
     parser.add_argument("--repeat-equivalent-cutoffs", action="store_true",
@@ -52,9 +54,23 @@ def main(argv=None):
                         help="powers for CW recovery, fine/coarse extraction and verified packing")
     parser.add_argument("--cw-packing-size", type=int, default=2,
                         help="square base for finite CW packing; independent of growth-grid sizes")
+    parser.add_argument("--interior-candidate-budget", type=int, default=2048,
+                        help="coordinate candidates per interior sector/power; independent of matrix sizes")
+    parser.add_argument("--interior-max-parts", type=int, default=2)
+    parser.add_argument("--interior-max-source-dimension", type=int, default=64)
+    parser.add_argument("--interior-max-source-terms", type=int, default=4096)
+    parser.add_argument("--neighborhood-budget", type=int, default=4096,
+                        help="follow-up coordinate/pair attempts per interior sector/power, split equally")
+    parser.add_argument("--neighborhood-max-witnesses", type=int, default=64)
+    parser.add_argument('--support-budget', type=int, default=4096)
+    parser.add_argument('--support-steps', type=int, default=1000)
+    parser.add_argument('--support-restarts', type=int, default=10)
+    parser.add_argument('--support-search-seeds', type=int, nargs='+', default=[0, 1])
+    parser.add_argument('--support-max-height', type=int, default=1)
+    parser.add_argument('--support-reduction-limit', type=int, default=1)
     parser.add_argument("--pair-trace-limit", type=int, default=200, help="retained scalar/primitive events per algorithm and diagnostic pair")
     parser.add_argument("--projection-cycles", type=int, default=12,
-                        help="whole recurrence cycles to project without executing matrices")
+                        help="whole recurrence cycles, and slider range doublings, to project without executing matrices")
     parser.add_argument("--no-sweep-memory", action="store_true",
                         help="disable allocation peaks for growth calls; retain exact counters and operand widths")
     args = parser.parse_args(argv)
@@ -70,6 +86,17 @@ def main(argv=None):
                                      search_extra_rank=args.search_extra_rank, search_split_every=args.search_split_every,
                                      cw_parameters=tuple(args.cw_parameters),
                                      cw_powers=tuple(args.cw_powers), cw_packing_size=args.cw_packing_size,
+                                     interior_candidate_budget=args.interior_candidate_budget,
+                                     interior_max_parts=args.interior_max_parts,
+                                     interior_max_source_dimension=args.interior_max_source_dimension,
+                                     interior_max_source_terms=args.interior_max_source_terms,
+                                     neighborhood_budget=args.neighborhood_budget,
+                                     neighborhood_max_witnesses=args.neighborhood_max_witnesses,
+                                     support_budget=args.support_budget, support_steps=args.support_steps,
+                                     support_restarts=args.support_restarts,
+                                     support_search_seeds=tuple(args.support_search_seeds),
+                                     support_max_height=args.support_max_height,
+                                     support_reduction_limit=args.support_reduction_limit,
                                      trace_limit=args.pair_trace_limit,
                                      measure_sweep_memory=not args.no_sweep_memory,
                                      projection_cycles=args.projection_cycles)
@@ -77,14 +104,15 @@ def main(argv=None):
                                            compositions=compositions, settings=settings, seed=args.seed,
                                            output_root=args.output_root, reference_reports=args.reference_report,
                                            progress=print_progress,
-                                           reuse_equivalent_cutoffs=not args.repeat_equivalent_cutoffs)
+                                           reuse_equivalent_cutoffs=not args.repeat_equivalent_cutoffs,
+                                           size_policy=args.size_policy)
             print(destination.resolve())
             return status
         data = collect_work(args.sizes, args.cutoffs, algorithms=args.algorithms,
                             seed=args.seed, progress=print_progress,
                             reuse_equivalent_cutoffs=not args.repeat_equivalent_cutoffs,
                             compositions=compositions, measure_memory=not args.no_sweep_memory,
-                            projection_cycles=args.projection_cycles)
+                            projection_cycles=args.projection_cycles, size_policy=args.size_policy)
         raw = (json.dumps(data, indent=2, allow_nan=False) + "\n").encode("utf-8")
         destination = write_data_report(raw, source_name="work-sweep.json",
                                         output_root=args.output_root, title="Measured arithmetic growth",

@@ -36,12 +36,16 @@ def _step(a_blocks, b_blocks, product):
         return step(a_blocks, b_blocks, product)
 
 
-def _multiply(a, b, cutoff):
+def _multiply(a, b, cutoff, *, size_policy="fringe"):
     """Bind the Strassen formula to the shared binary recursive traversal."""
-    return recursive_kernel(a, b, cutoff, 2, _step, name="strassen")
+    return recursive_kernel(a, b, cutoff, 2, _step, name="strassen", size_policy=size_policy)
 
 
-def multiply(a, b, *, cutoff=1, instrumentation=None):
+def multiply(a, b, *, cutoff=1, instrumentation=None, size_policy="fringe"):
     """Return a fresh rectangular product, optionally recording primitive work."""
-    return recursive_product(a, b, cutoff, 2, _multiply, name="strassen",
-                             instrumentation=instrumentation)
+    def kernel(left, right, leaf):
+        """Bind the selected size policy to every recursive child."""
+        return _multiply(left, right, leaf, size_policy=size_policy)
+
+    return recursive_product(a, b, cutoff, 2, kernel, name="strassen",
+                             instrumentation=instrumentation, size_policy=size_policy)

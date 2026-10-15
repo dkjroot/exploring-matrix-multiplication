@@ -47,12 +47,16 @@ def _step(a_blocks, b_blocks, product):
         return step(a_blocks, b_blocks, product)
 
 
-def _multiply(a, b, cutoff):
+def _multiply(a, b, cutoff, *, size_policy="fringe"):
     """Bind Winograd's formula to exactly the traversal used by Strassen."""
-    return recursive_kernel(a, b, cutoff, 2, _step, name="strassen-winograd")
+    return recursive_kernel(a, b, cutoff, 2, _step, name="strassen-winograd", size_policy=size_policy)
 
 
-def multiply(a, b, *, cutoff=1, instrumentation=None):
-    """Multiply with shared padding and optional primitive observation."""
-    return recursive_product(a, b, cutoff, 2, _multiply, name="strassen-winograd",
-                             instrumentation=instrumentation)
+def multiply(a, b, *, cutoff=1, instrumentation=None, size_policy="fringe"):
+    """Multiply through unpadded cores/fringes, or the optional padded baseline."""
+    def kernel(left, right, leaf):
+        """Bind the selected size policy to every recursive child."""
+        return _multiply(left, right, leaf, size_policy=size_policy)
+
+    return recursive_product(a, b, cutoff, 2, kernel, name="strassen-winograd",
+                             instrumentation=instrumentation, size_policy=size_policy)

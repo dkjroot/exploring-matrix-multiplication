@@ -1,7 +1,8 @@
 """Reusable matrix/block layer between scalar arithmetic and algorithm formulas.
 
-The flow is validate -> pad/encode -> recursive nodes -> block steps -> scalar
-leaves -> join/crop/decode. Structural work is recorded separately from arithmetic.
+The flow is validate -> encode -> recursive cores/fringes -> block steps ->
+scalar leaves -> join/decode. Optional padded execution also pads and crops.
+Structural work is recorded separately from arithmetic.
 Copying blocks favors readability; it changes constants and memory, not exponents.
 Only this layer owns traversal, padding, and elementary matrix loops.
 """
@@ -10,7 +11,7 @@ from math import isfinite
 from numbers import Rational
 
 from . import scalars
-from .instrumentation import count, scope, session
+from .instrumentation import count, scope, session, move_values
 
 
 def validate(a, b, cutoff=1):
@@ -62,6 +63,7 @@ def classical(a, b):
         for i, row in enumerate(a):
             for j in range(len(b[0])):
                 result[i][j] = dot(row, column(b, j))
+                move_values((result[i][j],), 'write')
         return result
 
 
@@ -70,7 +72,9 @@ def column(matrix, index):
     with scope("vector.column", length=len(matrix), index=index):
         count("vector_cells_allocated", len(matrix))
         count("vector_cells_copied", len(matrix))
-        return [row[index] for row in matrix]
+        result = [row[index] for row in matrix]
+        move_values(result)
+        return result
 
 
 def dot(left, right):
@@ -87,6 +91,7 @@ def zeros(rows, columns=None):
     columns = rows if columns is None else columns
     with scope("matrix.zeros", rows=rows, columns=columns):
         count("matrix_cells_allocated", rows * columns)
+        move_values((0,), 'write', repeat=rows*columns)
         return [[0 for _ in range(columns)] for _ in range(rows)]
 
 
@@ -97,6 +102,7 @@ def padded(matrix, size, columns=None):
         for i, row in enumerate(matrix):
             result[i][:len(row)] = row
             count("matrix_cells_copied", len(row))
+            move_values(row)
         return result
 
 
@@ -133,40 +139,54 @@ def crop(matrix, rows, columns):
     with scope("matrix.crop", rows=rows, columns=columns):
         count("matrix_cells_allocated", rows * columns)
         count("matrix_cells_copied", rows * columns)
-        return [row[:columns] for row in matrix[:rows]]
+        result = [row[:columns] for row in matrix[:rows]]
+        move_values(value for row in result for value in row)
+        return result
 
 
 def map_entries(matrix, function, *, name="matrix.map"):
     """Apply a scalar conversion/normalization while keeping the matrix loop shared."""
     with scope(name, rows=len(matrix), columns=len(matrix[0])):
         count("matrix_cells_allocated", len(matrix) * len(matrix[0]))
-        return [[function(value) for value in row] for row in matrix]
+        move_values((value for row in matrix for value in row), 'read')
+        result = [[function(value) for value in row] for row in matrix]
+        move_values((value for row in result for value in row), 'write')
+        return result
 
 
 def recursive_product(a, b, cutoff, radix, kernel, *, name="recursive",
-                      instrumentation=None, encode=None, decode=None, radices=None):
+                      instrumentation=None, encode=None, decode=None, radices=None,
+                      size_policy="fringe"):
     """Run the shared public contract around an algorithm's square kernel.
 
     Encoding/decoding lets a scheme choose an exact scalar domain independently
     of traversal. Observation ends before independent correctness verification.
-    Optional radices select composition padding; the kernel uses that same cycle.
+    Optional radices select composition padding for the historical baseline.
+    The default leaves dimensions unchanged; the kernel handles every fringe.
     """
     with session(instrumentation), scope(f"{name}.multiply", radix=radix, cutoff=cutoff):
         rows, inner, columns = validate(a, b, cutoff)
+        validate_size_policy(size_policy)
         rectangular = radices and isinstance(radices[0], tuple)
-        size = None if rectangular else padded_size(rows, inner, columns, radix, radices=radices)
-        pm, pk, pn = padded_dimensions(rows, inner, columns, radices) if rectangular else (size, size, size)
         count("input_cells", rows * inner + inner * columns)
-        count("padded_input_cells", pm*pk + pk*pn)
-        left, right = padded(a, pm, pk), padded(b, pk, pn)
+        if size_policy == "padded":
+            size = None if rectangular else padded_size(rows, inner, columns, radix, radices=radices)
+            pm, pk, pn = padded_dimensions(rows, inner, columns, radices) if rectangular else (size, size, size)
+            count("padded_input_cells", pm*pk + pk*pn)
+            left, right = padded(a, pm, pk), padded(b, pk, pn)
+        else:
+            left, right = a, b
         if encode is not None:
             left = map_entries(left, encode, name="scalar.encode_matrix")
             right = map_entries(right, encode, name="scalar.encode_matrix")
-        result = crop(kernel(left, right, cutoff), rows, columns)
+        result = kernel(left, right, cutoff)
+        if size_policy == "padded":
+            result = crop(result, rows, columns)
         return map_entries(result, decode, name="scalar.decode_matrix") if decode else result
 
 
-def recursive_kernel(a, b, cutoff, radix, step, *, name, depth=0, select_step=None):
+def recursive_kernel(a, b, cutoff, radix, step, *, name, depth=0, select_step=None,
+                     size_policy="fringe"):
     """Traverse recursion once for all schemes; ``step`` supplies only its formula.
 
     ``step(a_blocks, b_blocks, product)`` forms input combinations, calls the
@@ -174,6 +194,8 @@ def recursive_kernel(a, b, cutoff, radix, step, *, name, depth=0, select_step=No
     number of calls is chosen by the scheme (7 or 48), never by instrumentation.
     ``select_step(depth)`` optionally supplies a mixed plan's radix and formula;
     leaf selection, child traversal, observation, and split/join remain shared.
+    The default rounds each axis down to its divisible core and accounts for
+    every remaining dot term separately. The padded baseline keeps its old path.
     """
     with scope(f"{name}.node", depth=depth, size=len(a), cutoff=cutoff):
         count("recursive_nodes")
@@ -186,21 +208,79 @@ def recursive_kernel(a, b, cutoff, radix, step, *, name, depth=0, select_step=No
             return classical(a, b)
 
         # A composition selects a formula by depth; existing algorithms retain
-        # their fixed formula. Padding follows the same radix schedule.
+        # their fixed formula. Both policies follow this same stage schedule.
         if select_step is not None:
             radix, step = select_step(depth)
+
+        m, k, n = radix if isinstance(radix, tuple) else (radix, radix, radix)
+        shape = len(a), len(b), len(b[0])
+        core = tuple(d - d % r for d, r in zip(shape, (m, k, n)))
+        if size_policy == "fringe" and not all(core):
+            # A stage cannot operate on an empty block. A skinny request is a
+            # classical leaf, rather than an excuse to fabricate padded data.
+            count("classical_leaves")
+            return classical(a, b)
 
         def product(left, right):
             """Descend one level with the same scheme and incremented trace depth."""
             return recursive_kernel(left, right, cutoff, radix, step, name=name,
-                                    depth=depth + 1, select_step=select_step)
+                                    depth=depth + 1, select_step=select_step,
+                                    size_policy=size_policy)
 
-        m, k, n = radix if isinstance(radix, tuple) else (radix, radix, radix)
-        blocks = step(split(a, m, k), split(b, k, n), product)
+        has_fringe = size_policy == "fringe" and core != shape
+        left = rectangle(a, 0, core[0], 0, core[1]) if has_fringe else a
+        right = rectangle(b, 0, core[1], 0, core[2]) if has_fringe else b
+        blocks = step(split(left, m, k), split(right, k, n), product)
         # The formula chooses how many child products to request; this traversal
         # only supplies recursion and shapes. That separation lets algorithms
         # share all observation code without changing their mathematical ranks.
-        return join(blocks, m, n)
+        result = join(blocks, m, n)
+        return complete_fringe(a, b, result, core) if has_fringe else result
+
+
+def validate_size_policy(size_policy):
+    """Accept the no-padding default or the historical padded comparison policy."""
+    if size_policy not in ("fringe", "padded"):
+        raise ValueError("size_policy must be 'fringe' or 'padded'")
+
+
+def rectangle(matrix, row_start, row_stop, column_start, column_stop):
+    """Copy a nonempty rectangle, recording its logical allocation and movement."""
+    with scope("matrix.rectangle"):
+        cells = (row_stop-row_start)*(column_stop-column_start)
+        count("matrix_cells_allocated", cells)
+        count("matrix_cells_copied", cells)
+        result = [row[column_start:column_stop] for row in matrix[row_start:row_stop]]
+        move_values(value for row in result for value in row)
+        return result
+
+
+def complete_fringe(a, b, core_result, core):
+    """Finish a divisible core with each remaining scalar dot term exactly once.
+
+    For output inside the core, only shared indices beyond core_k remain. For
+    output in the remaining rows or columns, every shared index is needed.
+    These disjoint cases execute m*k*n-core_m*core_k*core_n products and additions.
+    Remainders are bounded by the fixed stage block counts, giving O(n^2)
+    overhead on square inputs. No numerical values are tested to skip arithmetic.
+    """
+    with scope("matrix.fringe", core_dimensions=core):
+        rows, inner, columns = len(a), len(b), len(b[0])
+        cm, ck, cn = core
+        result = zeros(rows, columns)
+        for i, row in enumerate(core_result):
+            result[i][:cn] = row
+        count("matrix_cells_copied", cm*cn)
+        move_values(value for row in core_result for value in row)
+        count("fringe_nodes")
+        count("fringe_data_products", rows*inner*columns-cm*ck*cn)
+        for i in range(rows):
+            for j in range(columns):
+                start = ck if i < cm and j < cn else 0
+                for t in range(start, inner):
+                    result[i][j] = scalars.add(result[i][j], scalars.multiply(a[i][t], b[t][j]))
+                    move_values((result[i][j],), 'write')
+        return result
 
 
 def add(a, b):
@@ -217,7 +297,9 @@ def elementwise(a, b, function, *, name):
     """Share the shape-preserving loop for block arithmetic on validated blocks."""
     with scope(name, rows=len(a), columns=len(a[0])):
         count("matrix_cells_allocated", len(a) * len(a[0]))
-        return [[function(x, y) for x, y in zip(ar, br)] for ar, br in zip(a, b)]
+        result = [[function(x, y) for x, y in zip(ar, br)] for ar, br in zip(a, b)]
+        move_values((value for row in result for value in row), 'write')
+        return result
 
 
 def accumulate_scaled(target, source, coefficient):
@@ -230,6 +312,7 @@ def accumulate_scaled(target, source, coefficient):
         for i, row in enumerate(source):
             for j, value in enumerate(row):
                 target[i][j] = scalars.add(target[i][j], scalars.scale(value, coefficient))
+                move_values((target[i][j],), 'write')
 
 
 def linear_combination(blocks, terms):
@@ -244,7 +327,7 @@ def linear_combination(blocks, terms):
 def split(matrix, radix=2, columns=None):
     """Copy a matrix into equal row-major blocks, optionally with rectangular tiling.
 
-    Callers have already padded the shape to be divisible by the stage's row and
+    Callers supply a divisible core or padded shape for the stage's row and
     column counts. Block (i,j) occupies flat position i*columns+j. Independent
     slices ensure that formula intermediates cannot mutate the caller's matrix.
     """
@@ -253,6 +336,7 @@ def split(matrix, radix=2, columns=None):
         height, width = len(matrix) // radix, len(matrix[0]) // columns
         count("matrix_cells_allocated", len(matrix) * len(matrix[0]))
         count("matrix_cells_copied", len(matrix) * len(matrix[0]))
+        move_values(value for row in matrix for value in row)
         return [[row[j * width:(j + 1) * width]
                  for row in matrix[i * height:(i + 1) * height]]
                 for i in range(radix) for j in range(columns)]
@@ -269,5 +353,6 @@ def join(blocks, radix=2, columns=None):
         size, width = len(blocks[0]), len(blocks[0][0])
         count("matrix_cells_allocated", radix * size * columns * width)
         count("matrix_cells_copied", radix * size * columns * width)
+        move_values(value for block in blocks for row in block for value in row)
         return [[value for j in range(columns) for value in blocks[i * columns + j][r]]
                 for i in range(radix) for r in range(size)]

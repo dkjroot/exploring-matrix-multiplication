@@ -368,6 +368,194 @@ Recursive laser extraction, better selection, and constructive large-power
 conversion remain separate mathematical work; this catalog does not supply
 their published exponent or the OpenAI witness.
 
+### Reusable interior restrictions and recombination
+
+```
+python -m matrix_multiplication.constructions cw-interior --certificate
+python -m matrix_multiplication.constructions cw-interior --candidate-budget 512 --max-parts 2
+python sweep.py --sizes 2 4 --cutoffs 1 --algorithms naive strassen --cw-parameters 2 --cw-powers 2
+```
+
+The focused command searches each unrecognized coarse component and its square.
+The default is 2,048 coordinate candidates per sector and power, two retained
+search parts, local component-space dimensions at most 64, and at most 4,096 source terms or
+polynomial terms before materialization. The suite runs this family for every
+selected q/power pair with independent `--interior-candidate-budget`,
+`--interior-max-parts`, `--interior-max-source-dimension` and
+`--interior-max-source-terms` settings. A catalog beyond the limits is rejected
+before construction; an oversized component power is explicitly skipped.
+No unrecognized sectors is a legitimate empty-library outcome.
+The ambient polynomial coordinate spaces can be larger than the retained local
+spaces; the dimension ceiling applies to the catalog source and local component
+powers, while the separate term ceiling also bounds polynomial term counts.
+
+`tensor_restrictions.py` enumerates coordinate subsets whose sizes can equal
+(m*k,k*n,m*n), considering larger classical volumes first. Coefficient-one
+support recognition proposes a row-major layout. A separate checker compares
+the original source restriction against every coefficient of A[i,j]B[j,l]C[i,l],
+including missing terms and unwanted cross-products. Every attempted subset and
+its result remains in `report.json`. Exhaustion or failure refers only to this
+candidate family; general linear changes of basis are unsearched.
+
+A `RestrictionWitness` records the source dimensions, matrix shape and ordered
+coordinate maps. `compose_selections` composes restrictions, while
+`product_witness` pairs witnesses with the explicit row/column permutation
+required for matrix order. The maps themselves add no data products.
+`recover_restriction` restricts the source polynomial family, compares exact
+interpolation with coefficient expansion and replayed dependency reductions,
+and independently checks the resulting finite matrix identity. It never
+replaces the recovery recipe with the classical specification used to check it.
+Signed rational-input executions record products, additions and coefficient
+arithmetic separately. The suite measures setup time and Python allocation
+peaks separately; construction coefficient-operation counts remain unmeasured.
+
+For CW₂ squared, the initial 12,288-candidate experiment finds four-product
+parts of shapes (2,1,2), (1,2,2) and (2,2,1), all at classical cost. Explicit
+squares of their witnesses give 16-product parts. Fresh 2,048-candidate prefixes
+on each squared source recognize no additional parts. A known squared witness
+is retained separately from those misses. Multiplying one recovered part of
+each orientation from separate source copies yields shape (4,4,4) with 64
+products. Its complete matrix identity, actual execution and recursive scheme
+are checked; its exponent is three. This is reusable construction evidence,
+not an improvement on the Smirnov baseline.
+
+The output includes a reader-facing `index.html`, full `report.json` and
+`parts.json`. Parts with a unit axis remain exact generic tensors rather than
+being forced into the recursive scheme format. A supported recombination also
+exports `scheme.json` and, when requested, its portable independent certificate.
+The parts library retains rational factors, shapes, source maps, recovery
+events, arithmetic observations and provenance. Reload and recombine it with:
+
+```python
+from matrix_multiplication.recipe_parts import load_parts, recombine_parts
+
+parts, provenance = load_parts("outputs/construction_DATE_TIME/parts.json")
+left, left_evidence = parts[0]
+right, right_evidence = next(part for part in parts if part[1]["shape"] == [1, 2, 2])
+combined, shape = recombine_parts(left, left_evidence["shape"], right, right_evidence["shape"])
+```
+
+Loading independently checks each executable identity and its actual product
+count. Replaying its source derivation additionally requires the original exact
+source tensor; loading does not certify an entire derivation from saved flags.
+Overlapping parts are not automatically independent summands. Recombination
+uses tensor products of separate copies and preserves the recovered terms and
+their full cost. A promising next experiment is to search near verified maps
+and check joint restrictions; the first bounded experiment is described below.
+
+### Seeded neighborhoods and joint recovery
+
+```
+python -m matrix_multiplication.constructions cw-neighborhood
+python -m matrix_multiplication.constructions cw-neighborhood --seed-budget 2048 --candidate-budget 4096 --max-witnesses 64
+python sweep.py --sizes 2 4 --cutoffs 1 --algorithms naive strassen --cw-parameters 2 --cw-powers 2 --neighborhood-budget 4096
+```
+
+The automatic suite includes this family for every selected q/power pair. Its
+seed-prefix budget comes from `--interior-candidate-budget`; the independent
+follow-up budget and pool cap are `--neighborhood-budget` and
+`--neighborhood-max-witnesses`. Half the per-source follow-up budget tests
+single-coordinate replacements and half tests pairs of retained verified maps.
+The original coordinate prefix remains a separate control. Products of the two
+base seeds supply four seeds for the squared component. Accepted neighbors may
+expand breadth-first, but rejected maps do not expand, and a finite witness cap
+can cut off paths. Every attempted edit and pair is retained; unused budget is
+not reported as attempted work. Seed-prefix misses, graph exhaustion and pair
+pool exhaustion describe different finite scopes.
+
+`restriction_neighborhoods.py` supplies reusable move generation, map-set
+deduplication, budgeted graph traversal and checked joint restrictions. A dense
+union is recognized as one matrix product in its own source-coordinate order.
+An independent sum must have disjoint spaces and match the complete direct-sum
+identity: disjointness alone does not exclude unwanted cross terms. A rejected
+cross term retains an exact rational coefficient difference as evidence.
+Overlapping parts are never accepted as independent merely because each part
+works separately. `JointRestriction` retains the component maps and shapes.
+
+`recover_tensor_restriction` generalizes exact recovery to an independently
+specified whole tensor, including direct sums. It checks the literal source
+before interpolation, verifies all recovered coefficients, compares direct
+expansion and replayed reductions, and preserves the actual chosen terms.
+`recover_joint` binds the claimed joint map to its checked parents again and
+records only comparable same-target costs. For an accepted sum, compare its joint recovery cost with separately recovered
+parts implementing that same sum. A dense union is compared with its own
+classical product; adding costs of overlapping separate parts is not generally
+a comparison of the same bilinear map. `parts.json` can now retain a verified
+independent sum using `component_shapes` instead of `shape`; `load_parts`
+checks every cross coefficient. `recombine_parts` continues to tensor ordinary
+matrix parts, not relabel arbitrary sums as one dense multiplication.
+
+For CW₂ squared, each base sector has 32 distinct single-coordinate candidates
+and one seed pair. Each squared sector has 1,664 edits and six seed pairs. The
+5,088 edits and 21 pairs yield no new accepted map or joint target, so there is
+no new shape or saving. All 18 seed/control recipes recover at classical cost
+and pass signed rational-input execution. This completed negative experiment
+does not exclude coordinated changes, other shapes, general linear restrictions
+or new extraction constructions. The readable report separates actual attempts,
+caps, scopes, seed controls and paid execution evidence. The maintained tests
+also execute positive dense-union and independent-sum examples and reject a
+source whose separate parts pass but whose union contains an extra cross term.
+
+The selected record in `reports/2026-10-15-cw-neighborhood/` preserves this result
+outside ignored output. Full reproducible attempt logs remain in each dated
+generated report. RESEARCH_PLAN.md records the next bounded angle: support-guided
+coordinated changes that can alter the retained matrix shape.
+
+### Three sequential support experiments
+
+```
+python -m matrix_multiplication.constructions cw-support --certificate
+python sweep.py --sizes 2 4 --cutoffs 1 --algorithms naive strassen --cw-parameters 2 --cw-powers 2 --support-budget 4096
+```
+
+The first step searches squared interior components for shape (2,2,2) using only
+the earlier seed coordinate pools. The second allows each full component and
+nearby balanced shapes (2,2,2), (2,2,3), (2,3,2), (3,2,2). The third recovers
+retained targets from the actual polynomial, tries exact rational rank walks,
+replays the retained path, and tensors an improved part with itself. Earlier
+misses are retained even when a later scope succeeds.
+
+`support_search.py` is reusable outside CW. For each A/B coordinate subset pair,
+expand the exact tensor support and retain only C coordinates with the required
+number of coefficient-one products. Candidate C subsets must also give the
+correct incidence degree at every retained A and B coordinate. These necessary
+conditions are not sufficient: a regular support graph can still fail to be a
+matrix tensor, so complete recognition and independent source checking remain
+mandatory. Pruning counts the expanded coefficients after exact cancellation,
+not decomposition terms. No rescaling or general linear basis change is searched.
+
+Subset generation first uses fitting seed footprints and then mixed subsets in
+interleaved source order. A diagonal schedule advances both lazy A/B streams,
+avoiding the old bias toward a single first A subset. Each input-pair screen and
+each output-layout proposal consumes one attempt unit. Their separate counts
+and all rejections are saved. At a cap, exhaustion remains unknown; no extra
+unrecorded proposal is tested to peek past the budget.
+
+The default budget is 4,096 units per target/scope, with two maps retained per
+target and an independent 2,048-attempt base-seed prefix. Rank search considers
+one retained nonunit part, up to 1,000 flips per restart, ten restarts per seed,
+seeds 0 then 1, and coefficient height one. The CLI exposes these budgets and
+the suite exposes `--support-budget`, `--support-steps`, `--support-restarts`,
+`--support-search-seeds`, `--support-max-height` and `--support-reduction-limit`.
+Tensor materialization remains under the separately declared interior limits.
+
+All seed-pool prefixes miss, while the full squared (1,1,2) component yields
+eight verified 2-by-2 layouts. The first retained map uses local source A
+coordinates (0,1,4,5), B coordinates (8,12,9,13), and C coordinates
+(11,23,17,29), each in matrix row-major order. All four C coordinates were absent
+from the old seed pool. Exact recovery reduces the 432-product interpolation
+baseline to eight products. Seed 0 misses rank seven after 10,000 flips; seed 1
+finds it after 1,779. Replayed exact algebra gives a seven-product part, and its
+tensor square exports a fully checked 4-by-4 recipe with 49 products.
+
+The known rank-seven exponent is about 2.8074, weaker than our Smirnov baseline.
+This result demonstrates a reusable extraction/recovery/reduction pipeline; it
+does not establish a novel mathematical bound. The broader-shape misses remain
+bounded search evidence. Portable certificates check the exported recipe;
+the derivation report separately retains its source maps and rank transcripts.
+The selected evidence and reloadable parts are preserved outside ignored output
+in `reports/2026-10-15-cw-support-three-step/`.
+
 ## Relation to the OpenAI witness problem
 
 For any chosen positive epsilon, the 9/4 argument claims a finite size u and

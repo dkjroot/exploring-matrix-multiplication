@@ -84,8 +84,8 @@ class VisualizationTests(unittest.TestCase):
         self.assertTrue(groups[0].findall(".//circle"))
         self.assertTrue(groups[3].findall(".//rect"))
         self.assertIn('stroke-dasharray="8 6"', html)
-        self.assertIn(':has(.legend-button[data-series-group="g0"]:hover)', html)
-        self.assertIn(':has(.legend-button[data-series-group="g0"]:focus-visible)', html)
+        self.assertIn(':has(.legend-button[data-series-group="g0"][aria-pressed="true"]:hover)', html)
+        self.assertIn(':has(.legend-button[data-series-group="g0"][aria-pressed="true"]:focus-visible)', html)
         self.assertIn('.work-chart:not(:has(.legend-button:hover))', html)
         self.assertIn('visibility:hidden', html)
         self.assertEqual(html.count('class="legend-button"'), 4)
@@ -115,8 +115,16 @@ class VisualizationTests(unittest.TestCase):
         reports["other"] = json.loads(json.dumps(reports["strassen"]))
         reports["other"]["experiment"]["input_repr_sha256"] = "different"
         html = self.render(reports)
-        self.assertIn("different inputs, cutoffs, tolerances, or profiling settings", html)
+        self.assertIn("different inputs, cutoffs, size policies, tolerances, or profiling settings", html)
         self.assertIn("do not establish a fair comparison", html)
+
+    def test_size_policy_difference_is_not_a_fair_run_comparison(self):
+        """Matching inputs and cutoff cannot hide different boundary schedules."""
+        reports = self.fixture()
+        reports['other'] = json.loads(json.dumps(reports['strassen']))
+        reports['strassen']['experiment']['size_policy'] = 'fringe'
+        reports['other']['experiment']['size_policy'] = 'padded'
+        self.assertIn('do not establish a fair comparison', self.render(reports))
 
     def test_failed_reports_and_data_labels_are_escaped(self):
         """Render errors and infinite display errors without active injected HTML."""

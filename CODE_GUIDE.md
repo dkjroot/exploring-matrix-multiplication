@@ -6,7 +6,27 @@ finite identities and check whether they can become matrix multiplication
 algorithms. Construction work and multiplier work have different meanings, so
 they deliberately have separate code and evidence.
 
+For the interior-CW experiment, read `tensor_restrictions.py` for reusable
+coordinate witnesses and their independent coefficient checker, then
+`cw_interior.py` for bounded searches and paid polynomial recovery.
+`recipe_parts.py` reloads exact parts and recombines their actual recovered
+terms, including shapes with a unit axis. CONSTRUCTIONS.md gives commands,
+index conventions, artifact formats and the limits of the initial results.
+`restriction_neighborhoods.py` extends those witnesses with bounded local edits
+and completely checked dense unions or independent sums; `cw_neighborhood.py`
+recovers and measures their actual polynomial recipes and retains finite misses.
+`support_search.py` adds exact incidence pruning with a fair schedule of input
+subsets. `cw_support.py` runs the three-step seed-pool/full-space/rank-reuse
+experiment, retains successful and failed walks, and exports checked recipes.
+
 ## Start with an actual multiplication
+
+For choosing implementation candidates, read [MATHEMATICAL_WORK.md](MATHEMATICAL_WORK.md).
+`mathematical_work.py` owns the exact reference arithmetic schedule and work
+categories, `data_movement.py` records logical payload traffic, and
+`work_comparison.py` binds normalized scores to verified same-input classical
+references. Existing field counters, old operand-word estimates and proved
+resource bounds keep their original meanings.
 
 Read `matrix_multiplication/naive.py`, then `strassen.py` and
 `strassen_winograd.py`. Each public function has the same interface. A `step`
@@ -14,22 +34,24 @@ function describes the formula at one level; its `product` argument supplies a
 child multiplication. The formula chooses the child-product count. Traversal
 chooses the shapes and stopping condition.
 
-Continue with `common.py`, which owns input validation, padding, copying,
-recursion, splitting, joining, and cropping. Its elementwise block operations call
+Continue with `common.py`, which owns validation, core/fringe traversal, copying,
+splitting and joining (and optional baseline padding/cropping). Its block operations call
 `scalars.py`, where field operations become observable component operations.
 `instrumentation.py` observes that execution using a context-local observer.
 
 ```mermaid
 flowchart TD
-    A[Public multiply call] --> B[Validate and pad inputs]
+    A[Public multiply call] --> B[Validate and encode actual inputs]
     B --> C[Recursive node]
     C --> D{All dimensions at most cutoff?}
     D -->|Yes| E[Classical dot products]
-    D -->|No| F[Split into blocks]
+    D -->|No| F[Split divisible core into blocks]
+    F -->|Empty core| E
     F --> G[Algorithm formula or sparse scheme]
     G -->|Child product calls| C
     G --> H[Join output blocks]
-    H --> I[Crop and decode result]
+    H --> L[Compute remaining fringe dot terms]
+    L --> I[Decode result]
     E --> I
     G --> J[Shared block and scalar primitives]
     E --> J
@@ -42,9 +64,12 @@ With cutoff 2, those seven children instead use the classical loop, which needs
 eight multiplications per child: 56 total. Additions are counted separately,
 including each classical product's accumulation into the running sum.
 
-Padding and cutoffs explain why a finite graph has steps and plateaus rather than
-following one smooth power law. They do not change the family's asymptotic
-exponent when the cutoff remains fixed as inputs grow.
+The default uses unpadded cores and finishes boundaries at every depth. A 5×5
+Strassen call uses 49 products for its 4×4 core and 61 remaining dot terms.
+`size_policy.py` predicts this work from dimensions and stage descriptions,
+independently of observed execution. The optional `size_policy="padded"` baseline
+reproduces the earlier staircase. Core transitions and cutoffs can still change
+finite counts; neither policy changes the justified fixed-cutoff family exponent.
 
 ## Follow coefficients through execution and checking
 

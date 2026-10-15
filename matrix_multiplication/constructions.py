@@ -23,6 +23,9 @@ from .composition import Composition
 from .decomposition_search import beats_exponent, replay, search
 from .degenerations import recover_cw
 from .cw_extraction import extract_cw
+from .cw_interior import explore_interiors, interior_summary
+from .cw_neighborhood import explore_neighborhoods, neighborhood_summary, compact_neighborhood_report
+from .cw_support import explore_support, support_summary, compact_support_report
 from .dense_packing import pack_cw, pack_coarse_cw
 from .report_explanations import construction_guide, terminology_guide
 from .scheme_io import load_scheme_document, save_scheme, scheme_document, scheme_from_document
@@ -52,6 +55,15 @@ class ConstructionRequest:
     power: int = 1
     sector_words: tuple = None
     report: Path = None
+    candidate_budget: int = 2048
+    max_parts: int = 2
+    max_source_dimension: int = 64
+    max_source_terms: int = 4096
+    neighborhood_budget: int = 4096
+    neighborhood_max_witnesses: int = 64
+    support_budget: int = 4096
+    support_search_seeds: tuple = (0, 1)
+    support_reduction_limit: int = 1
 
 
 def recipe(spec):
@@ -269,7 +281,26 @@ def write_summary(directory, report):
                   'methods still need a constructive implementation. Successful classification and packing '
                   'are therefore research steps, not permission to attach the paper’s limiting exponent '
                   'to this small executable example.</p>')
+    interior = report.get("cw_interior")
+    if interior:
+        curve += interior_summary(interior)
+    neighborhood = report.get("cw_neighborhood")
+    if neighborhood:
+        curve += neighborhood_summary(neighborhood)
+    support = report.get('cw_support')
+    if support:
+        curve += support_summary(support)
     display = {k: v for k, v in report.items() if k != "starting_recipe"}
+    if interior:
+        # Preserve all attempted maps in JSON; the readable HTML uses outcome
+        # counts and part tables rather than thousands of failed candidate rows.
+        display["cw_interior"] = {**interior, "experiments": [
+            {**entry, "search": {key: value for key, value in entry.get("search", {}).items()
+                                  if key != "candidates"}} for entry in interior["experiments"]]}
+    if neighborhood:
+        display["cw_neighborhood"] = compact_neighborhood_report(neighborhood)
+    if support:
+        display['cw_support'] = compact_support_report(support)
     if "search" in display:
         display["search"] = {k: v for k, v in evidence.items() if k != "events"}
     links = ' · '.join(f'<a href="{escape(path.name)}">{escape(path.name)}</a>'
@@ -300,7 +331,7 @@ def run_experiment(args, directory=None):
     suite artifacts predictably named under one dated run, without nested dates.
     Existing directories are refused; callers retain earlier experiment output.
     """
-    if args.command not in ("search", "product", "replay", "cw", "cw-extract", "cw-pack", "cw-coarse"):
+    if args.command not in ("search", "product", "replay", "cw", "cw-extract", "cw-pack", "cw-coarse", "cw-interior", "cw-neighborhood", "cw-support"):
         raise ValueError("unknown construction experiment")
     if args.command == "search" and args.target_rank is not None and args.target_exponent is not None:
         raise ValueError("choose a rank or exponent target")
@@ -308,7 +339,8 @@ def run_experiment(args, directory=None):
                   "implementation_license": "GPL-3.0; repository LICENSE"}
     report = {"schema": "construction-experiment-v1", "command": args.command,
               "coefficient_field": "Q", "limitations": "Finite exact recipes only; no new exponent bound follows from a search attempt."}
-    scheme = None
+    scheme = tensor = None
+    interior_parts = ()
     if args.command == "search":
         if args.start:
             start_document = recipe_document(args.start)
@@ -381,7 +413,7 @@ def run_experiment(args, directory=None):
         provenance["method_reference"] = evidence["extraction"]["source"]
         provenance["polynomial_reference"] = "https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf"
         provenance["construction"] = "independent finite volume tiling, direct coefficient recovery, and replayed exact reductions"
-    else:
+    elif args.command == "cw-coarse":
         if args.sector_words is not None:
             raise ValueError("fine sector words cannot select coarse components")
         tensor, evidence = pack_coarse_cw(args.q, args.power, args.size)
@@ -390,6 +422,72 @@ def run_experiment(args, directory=None):
         provenance["method_reference"] = evidence["source"]
         provenance["polynomial_reference"] = "https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf"
         provenance["construction"] = "independent sum-index coarsening, exact support classification, polynomial recovery and finite packing"
+    elif args.command == "cw-interior":
+        if args.sector_words is not None:
+            raise ValueError("fine sector words cannot select interior components")
+        interior_parts, evidence = explore_interiors(args.q, args.power,
+            candidate_budget=args.candidate_budget, max_parts=args.max_parts,
+            max_source_dimension=args.max_source_dimension, max_source_terms=args.max_source_terms)
+        report["cw_interior"] = evidence
+        report["outcome"] = (f"Retained {len(interior_parts)} exactly recovered reusable parts, including recombinations. "
+                             "Bounded search and full recovery costs are recorded; no improved exponent is claimed.")
+        provenance["method_reference"] = "https://arxiv.org/abs/2404.16349"
+        provenance["polynomial_reference"] = "https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf"
+        provenance["construction"] = "bounded coordinate restrictions, exact CW polynomial recovery, witness products and verified recombination"
+        provenance["source_parameters"] = {"q": args.q, "cw_power": args.power, "component_powers": [1, 2]}
+        if evidence["recombinations"]:
+            tensor, description = interior_parts[-1]
+            shape = tuple(description["shape"])
+            if min(shape) >= 2:
+                scheme = to_scheme(tensor, shape, "cw-interior-recombined")
+    elif args.command == 'cw-neighborhood':
+        if args.sector_words is not None:
+            raise ValueError("fine sector words cannot select coordinate neighborhoods")
+        interior_parts, evidence = explore_neighborhoods(args.q, args.power,
+            seed_budget=args.candidate_budget, candidate_budget=args.neighborhood_budget,
+            max_parts=args.max_parts, max_witnesses=args.neighborhood_max_witnesses,
+            max_source_dimension=args.max_source_dimension, max_source_terms=args.max_source_terms)
+        report['cw_neighborhood'] = evidence
+        report['outcome'] = (f"Seeded coordinate and joint-restriction experiment completed: "
+            f"{evidence['new_verified_shapes']} new verified shapes and "
+            f"{evidence['strict_recovery_savings']} joint-recovery savings. Bounded misses are not exclusions.")
+        provenance.update(method_reference="https://arxiv.org/abs/2404.16349",
+            polynomial_reference="https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf",
+            construction="exact seeded coordinate neighborhoods, checked dense unions/direct sums and paid joint recovery",
+            source_parameters={"q": args.q, "cw_power": args.power, "component_powers": [1, 2]})
+        # Generic sums retain their component shapes. Only an ordinary supported
+        # matrix recipe, with no worse than classical rank, joins recursion.
+        for candidate, description in interior_parts:
+            shape = tuple(description.get('shape', ()))
+            if shape and min(shape) >= 2 and candidate.rank <= shape[0]*shape[1]*shape[2]:
+                tensor = candidate
+                scheme = to_scheme(tensor, shape, "cw-neighborhood-matrix")
+                break
+    else:
+        if args.sector_words is not None:
+            raise ValueError('fine sector words cannot select support-search targets')
+        interior_parts, evidence = explore_support(args.q, args.power,
+            candidate_budget=args.support_budget, seed_budget=args.candidate_budget,
+            max_parts=args.max_parts, steps=args.steps, restarts=args.restarts,
+            search_seeds=args.support_search_seeds, max_height=args.max_height,
+            reduction_limit=args.support_reduction_limit,
+            max_source_dimension=args.max_source_dimension, max_source_terms=args.max_source_terms)
+        report['cw_support'] = evidence
+        report['outcome'] = ('Three bounded support/recovery experiments completed; '
+            'known rank-seven recovery is not a stronger bound than our Smirnov baseline.')
+        provenance.update(method_reference='https://arxiv.org/abs/2404.16349',
+            polynomial_reference='https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf',
+            search_reference='https://arxiv.org/abs/2212.01175',
+            construction='seed-pool support, full-space balanced targets, paid recovery and replayed rank reduction',
+            source_parameters={'q': args.q, 'cw_power': args.power, 'component_power': 2})
+        # Prefer the explicit recombination; its source parts and rank walks
+        # remain available in the library and report, including unsuccessful seeds.
+        for candidate, description in reversed(interior_parts):
+            shape = tuple(description['shape'])
+            if min(shape) >= 2 and candidate.rank <= shape[0]*shape[1]*shape[2]:
+                tensor = candidate
+                scheme = to_scheme(tensor, shape, 'cw-support-recombined')
+                break
     if scheme is not None:
         report.update({"shape": list(scheme.shape), "rank": scheme.rank, "exact_matrix_identity_verified": True})
         if len(set(scheme.shape)) == 1:
@@ -406,6 +504,12 @@ def run_experiment(args, directory=None):
     report["provenance"] = provenance
     if args.command == "cw-extract" and args.certificate and scheme is None:
         raise ValueError("extraction certificate requires a single supported matrix component; a direct sum is tensor evidence")
+    if args.command == "cw-interior" and args.certificate and scheme is None:
+        raise ValueError("interior certificate requires a supported square recombination; generic parts remain tensor evidence")
+    if args.command == "cw-neighborhood" and args.certificate and scheme is None:
+        raise ValueError("neighborhood certificate requires a supported matrix target; generic parts remain tensor evidence")
+    if args.command == 'cw-support' and args.certificate and scheme is None:
+        raise ValueError('support certificate requires a supported matrix target')
     # Reject an unsupported certificate request before creating a partial output
     # directory. Rectangular certificate creation needs an explicitly balanced
     # cycle; the suite supplies that cycle in its separate integration stage.
@@ -422,8 +526,16 @@ def run_experiment(args, directory=None):
             # which must remain inside a portable certificate distributed alone.
             write_bundle(Composition.from_spec(str(directory / "scheme.json")), directory / "certificate")
             report["portable_certificate"] = "certificate/certificate.json"
-    else:
+    elif tensor is not None:
         write_json(directory / "tensor.json", tensor_document(tensor))
+    if args.command in ("cw-interior", "cw-neighborhood", 'cw-support'):
+        # Unit-axis pieces remain generic exact tensors, with their proved
+        # matrix shape and recovery provenance. Do not relax scheme contracts
+        # just to label them recursive square algorithms.
+        library = {"schema": "exact-recipe-parts-v1", "provenance": provenance,
+                   "parts": [{"evidence": description, "tensor": tensor_document(part)}
+                             for part, description in interior_parts]}
+        write_json(directory / "parts.json", library)
     write_json(directory / "report.json", report)
     write_summary(directory, report)
     return directory, report
@@ -470,6 +582,39 @@ def main(argv=None):
     coarse_parser.add_argument("--power", type=int, default=2)
     coarse_parser.add_argument("--size", type=int, default=2)
     coarse_parser.add_argument("--certificate", action="store_true")
+    interior_parser = commands.add_parser("cw-interior", help="search, recover and recombine reusable restrictions of interior CW components")
+    interior_parser.add_argument("--q", type=int, default=2)
+    interior_parser.add_argument("--power", type=int, default=2, help="source CW power; each interior component is tried at powers one and two")
+    interior_parser.add_argument("--candidate-budget", type=int, default=2048, help="candidate subsets per sector and component power")
+    interior_parser.add_argument("--max-parts", type=int, default=2, help="saved search parts per sector/power, plus a known lifted witness")
+    interior_parser.add_argument("--max-source-dimension", type=int, default=64)
+    interior_parser.add_argument("--max-source-terms", type=int, default=4096)
+    interior_parser.add_argument("--certificate", action="store_true")
+    neighborhood_parser = commands.add_parser("cw-neighborhood", help="search near verified maps and check joint restrictions with paid recovery")
+    neighborhood_parser.add_argument("--q", type=int, default=2)
+    neighborhood_parser.add_argument("--power", type=int, default=2)
+    neighborhood_parser.add_argument("--seed-budget", dest="candidate_budget", type=int, default=2048)
+    neighborhood_parser.add_argument("--candidate-budget", dest="neighborhood_budget", type=int, default=4096,
+                                     help="per sector/power; half single-coordinate edits and half pair tests")
+    neighborhood_parser.add_argument("--max-witnesses", dest="neighborhood_max_witnesses", type=int, default=64)
+    neighborhood_parser.add_argument("--max-parts", type=int, default=2)
+    neighborhood_parser.add_argument("--max-source-dimension", type=int, default=64)
+    neighborhood_parser.add_argument("--max-source-terms", type=int, default=4096)
+    neighborhood_parser.add_argument("--certificate", action="store_true")
+    support_parser = commands.add_parser('cw-support', help='run three sequential exact support, broader-shape and rank-reuse experiments')
+    support_parser.add_argument('--q', type=int, default=2)
+    support_parser.add_argument('--power', type=int, default=2)
+    support_parser.add_argument('--candidate-budget', dest='support_budget', type=int, default=4096)
+    support_parser.add_argument('--seed-budget', dest='candidate_budget', type=int, default=2048)
+    support_parser.add_argument('--max-parts', type=int, default=2)
+    support_parser.add_argument('--steps', type=int, default=1000)
+    support_parser.add_argument('--restarts', type=int, default=10)
+    support_parser.add_argument('--search-seeds', dest='support_search_seeds', type=int, nargs='+', default=(0, 1))
+    support_parser.add_argument('--max-height', type=int, default=1)
+    support_parser.add_argument('--reduction-limit', dest='support_reduction_limit', type=int, default=1)
+    support_parser.add_argument('--max-source-dimension', type=int, default=64)
+    support_parser.add_argument('--max-source-terms', type=int, default=4096)
+    support_parser.add_argument('--certificate', action='store_true')
     replay_parser = commands.add_parser("replay", help="replay a prior report.json independently of random search")
     replay_parser.add_argument("report", type=Path)
     replay_parser.add_argument("--certificate", action="store_true")

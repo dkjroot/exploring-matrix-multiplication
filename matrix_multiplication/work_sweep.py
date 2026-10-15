@@ -17,12 +17,14 @@ from random import Random
 from . import ALGORITHMS, Instrumentation
 from .common import padded_size
 from .experiments import ExecutionMeasurement, arithmetic_model
-from .scaling import CATEGORIES, category_budget, project_work
+from .scaling import CATEGORIES, category_budget, project_work, project_range
 from .size_effects import describe_sample, describe_transition
 from .verification import check_product
+from .work_comparison import classical_reference, attach_comparison
 
 
 SCHEMA = "matrix-multiplication-work-sweep-v1"
+INPUT_MAGNITUDE_BOUND = 4
 
 
 def positive_integer_grid(values, name):
@@ -52,10 +54,11 @@ def schedule_work_model(plan):
             "ideal_curve_status": "omitted: repeating stage cutoffs have phase-dependent constants"}
 
 
-def schedule_prediction(plan, size, cutoff):
+def schedule_prediction(plan, size, cutoff, *, size_policy="fringe"):
     """Translate an independently calculated stage budget into sweep fields."""
-    budget = plan.budget(size, size, size, cutoff=cutoff)
-    result = {"padded_dimension": budget["padded_size"],
+    budget = plan.budget(size, size, size, cutoff=cutoff, size_policy=size_policy)
+    result = {"size_policy": size_policy,
+              "padded_dimension": budget["padded_size"],
               "effective_leaf_dimension": budget["leaf_size"],
               "recursion_levels": len(budget["levels"]),
               "padded_data_multiplications": budget["field_multiplications"],
@@ -100,19 +103,26 @@ def work_model(name):
             "source": "validated sparse coefficient columns and Gaussian primitive formulas"}
 
 
-def prediction(name, size, cutoff, costs=None):
+def prediction(name, size, cutoff, costs=None, *, size_policy="fringe"):
     """Predict work from declared recursion and scalar costs, not observed counters.
 
 The smooth curve uses the requested dimension and effective radix-power leaf.
-The discrete recurrence rounds the dimension up, then counts classical products
-in each leaf. This accounts for padding and cutoffs without evaluating a matrix.
+The default discrete budget rounds cores down and counts their boundary terms.
+The baseline rounds the entire input up. Both count leaves without executing data.
 Total-work predictions include additions, scaling, and normalization, so their
 smooth curves include lower-order terms rather than only a normalized n**p.
 """
+    from .common import validate_size_policy
+    validate_size_policy(size_policy)
     costs = work_model(name) if costs is None else costs
     if name == "smirnov":
         from .smirnov import plan
-        return schedule_prediction(plan(), size, cutoff)
+        return schedule_prediction(plan(), size, cutoff, size_policy=size_policy)
+    if size_policy == "fringe" and name != "naive":
+        from .composition import Composition
+        result = prediction(name, size, cutoff, costs, size_policy="padded")
+        result.update(schedule_prediction(Composition([name]), size, cutoff, size_policy=size_policy))
+        return result
     model = arithmetic_model(name)
     radix, rank = model["base_dimension"], model["base_bilinear_rank"]
     if radix is None:
@@ -183,8 +193,8 @@ can make the empirical slope differ substantially from the family exponent.
 def inputs(size, seed):
     """Generate reproducible signed integer matrices shared by every configuration."""
     random = Random(seed + size)
-    return ([[random.randrange(-4, 5) for _ in range(size)] for _ in range(size)],
-            [[random.randrange(-4, 5) for _ in range(size)] for _ in range(size)])
+    return ([[random.randrange(-INPUT_MAGNITUDE_BOUND, INPUT_MAGNITUDE_BOUND+1) for _ in range(size)] for _ in range(size)],
+            [[random.randrange(-INPUT_MAGNITUDE_BOUND, INPUT_MAGNITUDE_BOUND+1) for _ in range(size)] for _ in range(size)])
 
 
 def cutoff_execution_structure(name, implementation, predicted, plan=None):
@@ -211,7 +221,8 @@ def cutoff_execution_structure(name, implementation, predicted, plan=None):
         return None
     budget = predicted.get("composition_budget")
     if budget is not None:
-        return {"padded_dimensions": budget.get("padded_dimensions", [budget["padded_size"]] * 3),
+        return {"size_policy": budget.get("size_policy", "padded"),
+                "padded_dimensions": budget.get("padded_dimensions", [budget["padded_size"]] * 3),
                 "leaf_dimensions": budget.get("leaf_dimensions", [budget["leaf_size"]] * 3),
                 "stages": [{key: level[key] for key in ("depth", "stage", "size", "radix", "rank")}
                            for level in budget["levels"]]}
@@ -221,7 +232,8 @@ def cutoff_execution_structure(name, implementation, predicted, plan=None):
 
 
 def collect_work(sizes, cutoffs, *, algorithms=None, seed=1729, progress=None, compositions=None,
-                 reuse_equivalent_cutoffs=True, measure_memory=True, projection_cycles=12):
+                 reuse_equivalent_cutoffs=True, measure_memory=True, projection_cycles=12,
+                 size_policy="fringe"):
     """Run all requested configurations with counting only and exact verification.
 
 Algorithms receive identical inputs at each size. Primitive clocks and wall-clock
@@ -234,6 +246,8 @@ within the same algorithm/input. No result is reused across sizes or algorithms,
 and failed outputs/budget mismatches are never cached. Disable reuse to request
 independent executions of every cutoff, for example when checking the optimizer.
 """
+    from .common import validate_size_policy
+    validate_size_policy(size_policy)
     sizes = positive_integer_grid(sizes, "sizes")
     cutoffs = positive_integer_grid(cutoffs, "cutoffs")
     if type(projection_cycles) is not int or projection_cycles < 1:
@@ -256,7 +270,7 @@ independent executions of every cutoff, for example when checking the optimizer.
     costs.update({name: schedule_work_model(plan) for name, plan in plans.items()})
     series = [{"algorithm": name, "cutoff": cutoff, "mathematical_model":
                plans[name].model() if name in plans else arithmetic_model(name),
-               "work_model": costs[name], "samples": []}
+               "work_model": costs[name], "size_policy": size_policy, "samples": []}
               for name in names for cutoff in cutoffs]
     for line in series:
         # Projection setup must not replace successful/failed execution evidence.
@@ -264,7 +278,7 @@ independent executions of every cutoff, for example when checking the optimizer.
         line["mathematical_model"]["exponent_notation"] = "algorithm exponent p; upper bound on omega, not omega itself"
         try:
             line["scaling_projection"] = project_work(line["algorithm"], line["cutoff"],
-                line["mathematical_model"], plans.get(line["algorithm"]), projection_cycles)
+                line["mathematical_model"], plans.get(line["algorithm"]), projection_cycles, size_policy=size_policy)
         except (OSError, ValueError, TypeError, KeyError) as exc:
             line["scaling_projection"] = {"status": "unavailable", "reason": str(exc)}
     for size in sizes:
@@ -280,8 +294,8 @@ independent executions of every cutoff, for example when checking the optimizer.
                       "measurement": {"kind": "setup_error"}}
             cache_key = None
             try:
-                sample["prediction"] = (schedule_prediction(plans[name], size, cutoff) if name in plans
-                                        else prediction(name, size, cutoff, costs[name]))
+                sample["prediction"] = (schedule_prediction(plans[name], size, cutoff, size_policy=size_policy) if name in plans
+                                        else prediction(name, size, cutoff, costs[name], size_policy=size_policy))
                 structure = (cutoff_execution_structure(name, implementations[name], sample["prediction"],
                                                        plans.get(name))
                              if reuse_equivalent_cutoffs and "unavailable_reason" not in costs[name] else None)
@@ -310,7 +324,7 @@ independent executions of every cutoff, for example when checking the optimizer.
                     measurement = ExecutionMeasurement(measure_memory=measure_memory)
                     try:
                         with measurement:
-                            result = implementations[name](left, right, cutoff=cutoff, instrumentation=observer)
+                            result = implementations[name](left, right, cutoff=cutoff, instrumentation=observer, size_policy=size_policy)
                     finally:
                         sample["execution_measurements"] = measurement.snapshot()
                     verification = check_product(left, right, result)
@@ -333,7 +347,7 @@ independent executions of every cutoff, for example when checking the optimizer.
             # Category predictions come from the formula/descriptor, never by
             # allocating a second observed matrix execution or fitting a count.
             if sample["status"] == "passed" and line["scaling_projection"]["status"] == "projected":
-                predicted_counts = category_budget(name, size, cutoff, plans.get(name))
+                predicted_counts = category_budget(name, size, cutoff, plans.get(name), size_policy=size_policy)
                 sample["category_prediction"] = predicted_counts
                 sample["category_prediction_matches_observed"] = all(
                     sample["observation"]["counts"].get(key, 0) == predicted_counts[key] for key in CATEGORIES)
@@ -350,6 +364,21 @@ independent executions of every cutoff, for example when checking the optimizer.
             sample.setdefault('size_effects', {'status': 'unavailable', 'reason': 'size planner failed before attribution'})
             if index:
                 sample['size_effects']['transition_from_previous_sample'] = describe_transition(line['samples'][index-1], sample)
+        try:
+            if not any(s['size_effects'].get('status') == 'known_reference_policy'
+                       and s['status'] == 'passed' for s in line['samples']):
+                raise ValueError('no successful known reference traversal for this series')
+            line['range_projection'] = project_range(line['algorithm'], line['cutoff'], sizes,
+                plans.get(line['algorithm']), projection_cycles, size_policy=size_policy)
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            line['range_projection'] = {'status': 'unavailable', 'reason': str(exc)}
+        from .resource_bounds import bound_range
+        try:
+            line['resource_bounds'] = bound_range(line['algorithm'], line['cutoff'], line['samples'],
+                line['range_projection'], plans.get(line['algorithm']),
+                input_bound=INPUT_MAGNITUDE_BOUND, size_policy=size_policy)
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            line['resource_bounds'] = {'status': 'unavailable', 'reason': str(exc)}
         minimum, maximum = sizes[0], sizes[-1]
         curve_sizes = sorted(set(sizes + [minimum + (maximum - minimum) * index / 80 for index in range(81)]))
         if "ideal_curve_status" in line["work_model"]:
@@ -358,25 +387,68 @@ independent executions of every cutoff, for example when checking the optimizer.
             curve_sizes = []
         line["ideal_curve"] = []
         for size in curve_sizes:
-            predicted = prediction(line["algorithm"], size, line["cutoff"], line["work_model"])
+            predicted = prediction(line["algorithm"], size, line["cutoff"], line["work_model"], size_policy="padded")
             line["ideal_curve"].append({"size": size,
                 "data_multiplications": predicted["ideal_data_multiplications"],
                 "field_arithmetic_operations": predicted["ideal_field_arithmetic_operations"],
                 "atomic_arithmetic_operations": predicted["ideal_atomic_arithmetic_operations"]})
+        if line['range_projection']['status'] == 'projected' and curve_sizes:
+            # The continuous comparison is secondary display evidence. Discrete
+            # projected counts remain exact integers in a separate collection.
+            ideal_extension = []
+            for point in line['range_projection']['points']:
+                if point['size'] <= maximum:
+                    continue
+                predicted = prediction(line['algorithm'], point['size'], line['cutoff'],
+                                       line['work_model'], size_policy='padded')
+                ideal_extension.append({'size': point['size'],
+                    'data_multiplications': predicted['ideal_data_multiplications'],
+                    'field_arithmetic_operations': predicted['ideal_field_arithmetic_operations'],
+                    'atomic_arithmetic_operations': predicted['ideal_atomic_arithmetic_operations']})
+            line['range_projection']['ideal_points'] = ideal_extension
         line["empirical_fits"] = {}
         for metric in ("field_multiplications", "field_arithmetic_operations", "atomic_arithmetic_operations"):
             points = [(sample["size"], sample["observation"]["counts"].get(metric, 0)
                        if metric == "field_multiplications" else sample["observation"][metric])
                       for sample in line["samples"] if sample["status"] == "passed"]
             line["empirical_fits"][metric] = log_log_fit(points)
+    references, reference_executions = [], 0
+    # A classical denominator is required even when the user selected only a
+    # generated recipe. These extra reference calls are explicit and unmeasured.
+    for size in sizes:
+        if progress:
+            progress(f"Accounting classical work baseline, n={size}")
+        from .naive import multiply as classical_multiply
+        source = next((sample for line in series if line['algorithm'] == 'naive'
+                       and implementations['naive'] is classical_multiply
+                       for sample in line['samples'] if sample['size'] == size and sample['status'] == 'passed'
+                       and sample['prediction_matches_observed_data_multiplications'] is True
+                       and sample['prediction_matches_observed_arithmetic_steps'] is True), None)
+        if source is not None:
+            reference = {'status': 'passed', 'input_repr_sha256': source['input_repr_sha256'],
+                         'scope': 'reused verified classical sample; no additional execution',
+                         'mathematical_work': deepcopy(source['observation']['mathematical_work']),
+                         'data_movement': deepcopy(source['observation']['data_movement'])}
+        else:
+            left, right = inputs(size, seed)
+            reference = classical_reference(left, right)
+            reference_executions += 1
+        references.append({'size': size, **reference})
+        for line in series:
+            sample = next(sample for sample in line['samples'] if sample['size'] == size)
+            target = {'status': sample['status'], **sample['observation']}
+            attach_comparison(target, reference, input_hash=sample['input_repr_sha256'])
+            sample['work_comparison'] = target['work_comparison']
     samples = [sample for line in series for sample in line["samples"]]
     summary = {"requested_configurations": len(samples),
                **{label: sum(sample["measurement"]["kind"] == kind for sample in samples)
                   for label, kind in (("actual_executions", "executed"), ("reused_measurements", "reused"),
                                       ("setup_errors", "setup_error"))}}
-    return {"schema": SCHEMA, "execution_summary": summary,
+    summary['classical_reference_executions'] = reference_executions
+    return {"schema": SCHEMA, "execution_summary": summary, 'classical_work_references': references,
             "configuration": {"sizes": sizes, "cutoffs": cutoffs, "seed": seed,
-            "reuse_equivalent_cutoffs": reuse_equivalent_cutoffs,
+            "input_absolute_bound": INPUT_MAGNITUDE_BOUND,
+            "reuse_equivalent_cutoffs": reuse_equivalent_cutoffs, "size_policy": size_policy,
             "memory_tracking_enabled": measure_memory, "projection_cycles": projection_cycles,
             "scalar_domain": "signed Python integers; complex intermediates where schemes require them",
             "primitive_timing_enabled": False, "focus": "executed arithmetic work, not elapsed time"},

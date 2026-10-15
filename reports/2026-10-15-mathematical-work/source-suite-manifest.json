@@ -1,0 +1,835 @@
+{
+  "schema": "matrix-multiplication-research-suite-v1",
+  "status": "passed",
+  "configuration": {
+    "sizes": [
+      2,
+      4
+    ],
+    "cutoffs": [
+      1
+    ],
+    "algorithms": [
+      "naive",
+      "strassen",
+      "strassen-winograd",
+      "alphaevolve",
+      "smirnov"
+    ],
+    "input_seed": 1729,
+    "requested_compositions": {},
+    "reuse_equivalent_cutoffs": true,
+    "size_policy": "fringe",
+    "research": {
+      "search_size": 2,
+      "search_start": null,
+      "search_target_rank": null,
+      "search_target_exponent": null,
+      "search_steps": 50,
+      "search_restarts": 1,
+      "search_seeds": [
+        0
+      ],
+      "search_max_height": 1,
+      "search_extra_rank": 0,
+      "search_split_every": 50,
+      "cw_parameters": [
+        2
+      ],
+      "cw_powers": [
+        2
+      ],
+      "cw_packing_size": 2,
+      "interior_candidate_budget": 2048,
+      "interior_max_parts": 2,
+      "interior_max_source_dimension": 64,
+      "interior_max_source_terms": 4096,
+      "trace_limit": 10,
+      "measure_sweep_memory": true,
+      "projection_cycles": 2,
+      "neighborhood_budget": 4096,
+      "neighborhood_max_witnesses": 64,
+      "support_budget": 4096,
+      "support_steps": 1000,
+      "support_restarts": 10,
+      "support_search_seeds": [
+        0,
+        1
+      ],
+      "support_max_height": 1,
+      "support_reduction_limit": 1
+    },
+    "reference_reports": [],
+    "source_sha256": {
+      "sweep.py": "d1789655631e3844c724c0f33dae86a03df2b3a6091737edccfc22f8522ccef9",
+      "matrix_multiplication/__init__.py": "4ba2db1b62fb0246310afaa9b0f5444b3563ab9fb76a7bf1f3f029a00a74870d",
+      "matrix_multiplication/alphaevolve.py": "5836662d78d939c1665271c42e79d9b72817fbdb42203fa2d646351d638184e6",
+      "matrix_multiplication/certificate_checker.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+      "matrix_multiplication/certificates.py": "b733949364e486e6b5cdf246413848385779108d391a0eb3413885e528347ae3",
+      "matrix_multiplication/common.py": "12822c2414aacac880b8881849eb6c63c59bd11f4efe93556587c1e6135bfc14",
+      "matrix_multiplication/composition.py": "ff74813b75e43b88bf29722278f12c7f08c2588ed5917649784ea1a18a3adbc2",
+      "matrix_multiplication/constructions.py": "f6c78b8564bf9ea929e25458a99752411f69c042c3716087cdfdd12f1f8321f6",
+      "matrix_multiplication/cw_coarsening.py": "96928a6c69f551e89578d44502907b8a6b70def243540b47cc0573fb16a8a987",
+      "matrix_multiplication/cw_extraction.py": "cfe734ead8e8c55a91cef2b7230eccda7cbe6228f9f9957fa8dbd072b8e8e216",
+      "matrix_multiplication/cw_interior.py": "2f8dfd8da29617ea4be4092d005142e098e65673090be8cb84c7bdc1038847cd",
+      "matrix_multiplication/cw_neighborhood.py": "fdc85b2bfef644babf5c84cfa30c46bfbc675d4bb8ddf82463e65278e873b8aa",
+      "matrix_multiplication/cw_support.py": "3f4ff5723eb810574697b029818cb44b55b9f6735ce25f312f47b207f4aa947d",
+      "matrix_multiplication/data_movement.py": "053a4352152042ab160fab487f305a3366b9e41acb5f453ecbba9226bb1ac45c",
+      "matrix_multiplication/decomposition_search.py": "0f7dfc336a6676a99cda802c062302c4a0c8a222ac315876c4c515f553984ee5",
+      "matrix_multiplication/degenerations.py": "ba95c0bab85328065e43f2af1755ecb2c92e847085428d2e64d21d108398227c",
+      "matrix_multiplication/dense_packing.py": "0497a5e14921ea6e565409c046e3f66647ea6de3aed5fe27dea5a28884f87905",
+      "matrix_multiplication/experiments.py": "aafd668473daece1ee6f6435d565683b1dfa0840e80ef41bc12682cd308b2ce8",
+      "matrix_multiplication/instrumentation.py": "98d48a41f9a209af76c1a6539fb93717c2d8e521b2022177f6a3b1288ab8aff2",
+      "matrix_multiplication/mathematical_work.py": "699a88ab88e7eb6b270ecd69915ab65c4789279fa4fc77e83f196759a7c8f7ec",
+      "matrix_multiplication/naive.py": "8f64c82775a62d3a8bcba385434d3e387533d95166bb65609bc241901afdbed6",
+      "matrix_multiplication/operand_costs.py": "b273a480c3761baa60c7cc805a3767f6ac67feda269be4776a1caef5608d1f87",
+      "matrix_multiplication/recipe_parts.py": "222323c10916980557b6feb13f5339f98076349ccadbdf9ea33ca7f8735ce14f",
+      "matrix_multiplication/rectangular.py": "9765f1da67c55eaed968d9969d4523b717106f4b10a373d93fc62635948e2a65",
+      "matrix_multiplication/report_explanations.py": "d7e13a8e4b18f9624d687a1f7fbf201013a45f77b3fb0b46c058590fa39893af",
+      "matrix_multiplication/report_interactivity.py": "11f86b1b875ad56fc74c0210f4e1c6aa7a614ee94e400a90a86e3e76d2ba1e45",
+      "matrix_multiplication/reporting.py": "489998b3091625b34e30eae44bd7eb9795a0ef25a5f30a4c8029d70caa4349c0",
+      "matrix_multiplication/research_suite.py": "b259ff9478e7a1d57856d9d15176b90ac9dd45fb9fce12f42f45ac87b8ce88ce",
+      "matrix_multiplication/resource_bounds.py": "2d5bb55a10b5f778548f5933e64d01530d6759d6cb7b67af1ab93899d6d5429c",
+      "matrix_multiplication/restriction_neighborhoods.py": "d8bbcfab63783fedd63fbca09ab8f74a07d101ade4ed06776a7a2cff6c712dbb",
+      "matrix_multiplication/scalars.py": "a9521463087158af17fc961c68779d22841d65bf09f98422a8c1b225384ef7f2",
+      "matrix_multiplication/scaling.py": "246c9ea5400fb1e6baa63d05bb7b30998e4616b50261e1275a2698dcd5bcb7d6",
+      "matrix_multiplication/scheme_io.py": "431a30bc5a67173c4d7d46f8e5f31372be8e9c41b8fd527be787691c3efa67f9",
+      "matrix_multiplication/schemes.py": "c7a278cfc114c55521aae7137feb1e4f3d922e22e799b99bff8c4048afcf6188",
+      "matrix_multiplication/size_effects.py": "d701f3bb7d7ce6ef4ad246e02292cf3e8b279e5fe61add6ee08a99076dc2f4f5",
+      "matrix_multiplication/size_policy.py": "57acd86d97ed527aa3f524a0a78753378f840b879e31c0567ba32a872f1aa32e",
+      "matrix_multiplication/smirnov.py": "cbca0ad76c59664fb00d399598f9bb1bbe09ec60c20fa744123198c3b93aa86c",
+      "matrix_multiplication/strassen.py": "e3c47cd661e802b6025f22ca1b8a76b8b21947e0bcb1c13a55bf87588360a7ee",
+      "matrix_multiplication/strassen_winograd.py": "23e8a59d366284488832e325e277db8318eb17421c02cb0f8f3e588d691b09c1",
+      "matrix_multiplication/support_search.py": "1e5ed58975109ca3ad0f284534d7e5d18c0b9902f6232e7da76d2fa7e3bf24a9",
+      "matrix_multiplication/tensor_classification.py": "2ccf9046be35c3e520a51c61f127131fda59b3cb1c8b3613820b6e2fd5605f15",
+      "matrix_multiplication/tensor_execution.py": "94c182eae0db3598ec64cdf0281a2c0d6ba81b7d05cf7da3d60741d87548e17a",
+      "matrix_multiplication/tensor_restrictions.py": "ace81ba9de6559fea50de88a326c42d07be8c838d66946de984c49f95519e013",
+      "matrix_multiplication/tensors.py": "664be8ada154c3c68016235272e31cc8659a4a5f019e6f69603fcce209f0bc43",
+      "matrix_multiplication/verification.py": "1be1c0fd00c1f03eadd6f91fd9d108e58391e055967a1c655e1f5013722033ff",
+      "matrix_multiplication/work_comparison.py": "f50962f6625e5d559b6d0831fde1176977b0390f69f69caf55024eaf2140412a",
+      "matrix_multiplication/work_sweep.py": "e7cfdcdc308f54b7b179481c5889ab9232bfa80dfd0c5a352bf4c81db3feb98f"
+    }
+  },
+  "stages": [
+    {
+      "name": "search-1",
+      "family": "discovery",
+      "status": "passed",
+      "report": "search-1/index.html",
+      "data": "search-1/report.json",
+      "outcome": "Verified (2, 2, 2) matrix recipe with 8 products. This is a finite executable identity; the exponent comparison is reported separately. Requested rank target 7: not reached.",
+      "rank": 8,
+      "target_reached": false,
+      "scheme": "search-1/scheme.json",
+      "setup_measurements": {
+        "elapsed_seconds": 0.08221260004211217,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 241167
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "register-generated-search-1",
+      "family": "candidate integration",
+      "scope": "Executable repeating plan for generated-search-1",
+      "base_dimension": 2,
+      "base_bilinear_rank": 8,
+      "status": "passed",
+      "setup_measurements": {
+        "elapsed_seconds": 0.0054079999681562185,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 43320
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "replay-1",
+      "family": "replay",
+      "status": "passed",
+      "report": "replay-1/index.html",
+      "data": "replay-1/report.json",
+      "outcome": "Verified (2, 2, 2) matrix recipe with 8 products. This is a finite executable identity; the exponent comparison is reported separately. Requested rank target 7: not reached.",
+      "rank": 8,
+      "target_reached": false,
+      "scheme": "replay-1/scheme.json",
+      "setup_measurements": {
+        "elapsed_seconds": 0.011574700009077787,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 129623
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "tensor-product",
+      "family": "construction",
+      "status": "passed",
+      "report": "tensor-product/index.html",
+      "data": "tensor-product/report.json",
+      "outcome": "Verified (4, 4, 4) matrix recipe with 49 products. This is a finite executable identity; the exponent comparison is reported separately.",
+      "rank": 49,
+      "scheme": "tensor-product/scheme.json",
+      "setup_measurements": {
+        "elapsed_seconds": 0.11169920000247657,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 314120
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "register-generated-tensor-product",
+      "family": "candidate integration",
+      "scope": "Executable repeating plan for generated-tensor-product",
+      "base_dimension": 4,
+      "base_bilinear_rank": 49,
+      "status": "passed",
+      "setup_measurements": {
+        "elapsed_seconds": 0.19383780006319284,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 366999
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "cw-q2-power2",
+      "family": "polynomial tensor recovery",
+      "status": "passed",
+      "report": "cw-q2-power2/index.html",
+      "data": "cw-q2-power2/report.json",
+      "outcome": "Polynomial CW tensor recovered and exactly verified. This is not yet a matrix multiplier.",
+      "setup_measurements": {
+        "elapsed_seconds": 0.8737758999923244,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 4436138
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "cw-extraction-q2-power2",
+      "family": "verified independent product extraction",
+      "status": "passed",
+      "report": "cw-extraction-q2-power2/index.html",
+      "data": "cw-extraction-q2-power2/report.json",
+      "outcome": "Extracted and executed 4 independent matrix products; the finite recovered recipe uses 176 data products. Dense packing remains open.",
+      "setup_measurements": {
+        "elapsed_seconds": 1.0952819000231102,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 1512398
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "cw-packing-q2-power2",
+      "family": "exact recovery optimization and dense packing",
+      "status": "passed",
+      "report": "cw-packing-q2-power2/index.html",
+      "data": "cw-packing-q2-power2/report.json",
+      "outcome": "Verified (2, 2, 2) matrix recipe with 8 products. This is a finite executable identity; the exponent comparison is reported separately.",
+      "rank": 8,
+      "scheme": "cw-packing-q2-power2/scheme.json",
+      "setup_measurements": {
+        "elapsed_seconds": 1.4910101999994367,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 605050
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "cw-coarse-q2-power2",
+      "family": "coarse CW classification and verified packing",
+      "status": "passed",
+      "report": "cw-coarse-q2-power2/index.html",
+      "data": "cw-coarse-q2-power2/report.json",
+      "outcome": "Verified (2, 2, 2) matrix recipe with 8 products. This is a finite executable identity; the exponent comparison is reported separately.",
+      "rank": 8,
+      "scheme": "cw-coarse-q2-power2/scheme.json",
+      "setup_measurements": {
+        "elapsed_seconds": 0.5307542999507859,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 936936
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "cw-interior-q2-power2",
+      "family": "interior CW restrictions and reusable parts",
+      "status": "passed",
+      "report": "cw-interior-q2-power2/index.html",
+      "data": "cw-interior-q2-power2/report.json",
+      "outcome": "Verified (4, 4, 4) matrix recipe with 64 products. This is a finite executable identity; the exponent comparison is reported separately.",
+      "rank": 64,
+      "scheme": "cw-interior-q2-power2/scheme.json",
+      "setup_measurements": {
+        "elapsed_seconds": 23.664941300055943,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 67067499
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "register-generated-cw-interior-q2-power2",
+      "family": "candidate integration",
+      "scope": "Executable repeating plan for generated-cw-interior-q2-power2",
+      "base_dimension": 4,
+      "base_bilinear_rank": 64,
+      "status": "passed",
+      "setup_measurements": {
+        "elapsed_seconds": 0.06414350005798042,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 182972
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "cw-neighborhood-q2-power2",
+      "family": "seeded CW neighborhoods and checked joint recovery",
+      "status": "passed",
+      "report": "cw-neighborhood-q2-power2/index.html",
+      "data": "cw-neighborhood-q2-power2/report.json",
+      "outcome": "Seeded coordinate and joint-restriction experiment completed: 0 new verified shapes and 0 joint-recovery savings. Bounded misses are not exclusions.",
+      "setup_measurements": {
+        "elapsed_seconds": 47.735177600057796,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 92784293
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "cw-support-q2-power2",
+      "family": "three-step support search and exact rank reuse",
+      "status": "passed",
+      "report": "cw-support-q2-power2/index.html",
+      "data": "cw-support-q2-power2/report.json",
+      "outcome": "Verified (4, 4, 4) matrix recipe with 49 products. This is a finite executable identity; the exponent comparison is reported separately.",
+      "rank": 49,
+      "scheme": "cw-support-q2-power2/scheme.json",
+      "setup_measurements": {
+        "elapsed_seconds": 51.47993770008907,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 198761712
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "register-generated-cw-support-q2-power2",
+      "family": "candidate integration",
+      "scope": "Executable repeating plan for generated-cw-support-q2-power2",
+      "base_dimension": 4,
+      "base_bilinear_rank": 49,
+      "status": "passed",
+      "setup_measurements": {
+        "elapsed_seconds": 0.4792699000099674,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 504376
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "register-generated-cw-packed",
+      "family": "candidate integration",
+      "scope": "Best finite CW packing from cw-coarse-q2-power2; all candidate reports retained.",
+      "selected_construction": "cw-coarse-q2-power2",
+      "base_dimension": 2,
+      "base_bilinear_rank": 8,
+      "base_field_arithmetic_operations": 64,
+      "candidates": [
+        {
+          "construction": "cw-packing-q2-power2",
+          "rank": 8,
+          "base_dimension": 2,
+          "admitted_to_comparison": true
+        },
+        {
+          "construction": "cw-coarse-q2-power2",
+          "rank": 8,
+          "base_dimension": 2,
+          "admitted_to_comparison": true
+        }
+      ],
+      "status": "passed",
+      "setup_measurements": {
+        "elapsed_seconds": 0.02184790000319481,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 49330
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-naive",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/naive/certificate.json",
+      "argument": "certificates/naive/README.md",
+      "scope": "Classical base identity; not a proof of the naive Python program.",
+      "setup_measurements": {
+        "elapsed_seconds": 0.026820600032806396,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 80045
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-strassen",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/strassen/certificate.json",
+      "argument": "certificates/strassen/README.md",
+      "scope": "Exact base identities and repeating recurrence; not a proof of the execution program.",
+      "setup_measurements": {
+        "elapsed_seconds": 0.040746400016359985,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 86704
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-strassen-winograd",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/strassen-winograd/certificate.json",
+      "argument": "certificates/strassen-winograd/README.md",
+      "scope": "Exact base identities and repeating recurrence; not a proof of the execution program.",
+      "setup_measurements": {
+        "elapsed_seconds": 0.028152900049462914,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 85403
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-alphaevolve",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/alphaevolve/certificate.json",
+      "argument": "certificates/alphaevolve/README.md",
+      "scope": "Exact base identities and repeating recurrence; not a proof of the execution program.",
+      "setup_measurements": {
+        "elapsed_seconds": 11.036474599968642,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 2432353
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-smirnov",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/smirnov/certificate.json",
+      "argument": "certificates/smirnov/README.md",
+      "scope": "Exact base identities and repeating recurrence; not a proof of the execution program.",
+      "setup_measurements": {
+        "elapsed_seconds": 21.64530560001731,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 3096687
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-generated-search-1",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/generated-1/certificate.json",
+      "argument": "certificates/generated-1/README.md",
+      "scope": "Verified finite scheme/cycle for generated-search-1; no claim of a record.",
+      "setup_measurements": {
+        "elapsed_seconds": 0.02458870003465563,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 80253
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-generated-tensor-product",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/generated-2/certificate.json",
+      "argument": "certificates/generated-2/README.md",
+      "scope": "Verified finite scheme/cycle for generated-tensor-product; no claim of a record.",
+      "setup_measurements": {
+        "elapsed_seconds": 7.449109299923293,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 386865
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-generated-cw-interior-q2-power2",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/generated-3/certificate.json",
+      "argument": "certificates/generated-3/README.md",
+      "scope": "Verified finite scheme/cycle for generated-cw-interior-q2-power2; no claim of a record.",
+      "setup_measurements": {
+        "elapsed_seconds": 9.33897150005214,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 444386
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-generated-cw-support-q2-power2",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/generated-4/certificate.json",
+      "argument": "certificates/generated-4/README.md",
+      "scope": "Verified finite scheme/cycle for generated-cw-support-q2-power2; no claim of a record.",
+      "setup_measurements": {
+        "elapsed_seconds": 6.910338299931027,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 380403
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "certificate-generated-cw-packed",
+      "family": "exact certificate",
+      "status": "passed",
+      "data": "certificates/generated-5/certificate.json",
+      "argument": "certificates/generated-5/README.md",
+      "scope": "Verified finite scheme/cycle for generated-cw-packed; no claim of a record.",
+      "setup_measurements": {
+        "elapsed_seconds": 0.023571899975650012,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 81436
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    },
+    {
+      "name": "pair-exact",
+      "family": "profiles, memory, accuracy, traces",
+      "status": "passed",
+      "report": "pair-exact/index.html",
+      "data": "pair-exact/measurements.json",
+      "algorithm_calls": 10,
+      "trace_limit_per_algorithm": 10
+    },
+    {
+      "name": "pair-floating",
+      "family": "profiles, memory, accuracy, traces",
+      "status": "passed",
+      "report": "pair-floating/index.html",
+      "data": "pair-floating/measurements.json",
+      "algorithm_calls": 10,
+      "trace_limit_per_algorithm": 10
+    },
+    {
+      "name": "arithmetic-growth",
+      "family": "measured arithmetic and theoretical comparison",
+      "status": "passed",
+      "report": "index.html#arithmetic-growth",
+      "data": "measurements.json",
+      "requested_configurations": 20,
+      "actual_executions": 20,
+      "reused_measurements": 0,
+      "setup_errors": 0,
+      "classical_reference_executions": 0
+    },
+    {
+      "name": "report-render",
+      "family": "combined HTML presentation",
+      "report": "index.html",
+      "scope": "All existing arithmetic and diagnostic report sections",
+      "status": "passed",
+      "setup_measurements": {
+        "elapsed_seconds": 1.0707408000016585,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 35587113
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    }
+  ],
+  "scope": "All implemented report families with recorded bounded experiments; not every possible parameter combination.",
+  "exponent_claim": "No new exponent follows from completing the suite.",
+  "finite_targets": {
+    "schema": "finite-rank-targets-v1",
+    "strict_exponent_targets": [
+      "11/4",
+      "23/10"
+    ],
+    "rows": [
+      {
+        "dimension": 2,
+        "11/4": 6,
+        "23/10": 4
+      },
+      {
+        "dimension": 3,
+        "11/4": 20,
+        "23/10": 12
+      },
+      {
+        "dimension": 4,
+        "11/4": 45,
+        "23/10": 24
+      },
+      {
+        "dimension": 8,
+        "11/4": 304,
+        "23/10": 119
+      },
+      {
+        "dimension": 16,
+        "11/4": 2047,
+        "23/10": 588
+      },
+      {
+        "dimension": 32,
+        "11/4": 13777,
+        "23/10": 2896
+      },
+      {
+        "dimension": 54,
+        "11/4": 58087,
+        "23/10": 9649
+      }
+    ],
+    "meaning": "Largest integer rank strictly beating each square exponent; no existence claim.",
+    "known_limit": "2x2 requires at least seven products; its threshold six for 11/4 is infeasible.",
+    "source": "https://arxiv.org/abs/2212.01175"
+  },
+  "artifact_sha256": {
+    "certificates/alphaevolve/certificate.json": "543d62dbbd4c080a1a574935ee84d40b358ab8b2e6d30812d3c8c1bf78198d2b",
+    "certificates/alphaevolve/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/alphaevolve/file-sha256.json": "833e9c24ae011ddd8d1fbc669e34a5383278df22792f983d15335374ac02c4e8",
+    "certificates/alphaevolve/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/alphaevolve/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/generated-1/certificate.json": "f1498836be93a7a14c6cd7285582ff1704b44af41db5b8949e931beb796fb2df",
+    "certificates/generated-1/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/generated-1/file-sha256.json": "2a5be7c94a958a6ca3b381c88727f1580a758524ffb3f817723bdb73f3902873",
+    "certificates/generated-1/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/generated-1/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/generated-2/certificate.json": "2d2a2ab863764a66d032c1a935894085426385aa487e7ec9263b151eba7350cb",
+    "certificates/generated-2/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/generated-2/file-sha256.json": "2c1e197f2e2b31876fd39c9e5daf9546a2041b83e1b5c4dfd980d5fb955dcd5c",
+    "certificates/generated-2/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/generated-2/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/generated-3/certificate.json": "7ad7fa61074cc6ed2318ee1771043fa74947debd40b04b6462ccdb8b9c5f85bc",
+    "certificates/generated-3/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/generated-3/file-sha256.json": "69e822baa3427c66f4d1a5ca402fe92779069bdb6461d18082e8303207e15ff7",
+    "certificates/generated-3/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/generated-3/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/generated-4/certificate.json": "7adaba49b4febb90220e9bdbac118cc430d9d34d9109b43ba0689c0be4cb8980",
+    "certificates/generated-4/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/generated-4/file-sha256.json": "a0a9f01ee2ced31b52dd3a9bf71c0f41bff7bcd66d65af692264b6e478d85180",
+    "certificates/generated-4/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/generated-4/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/generated-5/certificate.json": "d8fd308d700e68e166829cc1ade4acd763754b32709b42681b286493b98fdf29",
+    "certificates/generated-5/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/generated-5/file-sha256.json": "68efe0ea24a9cffd3d06e623765041a0cf031628bbff930d012702cc51b32a1b",
+    "certificates/generated-5/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/generated-5/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/naive/certificate.json": "7abe3b901ce161223d71fe1a6d639d74b62179dc898ee529c5e37fccd5e20779",
+    "certificates/naive/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/naive/file-sha256.json": "d6bb56e3c4e7a9f4ff36cd5786fdb2220fb84303b64475f795700fe92f70fe77",
+    "certificates/naive/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/naive/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/smirnov/certificate.json": "e62908e8610e84bbf2a2aa8ddf90e0a86fb7d0a500055a5adfc5b2d9c0038a1f",
+    "certificates/smirnov/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/smirnov/file-sha256.json": "084436526f67b1e188fd91b1c687de5f2d1c1f085f463a6ee1c947d68dd101de",
+    "certificates/smirnov/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/smirnov/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/strassen/certificate.json": "39928475de95c6abf550048813ff5d3122f14f4d3345eddc534a73be57f5b072",
+    "certificates/strassen/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/strassen/file-sha256.json": "254ad77914ef1bfe4cb8a1fb0a168887c9f024a60bae88541ef3009186a49891",
+    "certificates/strassen/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/strassen/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "certificates/strassen-winograd/certificate.json": "5d63f364c11296974d761c8cff0dad0bf19384b95d4bd483bcfae12026e9b419",
+    "certificates/strassen-winograd/check_certificate.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+    "certificates/strassen-winograd/file-sha256.json": "e02e77a0df453cc688fb5df86b421bdad60081ea3fe28ff769b8702e1410346c",
+    "certificates/strassen-winograd/LICENSE": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+    "certificates/strassen-winograd/README.md": "4ab807633abbb0c98c6aa6a60e205e9bc5339a4cb0470b34152a576611f4068d",
+    "cw-coarse-q2-power2/index.html": "14464b09ae39a2b54831b40c269bef705421f4ea78863986441f6671ec93d9dd",
+    "cw-coarse-q2-power2/report.json": "361897a74022906ab54ebb9fa0905a0665a655c63e5565ca9f8540db95511e5c",
+    "cw-coarse-q2-power2/scheme.json": "86bf7996f00308efb5c358d48934bd8a2da8a4707605ab89bea35a4ae4e8c637",
+    "cw-extraction-q2-power2/index.html": "561745cbccbecab822f6d7b4633121e84533f277a50e4512bd168c2963b599b7",
+    "cw-extraction-q2-power2/report.json": "9f9affde4874bfdac03870904858e451f0d7922b2504d3c36f18b344ca6d2275",
+    "cw-extraction-q2-power2/tensor.json": "95d5b693112f8f03d5d72f5dbed65a6ca259737a179f93117c26e6c6d53f1788",
+    "cw-interior-q2-power2/index.html": "80b7447260617e03da0420cb71a3240509635081494d76d1299b53ae1c2784d0",
+    "cw-interior-q2-power2/parts.json": "414cc6287d1f72281b71b44378395935dd71913ef17e8ce25e837fa3d4d5e455",
+    "cw-interior-q2-power2/report.json": "2540794b62a3f983465a037003532d9d449a14ad93cd10279c0c50036f80bcfd",
+    "cw-interior-q2-power2/scheme.json": "906b857543e89261696fa0adcb6cf76a1068437a8411c808fc4a529128f1a468",
+    "cw-neighborhood-q2-power2/index.html": "4d242c1d73d47f1c96394590c032026cec0db7bb7401104429ad8b491be05011",
+    "cw-neighborhood-q2-power2/parts.json": "9a9fb53162e4250a183e6545d5f0f3c9b13021dca2d43f39ea653e98c52553d5",
+    "cw-neighborhood-q2-power2/report.json": "bc4b2f2876c2a04f1c92aef0929fd109e5c76aa323d088fafa154c90d3e67d3c",
+    "cw-packing-q2-power2/index.html": "b2a53f708f8c0ea7be112ab92d2df2aa2911b567c5c9165b421b7468638816c0",
+    "cw-packing-q2-power2/report.json": "dc2b86e30792eb802a26241e304f7ebdf7b4c353b85b72a17cf8bd206d19c487",
+    "cw-packing-q2-power2/scheme.json": "3301fe885128bde7c03b06c58c81972bd4d0b8d964a3db417038beb80547f5e8",
+    "cw-q2-power2/index.html": "68b52d88e1b233d37bde47eddc69d7ba6155a1b32cc90f5518379a1cf761006e",
+    "cw-q2-power2/report.json": "8b6f288156a112829e4d7a6535e53bf9c09225f116d80e68b26558faaa5b1559",
+    "cw-q2-power2/tensor.json": "e17cbb6c06d6c18c0a2c416f81ee29592e1f5093daf781159855e2fa5b821ff4",
+    "cw-support-q2-power2/index.html": "778d5039ae231df515c394e09adf0cd947857e0f04d8ca61956914c0fc557c16",
+    "cw-support-q2-power2/parts.json": "e3d2fa02afe2fca7fb4bccd504a29fc027894bc86ed1407d289e7c9663ba533f",
+    "cw-support-q2-power2/report.json": "a5309feb08cd58f77663a20f0a106f29f2c56caf49496ef3abdbd31636c4a60e",
+    "cw-support-q2-power2/scheme.json": "6ce2d33edf4e9f41847bb4644dff58ef5cffdc1da0d82af2ad74b7d6dfaeb134",
+    "finite-targets.json": "d4f2a0450bdb9799be474942100ca6486c2afb68067f0692ac19e8e6092d6afd",
+    "measurements.json": "26433500b97a7356021cbd3549963f83be35ef734abb6ad1ace7b30e389b524d",
+    "pair-exact/index.html": "3166a9fe3bbbe0e05b60fd832c45551e0e161247deb1ba23c54d727926aa3ac1",
+    "pair-exact/measurements.json": "47ecec99a8e3fb4b1b37622bdf5990a04345d6426e3d6a86f5fe492ee881d6aa",
+    "pair-floating/index.html": "cbe6b61dcf477d3c61d9ae352f0137ca2e0b1efc56d95c833e76d61819d57cbb",
+    "pair-floating/measurements.json": "fe003118e31bd3f8048d3d6fb5df9d51e76a5be14b7d1fa3ff834c1dcfa5ad12",
+    "replay-1/index.html": "a33a45946944a5688a7d11c90c6570a40b57dc790d9c98d3d7619ffed79a29b0",
+    "replay-1/report.json": "72942a3f15f087f2f1c69bd938a680cf24122919e28d4be869ac78f78210af21",
+    "replay-1/scheme.json": "0978ab9c17c9e61d73ec313d1722554859283208234cc1577d8292d72a344f1d",
+    "search-1/index.html": "0ea83ccbcec56b6a16855b78ec2a8a2a9c8af71d41bd3342db79911141561a1e",
+    "search-1/report.json": "45a34a58ef27c92d16078797019318f96ca1a7cf8a2eeae44c1f7e002b5cbd04",
+    "search-1/scheme.json": "657e6b41db2ddd47c40c0bd51bacf2d1e812eaee40fc591f561eddc1ce597245",
+    "tensor-product/index.html": "dc043c2f74a0f57d5169f1c907addc0db629e41a91ba3595c5fd3b9807a47be8",
+    "tensor-product/report.json": "15fdd22a5ed706ebce67a18e00ad688c0ebb53935b1d4284dce6a461ab089e0e",
+    "tensor-product/scheme.json": "e36f3641805dd7a9d345bdfb759b776dcd82e127b198db5986296e0df3382ba0"
+  }
+}

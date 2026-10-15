@@ -18,6 +18,7 @@ from unittest.mock import patch
 
 import sweep
 from matrix_multiplication import ALGORITHMS, naive
+from matrix_multiplication.composition import Composition
 from matrix_multiplication.research_suite import (
     SuiteRun, SuiteSettings, pair_evidence, run_suite, target_evidence)
 
@@ -73,6 +74,9 @@ class ResearchSuiteTests(unittest.TestCase):
             self.assertTrue({"discovery", "replay", "construction", "polynomial tensor recovery", "exact certificate",
                              "verified independent product extraction", "exact recovery optimization and dense packing",
                              "coarse CW classification and verified packing",
+                             "interior CW restrictions and reusable parts",
+                             "seeded CW neighborhoods and checked joint recovery",
+                             "three-step support search and exact rank reuse",
                              "profiles, memory, accuracy, traces",
                              "measured arithmetic and theoretical comparison"} <= families)
             extraction = json.loads((root / "cw-extraction-q1-power1" / "report.json").read_text())["cw_extraction"]
@@ -82,6 +86,12 @@ class ResearchSuiteTests(unittest.TestCase):
             coarse = json.loads((root / "cw-coarse-q1-power1" / "report.json").read_text())["cw_coarse"]
             self.assertTrue(coarse["partition_reconstruction_verified"])
             self.assertTrue(coarse["packing"]["dense_matrix_identity_verified"])
+            interior = json.loads((root / "cw-interior-q1-power1" / "report.json").read_text())["cw_interior"]
+            self.assertEqual(interior["unrecognized_sectors"], [])
+            self.assertTrue((root / "cw-interior-q1-power1" / "parts.json").is_file())
+            neighborhood = json.loads((root / "cw-neighborhood-q1-power1" / "report.json").read_text())["cw_neighborhood"]
+            self.assertEqual(neighborhood['experiments'], [])
+            self.assertEqual(neighborhood['new_verified_shapes'], 0)
             integration = next(s for s in manifest["stages"] if s["name"] == "register-generated-cw-packed")
             self.assertTrue(any(c["construction"] == "cw-coarse-q1-power1" for c in integration["candidates"]))
             for stage in manifest["stages"]:
@@ -91,6 +101,11 @@ class ResearchSuiteTests(unittest.TestCase):
             for relative, digest in manifest["artifact_sha256"].items():
                 self.assertEqual(sha256((root / relative).read_bytes()).hexdigest(), digest)
             data = json.loads((root / "measurements.json").read_text())
+            for line in data['series']:
+                for sample in line['samples']:
+                    self.assertEqual(sample['work_comparison']['status'], 'compared')
+                    self.assertEqual(sample['observation']['mathematical_work']['status'], 'modelled')
+                    self.assertEqual(sample['observation']['data_movement']['status'], 'modelled')
             self.assertEqual(data["configuration"]["sizes"], [2, 4])
             self.assertEqual(len(data["reference_reports"]), 2)
             generated = next(line for line in data["series"] if line["algorithm"] == "generated-search-1" and line["cutoff"] == 1)
@@ -111,7 +126,8 @@ class ResearchSuiteTests(unittest.TestCase):
                            "All recorded operation and structural counters", "Original earlier JSON snapshot",
                            "Finite product-count targets", "pair-floating/index.html", "certificate-naive"):
                 self.assertIn(phrase, html)
-            self.assertNotIn("<script", html)
+            self.assertEqual(html.count('<script>'), 1)
+            self.assertNotIn('<script src=', html)
 
     def test_search_miss_is_evidence_but_a_failed_stage_is_not_success(self):
         """Retain an unsuccessful finite search; preserve other stages on recovery error."""
@@ -249,6 +265,11 @@ class ResearchSuiteTests(unittest.TestCase):
         self.assertIn("no existence claim", table["meaning"])
         self.assertEqual(self.settings(search_target_exponent=Fraction(11, 4)).document()["search_target_exponent"], "11/4")
         for overrides in ({"search_steps": -1}, {"cw_parameters": ()}, {"cw_powers": (0,)}, {"cw_packing_size": 1},
+                          {"interior_candidate_budget": -1}, {"interior_max_parts": 0},
+                          {"interior_max_source_dimension": True}, {"interior_max_source_terms": 0},
+                          {"neighborhood_budget": -1}, {"neighborhood_max_witnesses": 0},
+                          {'support_budget': -1}, {'support_steps': -1}, {'support_search_seeds': ()},
+                          {'support_restarts': 0}, {'support_reduction_limit': 0}, {'support_max_height': 0},
                           {"search_seeds": ()}, {"search_target_rank": 0},
                           {"search_split_every": 0}, {"search_start": ""},
                           {"search_target_rank": 7, "search_target_exponent": Fraction(11, 4)}):
@@ -257,6 +278,11 @@ class ResearchSuiteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             with self.assertRaises(ValueError):
                 run_suite([0], [1], output_root=temp)
+            self.assertEqual(list(Path(temp).iterdir()), [])
+        with tempfile.TemporaryDirectory() as temp:
+            with self.assertRaisesRegex(ValueError, "reserved suite name"):
+                run_suite([2], [1], algorithms=["naive"], output_root=temp, settings=self.settings(),
+                          compositions={"generated-cw-interior-q1-power1": Composition(["strassen"])})
             self.assertEqual(list(Path(temp).iterdir()), [])
 
     def test_existing_recipe_start_and_source_fingerprints(self):

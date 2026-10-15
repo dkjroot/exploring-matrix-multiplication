@@ -28,8 +28,10 @@ every real/algebraic number automatically. Memory and time remain finite resourc
 - Keep mathematics and cost models separate. Multiplication/addition counts use
   unit-cost field arithmetic. The 64-bit word model observes exact operand widths
   and estimates a declared schoolbook integer/rational schedule. It does not narrow
-  our numbers or claim to count processor instructions. GCD, cancellation, division
-  and carry work excluded by that model remain explicitly unmodelled.
+  our numbers or claim to count processor instructions. The original word model
+  retains its explicit exclusions. A separate mathematical work model accounts
+  for a declared GCD, cancellation, division and carry schedule; the models must
+  not be added together. See [MATHEMATICAL_WORK.md](MATHEMATICAL_WORK.md).
 - Distinguish captured executions, exact recurrence projections, finite-range fits
   and asymptotic arguments. Memory peaks and operand widths are measured properties
   of particular inputs and representations; do not silently extend them to infinity.
@@ -175,20 +177,22 @@ product = multiply(a, b, algorithm="alphaevolve", cutoff=1)
 same_product = strassen.multiply(a, b, cutoff=1)
 ```
 
-Each module provides `multiply(a, b, *, cutoff=1, instrumentation=None)`. Inputs are nonempty rectangular
+Each module provides `multiply(a, b, *, cutoff=1, instrumentation=None, size_policy="fringe")`. Inputs are nonempty rectangular
 lists or tuples of rows, containing integers, standard-library rational numbers,
 finite floats, or finite complex values. The left column count must equal the
 right row count. Empty matrices and zero-length rows are rejected because these
 representations cannot express their dimensions unambiguously. Inputs are never
 modified; results are new lists of rows.
 
-Recursive algorithms pad to a square power of two (Strassen variants) or four
-(AlphaEvolve). Smirnov pads along its repeating rectangular stage dimensions;
-after three stages the accumulated dimension is 54 on every axis. Each algorithm
-crops the product to the requested shape. This supports odd and rectangular shapes,
-but padding can be expensive for skinny matrices. `cutoff` selects the largest
-classical leaf size; the default of 1 exercises full recursion. Naive validates
-this option for interface consistency but always performs classical multiplication.
+Recursive algorithms operate on the requested dimensions without padding. At
+each level they apply the equal-block recipe to the largest divisible core and
+finish the remaining rows, columns and shared inner terms explicitly. A stage
+that cannot form nonempty blocks uses classical multiplication. This handles odd
+and rectangular inputs, including skinny matrices. `cutoff` tests the actual
+dimensions before splitting; the default of 1 exercises all applicable recursion.
+Naive validates this option for interface consistency but always multiplies classically.
+Use `size_policy="padded"` or `--size-policy padded` in either CLI to reproduce the
+historical whole-input padding and original cutoff ordering for comparison.
 These are readable research implementations; smaller arithmetic exponents do
 not guarantee smaller Python runtimes. Optional counters, primitive profiles, and
 bounded scalar traces are now available; compiled/GPU execution remains future work.
@@ -308,11 +312,17 @@ table, then adds links to these automatically generated artifacts:
 - Exact finite rank targets, plus a manifest recording settings, outcomes, and
   artifact fingerprints. Completed stages survive a failure elsewhere.
 
-The default arithmetic sizes remain 1, 2, 4, 8, 16, with cutoffs 1, 2, 4.
+The default arithmetic sizes are every integer from 1 through 16, with cutoffs 1, 2, 4.
 Discovery defaults to the bounded 2-by-2 experiment; increasing `--sizes` does
 not automatically increase search sizes or CW powers. Each growth call captures
 operand widths and a separate optional Python allocation peak. Small pairs retain
 primitive timing profiles; setup/construction stages have separate resource scopes.
+The same report includes [mathematical work efficiency](MATHEMATICAL_WORK.md),
+measured Python memory and logical data movement as three separate graphs.
+The work score includes a declared exact-arithmetic schedule for GCD, reduction,
+division and carry handling, and is normalized against classical multiplication
+on identical inputs. All ordinary and generated recipes participate. Original
+word-cost graphs and recurrence projections retain their earlier definitions.
 A search that misses its target is reported honestly as a completed
 experiment; invalid identities, wrong products, and arithmetic mismatches cause
 a failed suite and nonzero exit status. All outputs remain ignored by Git.
@@ -337,6 +347,36 @@ unbounded growth; the graph illustrates a finite range. `--no-sweep-memory`
 disables growth-call allocation probes, preserving arithmetic and operand/word
 cost observations. `--measurements-only` skips other research suite stages.
 
+Arithmetic graphs also have an **Extend dimension range** slider. They initially
+show only the sampled range. Each step doubles its maximum dimension and reveals
+a dotted curve of exact discrete schedule predictions, including fringe work,
+cutoff decisions and all recorded arithmetic categories. The field and component
+totals can be extended too. `--projection-cycles` sets the number of available
+range doublings. **Reset** restores the sampled graph and axes.
+
+Each graph also has **Select all** and **Select none** buttons. Click its legend
+entries to switch individual lines on or off; for a two-line comparison, select
+none and enable those two entries. Hovering still temporarily isolates related
+visible curves. Line selections survive slider changes and range reset, and do
+not change any saved measurements or bounds.
+
+The extra matrices are never allocated or multiplied. Small projected sizes are
+sampled densely; larger ranges use selected integer dimensions and neighbours of
+stage-prefix boundaries to expose jumps and dips. Connecting lines do not resolve
+every intervening fluctuation. Exact counts remain integers in JSON and decimal
+strings in browser tooltips; browser coordinates and axis labels are approximate.
+Operand-growth and both 64-bit word-work graphs also have sliders, but reveal
+**proved upper bounds**, drawn with dash-dot lines, rather than predicted
+observations. The bounds apply to this sweep's integer inputs with |entry| ≤ 4,
+the fixed recipe, cutoff and size policy. They use exact rational inequalities,
+including fractional denominators and complex components, without assuming
+cancellation. They can be loose; a high bound does not establish that actual
+values will be high. Each saved dimension has its own bound; a connecting line
+is not a bound at intervening dimensions. See [RESOURCE_BOUNDS.md](RESOURCE_BOUNDS.md).
+Python memory peaks and elapsed time remain measured-only because no justified
+model of those quantities has been derived.
+The controls work offline; without JavaScript the original sampled graphs remain.
+
 The 64-bit baseline is a **cost unit**, not a precision limit. A magnitude of b
 bits needs ceil(b/64) words; schoolbook multiplication of u and v words costs u*v
 word-pair products. Two 4,096-bit integers therefore model 4,096 word products.
@@ -348,7 +388,7 @@ use faster integer algorithms. These estimates are not processor instructions.
 Memory peaks include Python-traced allocations during execution, observer
 overhead and any cold setup; pre-existing inputs and untraced native/GPU storage
 are outside the probe. Reused rows identify their source. We do not project
-operand widths or algorithm memory peaks from small samples. Projection tables
+operand widths or algorithm memory peaks by fitting small samples. Projection tables
 include a hypothetical three-array 64-bit input/output baseline, separate from
 Fraction storage or peak memory. Setup tables report generation/check/export
 stage resources; raw coefficient-arithmetic counts remain unmeasured.
@@ -390,9 +430,9 @@ given size. Repeating identical inputs is unnecessary for deterministic counts.
 
 The sweep also avoids repeating equivalent cutoffs for the same algorithm and
 input. Naive's cutoff always has no effect; recursive algorithms can share a
-stopping point too. For example, AlphaEvolve cutoffs 1, 2, and 3 reach the same
-leaves, and the default Smirnov sizes use the same stages at cutoffs 1, 2, and 4.
-We compare padded dimensions, ordered recursion stages, and actual leaf dimensions
+stopping point too. For example, AlphaEvolve at size 16 reaches the same leaves
+with cutoffs 1, 2, and 3. Equivalence depends on the input and selected size policy.
+We compare executed dimensions, ordered recursion stages, and actual leaf dimensions
 before reusing one successful, verified execution. Equal operation totals alone
 are insufficient. Different sizes and algorithms always run independently.
 
@@ -405,7 +445,7 @@ To deliberately execute every cutoff, use `python sweep.py --repeat-equivalent-c
 Python callers can pass `reuse_equivalent_cutoffs=False` to `collect_work`.
 
 The report overlays captured **data multiplication** counts with a smooth ideal
-model and the discrete recurrence's prediction after padding. Both models use
+model and the discrete recurrence's prediction under the selected size policy. Both models use
 declared algorithm parameters; neither substitutes for executed counters. Separate
 plots show total field arithmetic and component/atomic steps, which describe
 overlapping layers and must not be added together. Coefficient multiplications are
@@ -444,10 +484,13 @@ embeds each original reference JSON verbatim with its source hash, so a copied
 report remains self-contained. No earlier file is modified, no previous dated
 report is overwritten, and no earlier report is included implicitly.
 
-The configured cutoff is the maximum classical leaf size. For radix-four
-recursion, cutoff 2 or 3 still gives size-1 leaves; cutoff 4 permits size-4 leaves.
-Both an 8-by-8 and a 16-by-16 AlphaEvolve input pad to size 16, producing a measured
-plateau. The report shows actual padded sizes and leaf sizes to explain this.
+The configured cutoff is the maximum classical leaf size. At natural radix-four
+sizes such as 16, cutoff 2 or 3 still gives size-1 leaves; cutoff 4 permits size-4
+leaves. Unpadded inputs can reach other leaf sizes: size 8 splits to size-2 blocks,
+so cutoff 2 permits those classical leaves. An empty core also stops recursion.
+In the optional padded baseline, both 8-by-8 and 16-by-16 AlphaEvolve inputs pad
+to size 16, producing a plateau. The default runs size 8 directly with size-2
+child blocks. The report records the selected policy and actual leaf dimensions.
 
 The report's **Why can the graphs have steps?** section distinguishes prescribed
 block divisions from our size-handling decisions. Expand **Where this algorithm’s
@@ -456,21 +499,19 @@ extra zero input cells, every stage and child shape, leaf dimensions and
 transitions between the sampled sizes.
 
 Recursion alone does not force a staircase. For Strassen at cutoff one, natural
-sizes n=2^h have 7^h data products and lie on the n^log₂7 product curve. Our choice
-to pad arbitrary requests to the next schedule prefix produces plateaus: n=5
-through n=8 execute at size 8, costing 343 products; n=9 executes at size 16,
-costing 2,401. Equal-half block divisions are mathematical. Padding the whole
-request to this grid is a portable implementation choice, not a requirement
-imposed by Python, CUDA or a home computer.
+sizes n=2^h still use 7^h data products. Under the historical padded baseline,
+n=5 through n=8 all cost 343 products and n=9 costs 2,401. The default unpadded
+policy instead costs 110 at n=5: 49 for its 4×4 core plus 5³−4³=61 remaining
+dot terms. Sizes 6, 7, 8 and 9 use 182, 309, 343 and 560 products respectively.
+Every remainder is handled at its own recursive level; no child is padded.
+Equal-block formulas remain intact. Core and stage transitions can still cause
+jumps or dips in finite counts, so the new policy does not promise smooth graphs.
 
-The current interpreter pads before comparing the cutoff. Size 3 with cutoff 3
-therefore pads to 4 and recurses; size 6 with cutoff 3 pads to 8, even though an
-unpadded split 6→3 could use classical leaves. These choices keep one uniform,
-verified traversal; they are not universally necessary. Border handling, peeling,
-generalized blocks or recipe dispatch could reduce finite work while keeping
-exact arithmetic and the asymptotic exponent. Alternatives need their own budgets
-and verification and are on the checklist. We already accept arbitrary square
-sizes correctly; a new policy would change their work, not add missing correctness.
+The default checks the cutoff first: size 3 with cutoff 3 uses 27 classical
+products; size 6 with cutoff 3 splits directly to size-3 leaves. The optional
+padded baseline retains the earlier ordering. Both policies have independent
+integer operation budgets, exact output checks and explicit report metadata.
+The automatic sweep samples every integer size from 1 through 16 by default.
 
 The exponent is an asymptotic bound, not a promise of exactly n^p operations at
 every integer size. A smooth unpadded comparison curve does not execute
@@ -527,7 +568,7 @@ importer are independently written.
 The importer and both certificate checkers verify all 2,916 coefficient
 relationships in each orientation. A balanced-cycle check verifies that all
 three accumulated dimensions are 54 before claiming the square recurrence.
-Padding follows successive stage dimensions and can yield rectangular working
+Under `size_policy="padded"`, padding follows successive stage dimensions and can yield rectangular working
 matrices even for square inputs; reports retain all three padded dimensions.
 For example, a 16x16 input pads to 54x54. Its successive block dimensions are
 18x18x9, 6x3x3, and 1x1x1, so cutoffs 1, 2, and 4 all execute the same 64,000
@@ -543,7 +584,7 @@ The first research checklist item is implemented in
 `matrix_multiplication/scheme_io.py` and `matrix_multiplication/composition.py`.
 The engine accepts our built-in formulas and imported **square** bilinear schemes.
 It runs our existing primitives, rather than calling someone else's multiplier.
-Rectangular input matrices are supported through padding. Version-2 rectangular
+Rectangular inputs use exact cores/fringes by default, with padding selectable. Version-2 rectangular
 base data is used by the Smirnov cycle described above.
 
 ```
@@ -556,6 +597,9 @@ python sweep.py --sizes 1 2 3 4 5 8 9 16 --cutoffs 1 2 4 --algorithms naive stra
 --composition` adds a plan alongside the selected algorithms; repeat that option
 to compare multiple plans. Both commands automatically generate dated HTML reports
 in `outputs/`. Create `outputs/` first if requesting a JSON path in a fresh checkout.
+
+The padding rule in the following example applies only to `size_policy="padded"`.
+The default rounds cores down at each stage and computes the fringe separately.
 
 The comma-separated stages repeat by recursion depth. For example, Strassen then
 AlphaEvolve splits 16 â†’ 8 â†’ 2 â†’ 1 at cutoff 1. Padding follows the smallest prefix
@@ -697,16 +741,17 @@ work, and the distinction from generating the OpenAI witness.
 
 ## Research work checklist
 
+Keep this checklist and [RESEARCH_PLAN.md](RESEARCH_PLAN.md) current as research
+reveals promising new angles. Add the motivation, supporting source or exact
+local evidence, limitations, and a bounded next experiment with a clear success
+criterion. Preserve earlier paths and unsuccessful evidence, and explain changes
+of priority. A proposed direction is not a verified construction or bound.
+
 - [x] Build our own sparse scheme evaluator, recursive composition engine, and operation accounting. Version-1 square scheme import verifies exact identities; configurable repeating schedules share the existing traversal and include independent work budgets.
 - [x] Establish complete exact identity verification with reproducible certificates. Exact square recipes and repeating cycles have portable Python packages, an independent basis checker, fingerprint binding, and a documented composition argument; these are not Lean proofs.
-- [ ] Reproduce a licensed baseline, then investigate the stronger aggregation constructions. The verified Smirnov baseline now achieves exponent 2.7742999804; stronger aggregation constructions remain research work.
-- [ ] Add custom CUDA execution and memory scheduling where this can provide performance benefits without compromising the core principles of mathematical accuracy, readability, instrumentability, and ownership of our implementation - do not use any libraries (GPU or otherwise) that might hide optimisations; Code that is used for searches can be more optimised as long as the source remains educational, but we must own and be able to measure every aspect of the reference implementations.
+- [x] Reproduce a licensed lower-exponent baseline. The verified Smirnov construction achieves exponent 2.7742999804.
+- [ ] Investigate stronger aggregation constructions with exact identities and accounted finite overhead.
 - [ ] Search for product-count reductions or better constructions, independently verifying every candidate. The exact rational generator, flip/reduction/split search, replay logs, and CW polynomial recovery are implemented; a stronger exponent result remains open.
-
-The new construction machinery opens these more specific tasks, in research
-priority order. Only verified finite matrix identities and their accounted
-recurrences can establish a better exponent:
-
 - [x] Run every supported report family from one `python sweep.py` command, with
   a combined report, generated recipes measured automatically, and stage outcomes.
 - [x] Observe exact operand widths and declared 64-bit word equivalents; measure
@@ -714,17 +759,24 @@ recurrences can establish a better exponent:
   categories from exact recurrences without executing enormous matrices.
 - [ ] Derive input/representation-dependent bit-growth and peak-storage recurrences,
   before projecting those resources.
-- [ ] Model and instrument GCD work in exact rational normalization.
-- [ ] Account for cancellation and cross-cancellation, including their cost and
+- [x] Add a same-input classical-relative mathematical work score and separate
+  work, measured-memory and logical data-movement graphs to the automatic sweep.
+- [x] Model and instrument GCD work in an explicit exact rational reference schedule.
+- [x] Account for cancellation and cross-cancellation, including their cost and
   the reduction in operand sizes before multiplication.
-- [ ] Model exact division and normalization work separately from products.
-- [ ] Account for multiword carries and accumulation when combining word products.
+- [x] Model exact division and normalization work separately from products.
+- [x] Account for multiword carries and accumulation when combining word products.
+- [x] Count value-size-aware logical scalar ports, matrix/vector copies,
+  initialization and stores; distinguish this model from hardware traffic.
+- [ ] Derive lifetime-aware peak payload storage and cache-capacity-aware movement
+  models; the bounded next experiment is recorded in RESEARCH_PLAN.md.
 - [x] Explain graph steps with requested/padded dimensions and stage/leaf paths;
   distinguish recipe constraints, portable size policies and presentation artifacts.
-- [ ] Add a verified optional border/fringe strategy for arbitrary square sizes,
-  retaining zero-padding as a comparison baseline. Derive operation budgets and
-  recurrence evidence, including avoiding unnecessary root padding when a request
-  already fits a classical leaf under the alternative policy.
+- [x] Implement exact core/fringe traversal as the default for square and rectangular
+  inputs, retaining `size_policy="padded"` as a comparison baseline. Test actual
+  dimensions before splitting and count boundary work independently at every depth.
+  Fixed stage remainders add O(n²) work per square node, preserving the justified
+  fixed-cutoff family exponent and any existing borderline logarithmic factor.
 - [x] Implement a CW sector/extraction generator and verify surviving independent
   matrix products, including absence of unwanted cross-products. Execute the
   recovered recipe with observable arithmetic and report its finite overhead.
@@ -734,10 +786,29 @@ recurrences can establish a better exponent:
 - [x] Implement sum-index CW coarsening, exact matrix classification with explicit
   basis permutations, and complete catalog reconstruction. Retain unrecognized
   tensors and compare verified coarse recovery/packing in the automatic suite.
+- [x] Run bounded coordinate extraction on interior CW components and their
+  squares. Retain replayable restriction witnesses, pay exact polynomial recovery,
+  save reloadable recipe parts, and verify products of parts from separate source
+  copies. The CW₂-squared experiment recovers four-product unit-axis parts and
+  recombines them into a classical-cost 4-by-4 base; no improved bound follows.
 - [ ] Extract useful products from powers of the unrecognized coarse components,
   improve selection and large-power recovery,
   then implement the stronger constructive conversion behind the asymptotic sum
   inequality. The finite tiling milestone currently gives cubic dense work.
+- [x] Use verified interior witnesses as seeds for bounded coordinate-map
+  neighborhoods and jointly checked selections, with paid whole-target recovery.
+  The initial CW₂ experiment tests 5,088 edits and 21 pairs without finding a new
+  shape or saving. Reusable checkers distinguish dense unions from independent
+  sums and reject unintended cross terms; these misses are not exclusions.
+- [x] Run three sequential support experiments: restrict to seed pools, broaden
+  to complete component spaces and nearby balanced shapes, then recover and
+  reduce retained recipes exactly. The broader search finds eight 2-by-2
+  layouts in a squared interior component; a retained eight-product recipe
+  reduces to seven and recombines into a 49-product 4-by-4 base. This reproduces
+  the known rank-seven exponent, not a stronger bound than Smirnov.
+- [ ] Transport verified support maps across exact cyclic symmetries, then test
+  independent selections of the newly found layouts and recover their joint
+  recipes. Compare the same products with all finite overhead included.
 - [ ] Search reductions of existing explicit real schemes, especially the smaller
   Smirnov rectangular base. A cyclic rank-39 base would give about 2.7553; rank
   38 would give about 2.7357. These are targets, not discovered coefficients.
@@ -758,19 +829,32 @@ recurrences can establish a better exponent:
 - [ ] Audit the OpenAI proof for an effective finite-size bound or constructive
   witness route. Keep this separate from heuristic finite searches and support
   whatever exact coefficient field a verified witness actually needs.
+- [ ] Add custom CUDA execution and memory scheduling where this can provide performance benefits without compromising the core principles of mathematical accuracy, readability, instrumentability, and ownership of our implementation - do not use any libraries (GPU or otherwise) that might hide optimisations; Code that is used for searches can be more optimised as long as the source remains educational, but we must own and be able to measure every aspect of the reference implementations.
 
-The immediate research sequence is general coefficient import and exact
-certificates, a lower-exponent executable baseline, then explicit construction
-and extraction machinery for stronger bounds. The full route, including the
-older asymptotic constructions and the 2.25 witness problem, is in
-[RESEARCH_PLAN.md](RESEARCH_PLAN.md).
+Coefficient import, exact base certificates, the Smirnov baseline and initial
+construction/extraction machinery are implemented. Initial interior restrictions,
+squares and recombinations now provide reusable exact parts at classical cost.
+The first seeded-neighborhood and pair experiment found no new shape or saving.
+The three-step support follow-up now extracts a 2-by-2 product, reduces its paid
+recipe from eight products to seven, and certifies a 49-product 4-by-4
+recombination. Its exponent is the familiar log₂(7), so Smirnov remains the
+stronger baseline. Next, investigate exact symmetry transport and independently
+checked joint selections of the new layouts, comparing fully recovered costs
+with the existing extraction and packing paths. Targeted reductions of
+Smirnov's rectangular recipe provide
+a complementary finite search. Campaign checkpoints, broader exact coefficient
+fields and compact representations support these mathematical paths; custom
+CUDA execution follows when a concrete construction needs it. The bounded next
+experiment and the full route, including older asymptotic constructions and
+the 2.25 witness problem, are in [RESEARCH_PLAN.md](RESEARCH_PLAN.md).
 
 ## Correctness and accuracy
 
 The tests check every base matrix-unit pair: 16 pairs for each 2-by-2 scheme and
 256 pairs for AlphaEvolve's 4-by-4 scheme. Since these formulas are bilinear,
 those checks establish their complete base identities. Block recursion preserves
-these identities inductively; zero padding and cropping preserve the requested
+these identities inductively. The core/fringe extension completes every missing
+dot term exactly once; optional zero padding and cropping also preserve the requested
 product. The tests additionally exercise recursion, shapes, identity and zero
 matrices, seeded random inputs, exact fractions, large integers, complex values,
 input immutability, malformed inputs, and coefficient corruption.

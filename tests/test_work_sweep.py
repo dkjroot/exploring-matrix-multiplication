@@ -35,7 +35,8 @@ class WorkSweepTests(unittest.TestCase):
             data = collect_work([2, 3], [1, 2, 4], algorithms=["naive"])
         self.assertEqual(kernel.call_count, 2)
         self.assertEqual(data["execution_summary"], {"requested_configurations": 6,
-                         "actual_executions": 2, "reused_measurements": 4, "setup_errors": 0})
+                         "actual_executions": 2, "reused_measurements": 4, "setup_errors": 0,
+                         "classical_reference_executions": 0})
         source, reused = data["series"][0]["samples"][0], data["series"][1]["samples"][0]
         self.assertEqual(reused["measurement"]["kind"], "reused")
         self.assertEqual(reused["measurement"]["source_cutoff"], 1)
@@ -147,7 +148,8 @@ class WorkSweepTests(unittest.TestCase):
             if line["algorithm"] == "smirnov":
                 self.assertEqual(line["ideal_curve"], [])
                 self.assertEqual(line["mathematical_model"]["base_dimension"], 54)
-                self.assertEqual(line["samples"][1]["prediction"]["padded_dimensions"], [3, 3, 6])
+                self.assertEqual(line["samples"][1]["prediction"]["padded_dimensions"], [2, 2, 2])
+                self.assertEqual(line["samples"][1]["size_effects"]["extra_zero_input_cells"], 0)
                 self.assertEqual(prediction("smirnov", 4, line["cutoff"]), line["samples"][2]["prediction"])
 
     def test_missing_smirnov_data_remains_an_explicit_reported_error(self):
@@ -167,12 +169,12 @@ class WorkSweepTests(unittest.TestCase):
 
     def test_predictions_include_padding_and_effective_cutoffs(self):
         """Exercise recurrence plateaus and leaf sizes independently of the evaluator."""
-        self.assertEqual(prediction("strassen", 3, 1)["padded_data_multiplications"], 49)
-        self.assertEqual(prediction("strassen", 3, 2)["padded_data_multiplications"], 56)
-        self.assertEqual(prediction("alphaevolve", 8, 3)["effective_leaf_dimension"], 1)
-        self.assertEqual(prediction("alphaevolve", 8, 4)["padded_data_multiplications"], 3072)
-        self.assertEqual(prediction("alphaevolve", 8, 1)["padded_data_multiplications"],
-                         prediction("alphaevolve", 16, 1)["padded_data_multiplications"])
+        self.assertEqual(prediction("strassen", 3, 1, size_policy="padded")["padded_data_multiplications"], 49)
+        self.assertEqual(prediction("strassen", 3, 2, size_policy="padded")["padded_data_multiplications"], 56)
+        self.assertEqual(prediction("alphaevolve", 8, 3, size_policy="padded")["effective_leaf_dimension"], 1)
+        self.assertEqual(prediction("alphaevolve", 8, 4, size_policy="padded")["padded_data_multiplications"], 3072)
+        self.assertEqual(prediction("alphaevolve", 8, 1, size_policy="padded")["padded_data_multiplications"],
+                         prediction("alphaevolve", 16, 1, size_policy="padded")["padded_data_multiplications"])
         self.assertAlmostEqual(prediction("strassen", 4, 1)["ideal_data_multiplications"], 49)
 
     def test_observed_growth_matches_executed_classical_and_strassen_work(self):
@@ -180,8 +182,8 @@ class WorkSweepTests(unittest.TestCase):
         data = collect_work([1, 2, 3, 4], [1, 2], algorithms=["naive", "strassen"])
         lines = {(line["algorithm"], line["cutoff"]): line for line in data["series"]}
         samples = lines[("strassen", 1)]["samples"]
-        self.assertEqual([sample["observation"]["counts"]["field_multiplications"] for sample in samples], [1, 7, 49, 49])
-        self.assertEqual([sample["observation"]["counts"]["field_multiplications"] for sample in lines[("strassen", 2)]["samples"]], [1, 8, 56, 56])
+        self.assertEqual([sample["observation"]["counts"]["field_multiplications"] for sample in samples], [1, 7, 26, 49])
+        self.assertEqual([sample["observation"]["counts"]["field_multiplications"] for sample in lines[("strassen", 2)]["samples"]], [1, 8, 26, 56])
         self.assertAlmostEqual(lines[("naive", 1)]["empirical_fits"]["field_multiplications"]["slope"], 3)
         for line in lines.values():
             for sample in line["samples"]:
@@ -239,14 +241,15 @@ class WorkSweepTests(unittest.TestCase):
         data = collect_work([1, 2, 4], [1, 2], algorithms=["strassen"])
         decoded = visual.read_reports(json.dumps(data))
         html = visual.render_html(decoded, title="Sweep", source_name="test.json", source_hash="abc", generated="today")
-        for phrase in ("Wall-clock time is not plotted", "ideal model", "padded prediction", "Log-log view",
+        for phrase in ("Wall-clock time is not plotted", "ideal model", "execution-policy prediction", "Log-log view",
                        "Measured multiplication slope", "Data multiplications", "Coefficient multiplications",
                        "Exact sampled counts", "not proofs of an asymptotic exponent",
                        "Square arithmetic exponents", "Arithmetic work breakdown", "Subtractions", "Normalizations",
                        "Data products by recursion depth", "Primitive call counts", "Primitive profiles",
                        "Accuracy and verification evidence", "All recorded operation and structural counters"):
             self.assertIn(phrase, html)
-        self.assertNotIn("<script", html)
+        self.assertEqual(html.count('<script>'), 1)
+        self.assertIn('data-range-chart=', html)
         report = visual.sweep_sample_report(data["series"][0], data["series"][0]["samples"][1])
         self.assertEqual(report["counts"]["field_multiplications"], 7)
         self.assertEqual(report["execution_measurements"]["accuracy"]["maximum_absolute_error"], 0)

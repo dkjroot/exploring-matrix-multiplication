@@ -34,7 +34,7 @@ def matrix_literal(text):
 
 def experiment_metadata(args, name):
     """Describe a reproducible run outside its measured arithmetic, without input copies."""
-    metadata = {"algorithm": name, "cutoff": args.cutoff,
+    metadata = {"algorithm": name, "cutoff": args.cutoff, "size_policy": args.size_policy,
                 "atol": args.atol if isfinite(args.atol) else str(args.atol),
                 "rtol": args.rtol if isfinite(args.rtol) else str(args.rtol),
                 "input_repr_sha256": sha256(repr((args.a, args.b)).encode("utf-8")).hexdigest()}
@@ -56,6 +56,8 @@ def main(argv=None):
     parser.add_argument("--a", type=matrix_literal, default=[[1, 2], [3, 4]], help="left matrix literal")
     parser.add_argument("--b", type=matrix_literal, default=[[5, 6], [7, 8]], help="right matrix literal")
     parser.add_argument("--cutoff", type=int, default=1, help="classical leaf size; default 1 exercises the full recursion")
+    parser.add_argument("--size-policy", choices=("fringe", "padded"), default="fringe",
+                        help="exact unpadded core/fringe traversal (default), or historical padded comparison")
     parser.add_argument("--atol", type=float, default=1e-9)
     parser.add_argument("--rtol", type=float, default=1e-9)
     parser.add_argument("--list", action="store_true", help="list the implemented algorithms")
@@ -103,7 +105,8 @@ def main(argv=None):
         check = None
         try:
             with execution:
-                result = implementation(args.a, args.b, cutoff=args.cutoff, instrumentation=observer)
+                result = implementation(args.a, args.b, cutoff=args.cutoff, instrumentation=observer,
+                                        size_policy=args.size_policy)
             # The exact oracle is deliberately outside the measured algorithm.
             check = check_product(args.a, args.b, result, atol=args.atol, rtol=args.rtol)
         except (ValueError, TypeError, ArithmeticError, OSError) as exc:
@@ -133,6 +136,11 @@ def main(argv=None):
             memory = reports[name]["execution_measurements"]["python_traced_peak_bytes"]
             print(f"SECONDARY: algorithm call {execution.elapsed_seconds:.6g} seconds; "
                   f"traced Python peak {memory['value']} bytes ({memory['status']})")
+    # A same-input baseline stays outside every candidate measurement and timer.
+    reference = None
+    if reports and any(report.get('status') == 'passed' for report in reports.values()):
+        from matrix_multiplication.work_comparison import classical_reference, attach_comparison
+        reference = classical_reference(args.a, args.b)
     # Files contain measurements, not copied inputs or potentially non-JSON results.
     for name, report in reports.items():
         report["experiment"] = experiment_metadata(args, name)
@@ -143,7 +151,8 @@ def main(argv=None):
         report["mathematical_model"] = report_plan.model() if report_plan else arithmetic_model(name)
         if report_plan and report["experiment"]["input_shapes"]:
             shapes = report["experiment"]["input_shapes"]
-            budget = report_plan.budget(shapes[0][0], shapes[0][1], shapes[1][1], cutoff=args.cutoff)
+            budget = report_plan.budget(shapes[0][0], shapes[0][1], shapes[1][1], cutoff=args.cutoff,
+                                      size_policy=args.size_policy)
             report["composition_budget"] = budget
             report["composition_budget_matches"] = {
                 "field_multiplications": report["counts"].get("field_multiplications", 0) == budget["field_multiplications"],
@@ -154,6 +163,9 @@ def main(argv=None):
                 report["error"] = "composition counts disagree with recurrence budget"
                 failed = True
         report["experiment"]["primitive_timing_enabled"] = not args.counts_only
+        if reference is not None:
+            attach_comparison(report, reference, input_hash=report['experiment']['input_repr_sha256'])
+            report['classical_work_reference'] = reference
     try:
         if args.report:
             raw = (json.dumps(reports, indent=2, allow_nan=False) + "\n").encode("utf-8")

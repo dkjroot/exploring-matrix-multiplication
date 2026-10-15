@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from time import perf_counter
 
 from .operand_costs import OperandCosts, exact_parts, integer_bits
+from .mathematical_work import MathematicalWork
+from .data_movement import DataMovement
 
 
 @dataclass
@@ -53,6 +55,8 @@ class Instrumentation:
         self.sink = sink
         self.counts = Counter()
         self.operand_costs = OperandCosts()
+        self.mathematical_work = MathematicalWork()
+        self.data_movement = DataMovement()
         self.primitive_calls = Counter()
         self.profiles = {}
         self.products_by_depth = Counter()
@@ -98,6 +102,8 @@ class Instrumentation:
                      if key.startswith(("real_", "native_complex_")) or key == "integer_divmods")
         return {
             "operand_costs": self.operand_costs.snapshot(),
+            "mathematical_work": self.mathematical_work.snapshot(),
+            "data_movement": self.data_movement.snapshot(),
             "counts": dict(self.counts), "atomic_arithmetic_operations": atomic,
             "field_arithmetic_operations": sum(self.counts[key] for key in (
                 "field_multiplications", "coefficient_multiplications", "field_additions",
@@ -196,6 +202,19 @@ def count(category, amount=1):
             observer.products_by_depth[frame.depth if frame else 0] += amount
 
 
+def move_values(values, action='copy', *, repeat=1):
+    """Observe explicit storage traffic without changing values or retaining them.
+
+    Callers supply a vector or a lazy flattened matrix. A scalar's arithmetic
+    ports are counted separately; these events describe explicit array stores,
+    copies and zero initialization. Repeated constants avoid walking zero arrays.
+    """
+    observer, _ = _ACTIVE.get()
+    if observer is not None:
+        for value in values:
+            observer.data_movement.record(value, action, repeat=repeat)
+
+
 def trace_value(value):
     """Bound huge-number trace rendering without altering or rounding the value.
 
@@ -234,6 +253,8 @@ def evaluate(name, category, function, *operands, role=None):
         elapsed = perf_counter() - start if observer.profile else 0.0
         observer.counts[category] += 1
         observer.operand_costs.observe(name, operands, result, role, status)
+        observer.mathematical_work.observe(name, operands, result, role, status)
+        observer.data_movement.observe(operands, result, status)
         observer._profile(name, elapsed, elapsed, {category: 1})
         if frame is not None:
             frame.child_seconds += elapsed

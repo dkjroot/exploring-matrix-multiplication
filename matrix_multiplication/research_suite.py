@@ -28,6 +28,7 @@ from .scheme_io import load_scheme_document, scheme_from_document
 from .tensors import classical, to_scheme
 from .verification import check_product
 from .work_sweep import collect_work, positive_integer_grid
+from .work_comparison import classical_reference, attach_comparison
 
 
 @dataclass(frozen=True)
@@ -52,22 +53,42 @@ class SuiteSettings:
     cw_parameters: tuple = (1, 2)
     cw_powers: tuple = (1, 2)
     cw_packing_size: int = 2
+    interior_candidate_budget: int = 2048
+    interior_max_parts: int = 2
+    interior_max_source_dimension: int = 64
+    interior_max_source_terms: int = 4096
     trace_limit: int = 200
     measure_sweep_memory: bool = True
     projection_cycles: int = 12
+    neighborhood_budget: int = 4096
+    neighborhood_max_witnesses: int = 64
+    support_budget: int = 4096
+    support_steps: int = 1000
+    support_restarts: int = 10
+    support_search_seeds: tuple = (0, 1)
+    support_max_height: int = 1
+    support_reduction_limit: int = 1
 
     def validate(self):
         """Reject invalid ranges before creating output or doing expensive work."""
         positive = (self.search_size, self.search_restarts, self.search_max_height, self.search_split_every,
-                    self.cw_packing_size, self.projection_cycles, *self.cw_parameters, *self.cw_powers)
+                    self.cw_packing_size, self.projection_cycles, self.interior_max_parts,
+                    self.interior_max_source_dimension, self.interior_max_source_terms,
+                    self.neighborhood_max_witnesses,
+                    self.support_restarts, self.support_max_height, self.support_reduction_limit,
+                    *self.cw_parameters, *self.cw_powers)
         if any(type(n) is not int or n < 1 for n in positive) or self.search_size < 2:
             raise ValueError("suite sizes/parameters/restarts/height must be positive; search size >= 2")
         if self.cw_packing_size < 2:
             raise ValueError("CW packing size must be at least two")
-        if any(type(n) is not int or n < 0 for n in (self.search_steps, self.search_extra_rank, self.trace_limit)):
+        if any(type(n) is not int or n < 0 for n in (self.search_steps, self.search_extra_rank, self.trace_limit,
+                                                   self.interior_candidate_budget, self.neighborhood_budget,
+                                                   self.support_budget, self.support_steps)):
             raise ValueError("suite steps/extra rank/trace limit must be nonnegative integers")
         if not self.search_seeds or any(type(seed) is not int for seed in self.search_seeds):
             raise ValueError("choose at least one integer search seed")
+        if not self.support_search_seeds or any(type(seed) is not int for seed in self.support_search_seeds):
+            raise ValueError('choose at least one integer support search seed')
         if self.search_start is not None and (not isinstance(self.search_start, str) or not self.search_start.strip()):
             raise ValueError("search starting recipe must be a nonempty path or built-in formula name")
         if not self.cw_parameters or not self.cw_powers:
@@ -98,7 +119,7 @@ def write_report(directory, data, title, source_name):
     (directory / "index.html").write_text(rendered, encoding="utf-8")
 
 
-def pair_evidence(implementations, plans, *, floating=False, trace_limit=200):
+def pair_evidence(implementations, plans, *, floating=False, trace_limit=200, size_policy="fringe"):
     """Observe one small pair per algorithm, with profiles, memory, and bounded traces.
 
     Integer and float cases have different arithmetic/accuracy scopes; neither
@@ -109,6 +130,7 @@ def pair_evidence(implementations, plans, *, floating=False, trace_limit=200):
     a, b = ([[0.1, -0.3], [0.7, 1.1]], [[0.2, 0.9], [-0.4, 0.6]]) if floating else (
         [[1, -2], [3, 4]], [[-5, 6], [7, 8]])
     reports, events = {}, {}
+    reference = classical_reference(a, b)
     for name, implementation in implementations.items():
         observer = Instrumentation(profile=True, trace=True, trace_limit=trace_limit)
         execution = ExecutionMeasurement(measure_memory=True)
@@ -116,14 +138,15 @@ def pair_evidence(implementations, plans, *, floating=False, trace_limit=200):
         status, error = "error", None
         try:
             with execution:
-                result = implementation(a, b, cutoff=1, instrumentation=observer)
+                result = implementation(a, b, cutoff=1, instrumentation=observer, size_policy=size_policy)
             verification = check_product(a, b, result)
             status = "passed" if verification.passed else "failed"
         except (ArithmeticError, ValueError, TypeError, OSError) as exc:
             error = str(exc)
         report = {**observer.snapshot(), "status": status,
                   "execution_measurements": execution.snapshot(8, verification),
-                  "experiment": {"algorithm": name, "cutoff": 1, "input_shapes": [[2, 2], [2, 2]],
+                  "experiment": {"algorithm": name, "cutoff": 1, "size_policy": size_policy,
+                                 "input_shapes": [[2, 2], [2, 2]],
                                  "scalar_domain": "floating point" if floating else "exact signed integers",
                                  "classical_data_product_baseline": 8,
                                  "input_repr_sha256": sha256(repr((a, b)).encode("utf-8")).hexdigest(),
@@ -134,7 +157,7 @@ def pair_evidence(implementations, plans, *, floating=False, trace_limit=200):
         plan = plans.get(name)
         report["mathematical_model"] = plan.model() if plan else arithmetic_model(name)
         if plan is not None:
-            budget = plan.budget(2, 2, 2, cutoff=1)
+            budget = plan.budget(2, 2, 2, cutoff=1, size_policy=size_policy)
             report["composition_budget"] = budget
             matches = {"field_multiplications": observer.counts["field_multiplications"] == budget["field_multiplications"],
                        **{key: report[key] == budget[key] for key in
@@ -142,6 +165,8 @@ def pair_evidence(implementations, plans, *, floating=False, trace_limit=200):
             report["composition_budget_matches"] = matches
             if status == "passed" and not all(matches.values()):
                 report.update(status="failed", error="observed pair arithmetic differs from verified plan budget")
+        attach_comparison(report, reference, input_hash=report['experiment']['input_repr_sha256'])
+        report['classical_work_reference'] = reference
         reports[name], events[name] = report, observer.events
     return {"reports": reports, "events": events}
 
@@ -282,9 +307,9 @@ class SuiteRun:
             result["scheme"] = f"{name}/scheme.json"
         return result
 
-    def pair(self, name, implementations, plans, floating, trace_limit):
+    def pair(self, name, implementations, plans, floating, trace_limit, size_policy="fringe"):
         """Write full secondary diagnostics and their original bounded trace envelope."""
-        data = pair_evidence(implementations, plans, floating=floating, trace_limit=trace_limit)
+        data = pair_evidence(implementations, plans, floating=floating, trace_limit=trace_limit, size_policy=size_policy)
         write_report(self.directory / name, data, "Floating-point diagnostic pair" if floating else "Exact diagnostic pair", name)
         return {"status": "passed" if all(r["status"] == "passed" for r in data["reports"].values()) else "failed",
                 "report": f"{name}/index.html", "data": f"{name}/measurements.json",
@@ -330,7 +355,11 @@ def suite_panel(manifest, *, growth_available=True):
     target_rows = ''.join(f'<tr><td>{r["dimension"]}</td><td>{r["11/4"]:,}</td><td>{r["23/10"]:,}</td></tr>' for r in targets)
     growth_note = ('The full arithmetic growth report remains below.' if growth_available else
                    'The combined arithmetic page could not be produced; completed evidence remains linked below.')
+    comparison_navigation = ('<p>Candidate comparisons: <a href="#mathematical-work">mathematical work efficiency</a> · '
+                             '<a href="#comparison-memory">memory</a> · <a href="#logical-movement">logical data movement</a>.</p>'
+                             if growth_available else '')
     return ('<section class="panel" id="research-suite"><h2>Complete research suite</h2>'
+            f'{comparison_navigation}'
             f'<p>Suite status: <strong>{escape(manifest["status"])}</strong>. '
             f'{growth_note} One suite run performs several kinds of experiment, rather than one large '
             'multiplication: it builds and searches for recipes, replays saved algebraic changes, checks '
@@ -374,7 +403,7 @@ def suite_panel(manifest, *, growth_available=True):
 
 def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=None,
               seed=1729, output_root=None, reference_reports=(), progress=None,
-              reuse_equivalent_cutoffs=True):
+              reuse_equivalent_cutoffs=True, size_policy="fringe"):
     """Produce one dated report tree with all supported families and a combined index.
 
     New verified matrix recipes join the measured size sweep automatically.
@@ -383,6 +412,8 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
     wrong products, work-budget mismatches, and failed proof stages do not.
     """
     settings = settings or SuiteSettings()
+    from .common import validate_size_policy
+    validate_size_policy(size_policy)
     settings.validate()
     # Materialize optional source iterables once: recording a generator in the
     # configuration must not consume it before the attachment stage can read it.
@@ -399,11 +430,18 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
         raise ValueError("custom composition names must be nonempty and distinct from registered algorithms")
     reserved = {f"generated-search-{i}" for i in range(1, len(set(settings.search_seeds))+1)} | {
         "generated-tensor-product", "generated-cw-packed"}
+    reserved.update(f"generated-cw-interior-q{q}-power{power}"
+                    for q in settings.cw_parameters for power in settings.cw_powers)
+    reserved.update(f"generated-cw-neighborhood-q{q}-power{power}"
+                    for q in settings.cw_parameters for power in settings.cw_powers)
+    reserved.update(f'generated-cw-support-q{q}-power{power}'
+                    for q in settings.cw_parameters for power in settings.cw_powers)
     if reserved & plans.keys():
         raise ValueError("custom compositions use a reserved suite name")
     configuration = {"sizes": sizes, "cutoffs": cutoffs, "algorithms": names, "input_seed": seed,
                      "requested_compositions": {name: plan.model() for name, plan in plans.items()},
-                     "reuse_equivalent_cutoffs": reuse_equivalent_cutoffs, "research": settings.document(),
+                     "reuse_equivalent_cutoffs": reuse_equivalent_cutoffs, "size_policy": size_policy,
+                     "research": settings.document(),
                      "reference_reports": [str(path) for path in reference_reports]}
     source_root = Path(__file__).resolve().parents[1]
     configuration["source_sha256"] = {
@@ -459,6 +497,45 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
                 coarse_label, ConstructionRequest("cw-coarse", q=q, power=power, size=settings.cw_packing_size)))
             if coarse["status"] == "passed":
                 packing_candidates.append((coarse_label, directory / coarse["scheme"], coarse["rank"]))
+            # Interior extraction owns its source checks, and remains independent
+            # of classification/packing-stage failures. Generic parts retain unit
+            # axes; only a supported verified recombination joins growth reports.
+            interior_label = f"cw-interior-q{q}-power{power}"
+            interior = run.perform(interior_label, "interior CW restrictions and reusable parts", lambda: run.construction(
+                interior_label, ConstructionRequest("cw-interior", q=q, power=power,
+                    candidate_budget=settings.interior_candidate_budget, max_parts=settings.interior_max_parts,
+                    max_source_dimension=settings.interior_max_source_dimension,
+                    max_source_terms=settings.interior_max_source_terms)))
+            if interior["status"] == "passed" and "scheme" in interior:
+                generated_name = f"generated-cw-interior-q{q}-power{power}"
+                run.perform("register-"+generated_name, "candidate integration", lambda: run.register_candidate(
+                    generated_name, directory / interior["scheme"], plans))
+            neighborhood_label = f"cw-neighborhood-q{q}-power{power}"
+            neighborhood = run.perform(neighborhood_label, "seeded CW neighborhoods and checked joint recovery", lambda: run.construction(
+                neighborhood_label, ConstructionRequest("cw-neighborhood", q=q, power=power,
+                    candidate_budget=settings.interior_candidate_budget,
+                    neighborhood_budget=settings.neighborhood_budget,
+                    neighborhood_max_witnesses=settings.neighborhood_max_witnesses,
+                    max_parts=settings.interior_max_parts,
+                    max_source_dimension=settings.interior_max_source_dimension,
+                    max_source_terms=settings.interior_max_source_terms)))
+            if neighborhood['status'] == 'passed' and 'scheme' in neighborhood:
+                name = f"generated-cw-neighborhood-q{q}-power{power}"
+                run.perform('register-'+name, 'candidate integration', lambda: run.register_candidate(
+                    name, directory / neighborhood['scheme'], plans))
+            support_label = f'cw-support-q{q}-power{power}'
+            support = run.perform(support_label, 'three-step support search and exact rank reuse', lambda: run.construction(
+                support_label, ConstructionRequest('cw-support', q=q, power=power,
+                    candidate_budget=settings.interior_candidate_budget, support_budget=settings.support_budget,
+                    max_parts=settings.interior_max_parts, steps=settings.support_steps,
+                    restarts=settings.support_restarts, support_search_seeds=settings.support_search_seeds,
+                    max_height=settings.support_max_height, support_reduction_limit=settings.support_reduction_limit,
+                    max_source_dimension=settings.interior_max_source_dimension,
+                    max_source_terms=settings.interior_max_source_terms)))
+            if support['status'] == 'passed' and 'scheme' in support:
+                name = f'generated-cw-support-q{q}-power{power}'
+                run.perform('register-'+name, 'candidate integration', lambda: run.register_candidate(
+                    name, directory / support['scheme'], plans))
 
     def integrate_best_packing():
         """Measure one best finite packing; keep all construction comparisons.
@@ -518,7 +595,7 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
     pair_sources = []
     for label, floating in (("pair-exact", False), ("pair-floating", True)):
         stage = run.perform(label, "profiles, memory, accuracy, traces", lambda: run.pair(
-            label, implementations, execution_plans, floating, settings.trace_limit))
+            label, implementations, execution_plans, floating, settings.trace_limit, size_policy))
         if "data" in stage:
             pair_sources.append(directory / stage["data"])
     data = None
@@ -529,7 +606,7 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
         measured = collect_work(sizes, cutoffs, algorithms=names, seed=seed, progress=progress,
                                 compositions=plans, reuse_equivalent_cutoffs=reuse_equivalent_cutoffs,
                                 measure_memory=settings.measure_sweep_memory,
-                                projection_cycles=settings.projection_cycles)
+                                projection_cycles=settings.projection_cycles, size_policy=size_policy)
         raw = (json.dumps(measured, indent=2, allow_nan=False)+"\n").encode("utf-8")
         # Save primary evidence before enriching it with secondary snapshots.
         # A missing earlier report must neither discard completed counts nor

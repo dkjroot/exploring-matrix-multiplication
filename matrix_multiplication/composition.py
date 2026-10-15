@@ -149,14 +149,18 @@ class Composition:
                                 "rank equals radix squared can add an n^2 log(n) term"],
                 "scheme_documents": list(self.documents)}
 
-    def budget(self, rows, inner, columns, *, cutoff=1):
-        """Predict executed counts level by level, including padding and leaf work.
+    def budget(self, rows, inner, columns, *, cutoff=1, size_policy="fringe"):
+        """Predict executed counts including core/fringe or baseline padding and leaves.
 
         This independent recurrence calculation never runs the multiplication.
         Gaussian pairs make each combination addition two component additions,
         each scale six component operations, and each leaf product six operations.
         The leaf accumulation adds two more, giving eight atomic steps per dot term.
         """
+        from .size_policy import fringe_budget, validate_size_policy
+        validate_size_policy(size_policy)
+        if size_policy == "fringe":
+            return fringe_budget(self.stages, (rows, inner, columns), cutoff, gaussian=self.gaussian)
         if type(cutoff) is not int or cutoff < 1:
             raise ValueError("cutoff must be a positive integer")
         if any(type(x) is not int or x < 1 for x in (rows, inner, columns)):
@@ -198,8 +202,8 @@ class Composition:
                 "atomic_arithmetic_operations": atomic + (8 if self.gaussian else 2) * products,
                 "atomic_domain": "Gaussian components" if self.gaussian else "real scalars; native complex is opaque"}
 
-    def multiply(self, a, b, *, cutoff=1, instrumentation=None):
-        """Execute the cycle through shared padding, recursion, and scalar primitives."""
+    def multiply(self, a, b, *, cutoff=1, instrumentation=None, size_policy="fringe"):
+        """Execute the cycle through shared size handling, recursion, and scalar primitives."""
         validate(a, b, cutoff)
         complex_input = any(isinstance(x, complex) for m in (a, b) for row in m for x in row)
 
@@ -211,7 +215,7 @@ class Composition:
         def kernel(left, right, leaf_size):
             """Bind the cycle to the same recursive kernel used by fixed algorithms."""
             return recursive_kernel(left, right, leaf_size, self.radices[0],
-                                    self.stages[0].step, name="composition", select_step=select)
+                                    self.stages[0].step, name="composition", select_step=select, size_policy=size_policy)
 
         def decode(value):
             """Restore exact real results or native complex floating semantics."""
@@ -227,4 +231,4 @@ class Composition:
                                  name="composition", instrumentation=instrumentation,
                                  radices=self.radices,
                                  encode=Gaussian.from_number if self.gaussian else None,
-                                 decode=decode if self.gaussian else None)
+                                 decode=decode if self.gaussian else None, size_policy=size_policy)

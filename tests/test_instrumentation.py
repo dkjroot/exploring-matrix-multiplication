@@ -52,7 +52,7 @@ class InstrumentationTests(unittest.TestCase):
         for cutoff, products, depth in [(1, 49, 2), (2, 56, 1), (4, 64, 0)]:
             observer = Instrumentation()
             a = [[1, 2, 3]] * 3
-            multiply(a, a, algorithm="strassen", cutoff=cutoff, instrumentation=observer)
+            multiply(a, a, algorithm="strassen", cutoff=cutoff, instrumentation=observer, size_policy="padded")
             self.assertEqual(observer.counts["field_multiplications"], products)
             self.assertEqual(observer.counts["padded_input_cells"], 32)
             self.assertEqual(observer.maximum_depth, depth)

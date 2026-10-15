@@ -49,6 +49,27 @@ exact-arithmetic reference and a constructive mathematics research project.
 - Keep all report families in the automatic sweep, preserve earlier evidence and
   record failed candidates. Generate dated ignored outputs; manually published
   reports belong in reports/. Run small regressions before larger experiments.
+- Whenever a promising new research angle arises, augment RESEARCH_PLAN.md and
+  the README research checklist where relevant during the same work. Record its
+  motivation, source or exact local evidence, current limitations, and the next
+  bounded experiment with an explicit success criterion. Keep conjectures,
+  proposals, failed searches and verified results distinct; preserve existing
+  paths and explain any priority change. Recording a path does not commit us to
+  running an unbounded search or establish a stronger bound.
+- During construction research, retain useful exact subrecipes and reusable
+  mathematical primitives even when the complete candidate does not improve a
+  bound. Preserve their coordinate maps, provenance, verification and finite
+  execution costs in reloadable form. Support checked recombination; overlapping
+  parts must not be assumed independent or credited with unpaid recovery work.
+- Treat outputs/ as disposable, Git-ignored working data. Never leave the only
+  copy of useful code, a new discovery, an expensive-to-recreate search result,
+  or original measurements worth retaining there. Keep maintained generators in
+  the source tree and document regeneration commands and required inputs. Promote
+  selected recipes, derivations and original run evidence to a non-ignored
+  location such as reports/ before relying on them. Generated checker copies
+  are acceptable; timings, memory observations and historical source snapshots
+  are not recreated exactly by rerunning today's code. Ensure new source and
+  selected evidence files are included in the eventual Git commit.
 - Claim a stronger bound only from an exact executable identity, justified
   recursive construction, accounted finite overhead and independent verification.
   A heuristic search miss is not an impossibility proof; a paper's limiting bound

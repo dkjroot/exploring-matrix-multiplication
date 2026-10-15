@@ -102,7 +102,7 @@ embeds an earlier pair experiment, preserving its original JSON and distinguishi
 its secondary measurements from the sweep. The sweep's main report plots executed
 counts, not elapsed seconds. Solid points are observed
 data multiplications; dashed curves use the declared recurrence without padding;
-crosses predict the recurrence after padding and classical leaf selection.
+crosses predict the chosen discrete core/fringe or padded traversal and leaf selection.
 For a recursive scheme with base size u, r products, and effective leaf size b,
 the smooth data-product curve for n >= b is `b^3 * (n/b)^log_u(r)`.
 The padded prediction is `r^levels * leaf_size^3`. Actual execution counters
@@ -344,6 +344,24 @@ dense base joins arithmetic growth and certificates; every catalog is retained.
 
 ## Exact operand costs and recurrence projections
 
+The newer [mathematical work comparison](MATHEMATICAL_WORK.md) is separate from
+the original operand-cost model below. Instrumentation snapshots additionally
+contain `mathematical_work` and `data_movement`. The former replays an explicitly
+costed exact schedule, including Euclidean GCD, cross-cancellation, normalization,
+division and carry/borrow work. It publishes a total only with complete coverage.
+The latter counts logical payload reads/writes at scalar ports and explicit
+matrix/vector copies, initialization and stores. Neither counts hardware
+instructions or cache/DRAM transfers. Observation preserves existing scalar
+operators, result values, field/atomic counts and recurrence budgets.
+
+The automatic sweep compares each verified candidate with a same-input verified
+classical reference. It saves the ratio as exact numerator/denominator integers,
+renders work, measured Python memory and logical movement separately, and keeps
+all earlier report families. Extra classical reference calls are separately
+counted and excluded from candidate timing/allocation/counting scopes. Replay
+allocations are observer overhead inside the existing Python peak measurement.
+No new peak-storage or work projection is inferred from captured samples.
+
 `Instrumentation` now observes atomic operands/results with `operand_costs.py`.
 It records magnitude bit widths, denominator growth, bounded word-width buckets,
 and declared schoolbook word costs by data/coefficient/combination role and atomic
@@ -371,9 +389,29 @@ and artifact writing. Individual raw coefficient setup operations are not counte
 `scaling.py` derives category budgets from formula schedules and sparse descriptor
 areas. Categories must match both the independent total budget and actual calls.
 `--projection-cycles` evaluates those recurrences at whole-cycle sizes without
+changing the execution grid. It also selects how many range doublings the new
+graph sliders can reveal. Each series saves a separate `range_projection` with
+exact integer counts at selected off-grid dimensions, using the same fixed
+cutoff and size policy. Stage-prefix neighbours preserve visible boundary
+effects; lines between sparse large dimensions do not resolve every fluctuation.
+The browser starts with the original sampled SVG and restores it on reset.
+Projected count strings remain exact even above JavaScript's 2^53 integer limit;
+JavaScript only computes rounded plotting coordinates. A measured-range boundary
+and dotted curves distinguish the extension from actual execution. These controls
+do not predict observed word costs or operand widths. Separate `resource_bounds`
+fields provide proved upper bounds on both for integer inputs with |entry| ≤ 4,
+using exact rational magnitude/denominator enclosures and the maintained scalar
+schedules. The sweep checks every successful captured width and word count
+against its bound, plus exact equality of abstract and observed atomic call
+totals. A violation fails the sample while preserving its evidence. Dash-dot
+curves reveal bounds only after extending the graph; reset restores measurements.
+No elapsed-time or Python peak-memory extension is provided. The proof, scope
+and deliberate conservatism are documented in [RESOURCE_BOUNDS.md](RESOURCE_BOUNDS.md).
+
+The separate whole-cycle recurrence graphs continue to show predictions without
 matrix execution. Projections and measured points have separate report fields;
 the symbolic recurrence, not a finite graph, describes asymptotic growth. Operand
-width and peak-memory projections are not derived. Three-array hypothetical
+width predictions and peak-memory projections are not derived. Three-array hypothetical
 64-bit storage is a comparison baseline, not actual Fraction or algorithm storage.
 
 For a concrete interpretation, Strassen with cutoff one and n=2^h performs 7^h
@@ -393,16 +431,31 @@ Each sweep sample now saves `size_effects`: requested/padded dimensions, extra
 zero input cells, a rational padded-volume ratio (not a data-product overhead
 ratio), all stage/child dimensions, leaf dimensions and cutoff ordering. The
 recursion's prescribed block counts are mathematical. Whole-input padding to a
-covering schedule prefix and the classical cutoff are portable interpreter
+covering schedule prefix (the optional baseline) and the classical cutoff are portable interpreter
 choices. Neither is attributed to GPU width, Python or limited home resources.
 
 At natural Strassen sizes 2^h with cutoff one, data products are exactly 7^h.
-The broad staircase for arbitrary n comes from our padding policy, not recursion
+The historical broad staircase for arbitrary n comes from the padded policy, not recursion
 alone. Size 5 through 8 share the padded size 8; size 9 changes it to 16. Mixed
 and rectangular schedules use recorded per-stage shapes rather than assuming
-powers of two or rounding to a whole-cycle radix. Padding occurs before the
-cutoff check; even a requested size already within the cutoff can trigger a
-split after padding. That is documented as an implementation choice.
+powers of two or rounding to a whole-cycle radix. The padded baseline still checks the cutoff after enlarging the input. The default fringe
+policy checks actual dimensions first and never pads any recursive child. It applies
+the recipe to a divisible core and counts each remaining dot term once. A node
+with shape (m,k,n) and core (M,K,N) needs m*k*n-M*K*N fringe products and the
+same number of additions. These are data products at the current depth, distinct
+from descendant products. Stage remainders are bounded constants, so fringe work
+is O(n²) per square node and preserves the justified family recurrence. The
+independent budget records core shapes and fringe products at every depth.
+`fringe_data_products` counts that subset of `field_multiplications`; do not
+add it again to the total. `padded_input_cells` is zero for the fringe policy.
+Boundary work can still cause finite count jumps and dips.
+
+For compatibility with earlier saved sweep JSON, prediction fields named
+`padded_dimension`, `padded_dimensions` and `padded_*_operations` are retained.
+Under `size_policy="fringe"` they describe the actual unpadded dimensions and
+the complete core-plus-fringe budget. HTML labels them as execution dimensions
+and execution-policy predictions. The explicit policy and zero-cell count
+distinguish these from historical padded evidence.
 
 Transitions describe only adjacent sampled sizes. They cannot locate every
 intervening boundary or infer word-cost/memory plateaus from field-count equality.

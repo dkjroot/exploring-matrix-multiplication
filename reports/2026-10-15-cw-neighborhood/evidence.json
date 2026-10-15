@@ -1,0 +1,2193 @@
+{
+  "schema": "selected-cw-neighborhood-evidence-v1",
+  "focused_source": "outputs/construction_2026-10-15_165006_355089",
+  "original_report_sha256": "119edeb50b2b4fee0155fab41d06eddbb9ecde4bdf82c6dcdafce4a5990e10f1",
+  "focused_generator_sha256": {
+    "matrix_multiplication/cw_neighborhood.py": "fdc85b2bfef644babf5c84cfa30c46bfbc675d4bb8ddf82463e65278e873b8aa",
+    "matrix_multiplication/restriction_neighborhoods.py": "d8bbcfab63783fedd63fbca09ab8f74a07d101ade4ed06776a7a2cff6c712dbb",
+    "matrix_multiplication/tensor_restrictions.py": "ace81ba9de6559fea50de88a326c42d07be8c838d66946de984c49f95519e013",
+    "matrix_multiplication/recipe_parts.py": "222323c10916980557b6feb13f5339f98076349ccadbdf9ea33ca7f8735ce14f",
+    "matrix_multiplication/constructions.py": "9e4e45e5cf9a59eaa191e4f08d960ac044195374e30e0a185e3de8db4ed30ce4"
+  },
+  "experiment": {
+    "schema": "cw-neighborhood-experiment-v1",
+    "q": 2,
+    "cw_power": 2,
+    "settings": {
+      "seed_prefix_budget": 2048,
+      "candidate_budget_per_sector_power": 4096,
+      "single_coordinate_budget": 2048,
+      "joint_pair_budget": 2048,
+      "max_parts": 2,
+      "max_witnesses": 64,
+      "max_source_dimension": 64,
+      "max_source_terms": 4096
+    },
+    "experiments": [
+      {
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "component_power": 1,
+        "source_dimensions": [
+          4,
+          4,
+          6
+        ],
+        "parts": [
+          "sector-1-1-2-power-1-map-0",
+          "sector-1-1-2-power-1-map-1"
+        ],
+        "status": "completed",
+        "seed_prefix": {
+          "candidate_budget": 2048,
+          "max_saved_parts": 2,
+          "attempted_candidates": 2048,
+          "recognized_candidates": 23,
+          "candidate_family_exhausted": false,
+          "budget_exhausted": true,
+          "candidate_order": "descending classical volume, balance, shape, lexicographic coordinate subsets",
+          "limitation": "Coordinate subsets and coefficient-one basis permutations only; no general linear maps or minimum-rank claim."
+        },
+        "neighborhood": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 32,
+          "seed_count": 2,
+          "recognized_new_candidates": 0,
+          "retained_witnesses": 2,
+          "max_witnesses": 64,
+          "accepted_maps_not_retained": 0,
+          "budget_exhausted": false,
+          "retained_frontier_exhausted": true,
+          "witnesses": [
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                4,
+                4,
+                6
+              ],
+              "shape": [
+                2,
+                1,
+                2
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ],
+                [
+                  1,
+                  3,
+                  2,
+                  4
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                4,
+                4,
+                6
+              ],
+              "shape": [
+                2,
+                1,
+                2
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  2,
+                  3
+                ],
+                [
+                  0,
+                  1
+                ],
+                [
+                  1,
+                  2,
+                  3,
+                  4
+                ]
+              ]
+            }
+          ],
+          "limitation": "Single-coordinate edits of retained accepted maps only; rejected maps do not expand, and pool limits can omit paths."
+        },
+        "joint_search": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 1,
+          "recognized_candidates": 0,
+          "retained_results": 0,
+          "max_results": 2,
+          "pair_pool_exhausted": true,
+          "budget_exhausted": false,
+          "limitation": "Pairs of the retained witness pool only; overlap is not independence, and failed recognition is not a general exclusion."
+        },
+        "baseline_shapes": [
+          [
+            1,
+            1,
+            2
+          ],
+          [
+            1,
+            1,
+            3
+          ],
+          [
+            1,
+            2,
+            1
+          ],
+          [
+            2,
+            1,
+            2
+          ],
+          [
+            3,
+            1,
+            1
+          ]
+        ],
+        "comparisons": [
+          {
+            "part": "sector-1-1-2-power-1-map-0",
+            "shape": [
+              2,
+              1,
+              2
+            ],
+            "products": 4,
+            "same_target_classical_products": 4,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-1-1-2-power-1-map-1",
+            "shape": [
+              2,
+              1,
+              2
+            ],
+            "products": 4,
+            "same_target_classical_products": 4,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          }
+        ],
+        "edit_outcomes": {
+          "support count mismatch": 32
+        },
+        "pair_outcomes": {
+          "shared spaces; no dense union recognized": 1
+        },
+        "representative_rejected_edit": {
+          "parent_witness": 0,
+          "edit": {
+            "leg": 0,
+            "removed": 0,
+            "added": 2
+          },
+          "selected_coordinates": [
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "status": "support count mismatch"
+        },
+        "representative_rejected_pair": {
+          "shared_legs": [
+            2
+          ],
+          "union_coordinates": [
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "dense_recognition_status": "not recognized",
+          "status": "shared spaces; no dense union recognized",
+          "pair": [
+            0,
+            1
+          ]
+        }
+      },
+      {
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "component_power": 2,
+        "source_dimensions": [
+          16,
+          16,
+          36
+        ],
+        "parts": [
+          "sector-1-1-2-power-2-map-0",
+          "sector-1-1-2-power-2-map-1",
+          "sector-1-1-2-power-2-map-2",
+          "sector-1-1-2-power-2-map-3"
+        ],
+        "status": "completed",
+        "seed_prefix": {
+          "candidate_budget": 2048,
+          "max_saved_parts": 1,
+          "attempted_candidates": 2048,
+          "recognized_candidates": 0,
+          "candidate_family_exhausted": false,
+          "budget_exhausted": true,
+          "candidate_order": "descending classical volume, balance, shape, lexicographic coordinate subsets",
+          "limitation": "Coordinate subsets and coefficient-one basis permutations only; no general linear maps or minimum-rank claim."
+        },
+        "neighborhood": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 1664,
+          "seed_count": 4,
+          "recognized_new_candidates": 0,
+          "retained_witnesses": 4,
+          "max_witnesses": 64,
+          "accepted_maps_not_retained": 0,
+          "budget_exhausted": false,
+          "retained_frontier_exhausted": true,
+          "witnesses": [
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                16,
+                16,
+                36
+              ],
+              "shape": [
+                4,
+                1,
+                4
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  0,
+                  1,
+                  4,
+                  5
+                ],
+                [
+                  10,
+                  11,
+                  14,
+                  15
+                ],
+                [
+                  7,
+                  9,
+                  19,
+                  21,
+                  8,
+                  10,
+                  20,
+                  22,
+                  13,
+                  15,
+                  25,
+                  27,
+                  14,
+                  16,
+                  26,
+                  28
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                16,
+                16,
+                36
+              ],
+              "shape": [
+                4,
+                1,
+                4
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  2,
+                  3,
+                  6,
+                  7
+                ],
+                [
+                  8,
+                  9,
+                  12,
+                  13
+                ],
+                [
+                  7,
+                  8,
+                  19,
+                  20,
+                  9,
+                  10,
+                  21,
+                  22,
+                  13,
+                  14,
+                  25,
+                  26,
+                  15,
+                  16,
+                  27,
+                  28
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                16,
+                16,
+                36
+              ],
+              "shape": [
+                4,
+                1,
+                4
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  8,
+                  9,
+                  12,
+                  13
+                ],
+                [
+                  2,
+                  3,
+                  6,
+                  7
+                ],
+                [
+                  7,
+                  9,
+                  13,
+                  15,
+                  8,
+                  10,
+                  14,
+                  16,
+                  19,
+                  21,
+                  25,
+                  27,
+                  20,
+                  22,
+                  26,
+                  28
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                16,
+                16,
+                36
+              ],
+              "shape": [
+                4,
+                1,
+                4
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  10,
+                  11,
+                  14,
+                  15
+                ],
+                [
+                  0,
+                  1,
+                  4,
+                  5
+                ],
+                [
+                  7,
+                  8,
+                  13,
+                  14,
+                  9,
+                  10,
+                  15,
+                  16,
+                  19,
+                  20,
+                  25,
+                  26,
+                  21,
+                  22,
+                  27,
+                  28
+                ]
+              ]
+            }
+          ],
+          "limitation": "Single-coordinate edits of retained accepted maps only; rejected maps do not expand, and pool limits can omit paths."
+        },
+        "joint_search": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 6,
+          "recognized_candidates": 0,
+          "retained_results": 0,
+          "max_results": 2,
+          "pair_pool_exhausted": true,
+          "budget_exhausted": false,
+          "limitation": "Pairs of the retained witness pool only; overlap is not independence, and failed recognition is not a general exclusion."
+        },
+        "baseline_shapes": [
+          [
+            4,
+            1,
+            4
+          ]
+        ],
+        "comparisons": [
+          {
+            "part": "sector-1-1-2-power-2-map-0",
+            "shape": [
+              4,
+              1,
+              4
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-1-1-2-power-2-map-1",
+            "shape": [
+              4,
+              1,
+              4
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-1-1-2-power-2-map-2",
+            "shape": [
+              4,
+              1,
+              4
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-1-1-2-power-2-map-3",
+            "shape": [
+              4,
+              1,
+              4
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          }
+        ],
+        "edit_outcomes": {
+          "support count mismatch": 1664
+        },
+        "pair_outcomes": {
+          "shared spaces; no dense union recognized": 6
+        },
+        "representative_rejected_edit": {
+          "parent_witness": 0,
+          "edit": {
+            "leg": 0,
+            "removed": 0,
+            "added": 2
+          },
+          "selected_coordinates": [
+            [
+              1,
+              2,
+              4,
+              5
+            ],
+            [
+              10,
+              11,
+              14,
+              15
+            ],
+            [
+              7,
+              8,
+              9,
+              10,
+              13,
+              14,
+              15,
+              16,
+              19,
+              20,
+              21,
+              22,
+              25,
+              26,
+              27,
+              28
+            ]
+          ],
+          "status": "support count mismatch"
+        },
+        "representative_rejected_pair": {
+          "shared_legs": [
+            2
+          ],
+          "union_coordinates": [
+            [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            [
+              7,
+              8,
+              9,
+              10,
+              13,
+              14,
+              15,
+              16,
+              19,
+              20,
+              21,
+              22,
+              25,
+              26,
+              27,
+              28
+            ]
+          ],
+          "dense_recognition_status": "not recognized",
+          "status": "shared spaces; no dense union recognized",
+          "pair": [
+            0,
+            1
+          ]
+        }
+      },
+      {
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "component_power": 1,
+        "source_dimensions": [
+          4,
+          6,
+          4
+        ],
+        "parts": [
+          "sector-1-2-1-power-1-map-0",
+          "sector-1-2-1-power-1-map-1"
+        ],
+        "status": "completed",
+        "seed_prefix": {
+          "candidate_budget": 2048,
+          "max_saved_parts": 2,
+          "attempted_candidates": 2048,
+          "recognized_candidates": 23,
+          "candidate_family_exhausted": false,
+          "budget_exhausted": true,
+          "candidate_order": "descending classical volume, balance, shape, lexicographic coordinate subsets",
+          "limitation": "Coordinate subsets and coefficient-one basis permutations only; no general linear maps or minimum-rank claim."
+        },
+        "neighborhood": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 32,
+          "seed_count": 2,
+          "recognized_new_candidates": 0,
+          "retained_witnesses": 2,
+          "max_witnesses": 64,
+          "accepted_maps_not_retained": 0,
+          "budget_exhausted": false,
+          "retained_frontier_exhausted": true,
+          "witnesses": [
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                4,
+                6,
+                4
+              ],
+              "shape": [
+                1,
+                2,
+                2
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  1,
+                  3,
+                  2,
+                  4
+                ],
+                [
+                  2,
+                  3
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                4,
+                6,
+                4
+              ],
+              "shape": [
+                1,
+                2,
+                2
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  2,
+                  3
+                ],
+                [
+                  1,
+                  2,
+                  3,
+                  4
+                ],
+                [
+                  0,
+                  1
+                ]
+              ]
+            }
+          ],
+          "limitation": "Single-coordinate edits of retained accepted maps only; rejected maps do not expand, and pool limits can omit paths."
+        },
+        "joint_search": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 1,
+          "recognized_candidates": 0,
+          "retained_results": 0,
+          "max_results": 2,
+          "pair_pool_exhausted": true,
+          "budget_exhausted": false,
+          "limitation": "Pairs of the retained witness pool only; overlap is not independence, and failed recognition is not a general exclusion."
+        },
+        "baseline_shapes": [
+          [
+            1,
+            1,
+            2
+          ],
+          [
+            1,
+            1,
+            3
+          ],
+          [
+            1,
+            2,
+            1
+          ],
+          [
+            1,
+            2,
+            2
+          ],
+          [
+            1,
+            3,
+            1
+          ]
+        ],
+        "comparisons": [
+          {
+            "part": "sector-1-2-1-power-1-map-0",
+            "shape": [
+              1,
+              2,
+              2
+            ],
+            "products": 4,
+            "same_target_classical_products": 4,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-1-2-1-power-1-map-1",
+            "shape": [
+              1,
+              2,
+              2
+            ],
+            "products": 4,
+            "same_target_classical_products": 4,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          }
+        ],
+        "edit_outcomes": {
+          "support count mismatch": 32
+        },
+        "pair_outcomes": {
+          "shared spaces; no dense union recognized": 1
+        },
+        "representative_rejected_edit": {
+          "parent_witness": 0,
+          "edit": {
+            "leg": 0,
+            "removed": 0,
+            "added": 2
+          },
+          "selected_coordinates": [
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              2,
+              3,
+              4
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "status": "support count mismatch"
+        },
+        "representative_rejected_pair": {
+          "shared_legs": [
+            1
+          ],
+          "union_coordinates": [
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3,
+              4
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "dense_recognition_status": "not recognized",
+          "status": "shared spaces; no dense union recognized",
+          "pair": [
+            0,
+            1
+          ]
+        }
+      },
+      {
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "component_power": 2,
+        "source_dimensions": [
+          16,
+          36,
+          16
+        ],
+        "parts": [
+          "sector-1-2-1-power-2-map-0",
+          "sector-1-2-1-power-2-map-1",
+          "sector-1-2-1-power-2-map-2",
+          "sector-1-2-1-power-2-map-3"
+        ],
+        "status": "completed",
+        "seed_prefix": {
+          "candidate_budget": 2048,
+          "max_saved_parts": 1,
+          "attempted_candidates": 2048,
+          "recognized_candidates": 0,
+          "candidate_family_exhausted": false,
+          "budget_exhausted": true,
+          "candidate_order": "descending classical volume, balance, shape, lexicographic coordinate subsets",
+          "limitation": "Coordinate subsets and coefficient-one basis permutations only; no general linear maps or minimum-rank claim."
+        },
+        "neighborhood": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 1664,
+          "seed_count": 4,
+          "recognized_new_candidates": 0,
+          "retained_witnesses": 4,
+          "max_witnesses": 64,
+          "accepted_maps_not_retained": 0,
+          "budget_exhausted": false,
+          "retained_frontier_exhausted": true,
+          "witnesses": [
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                16,
+                36,
+                16
+              ],
+              "shape": [
+                1,
+                4,
+                4
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  0,
+                  1,
+                  4,
+                  5
+                ],
+                [
+                  7,
+                  9,
+                  19,
+                  21,
+                  8,
+                  10,
+                  20,
+                  22,
+                  13,
+                  15,
+                  25,
+                  27,
+                  14,
+                  16,
+                  26,
+                  28
+                ],
+                [
+                  10,
+                  11,
+                  14,
+                  15
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                16,
+                36,
+                16
+              ],
+              "shape": [
+                1,
+                4,
+                4
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  2,
+                  3,
+                  6,
+                  7
+                ],
+                [
+                  7,
+                  8,
+                  19,
+                  20,
+                  9,
+                  10,
+                  21,
+                  22,
+                  13,
+                  14,
+                  25,
+                  26,
+                  15,
+                  16,
+                  27,
+                  28
+                ],
+                [
+                  8,
+                  9,
+                  12,
+                  13
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                16,
+                36,
+                16
+              ],
+              "shape": [
+                1,
+                4,
+                4
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  8,
+                  9,
+                  12,
+                  13
+                ],
+                [
+                  7,
+                  9,
+                  13,
+                  15,
+                  8,
+                  10,
+                  14,
+                  16,
+                  19,
+                  21,
+                  25,
+                  27,
+                  20,
+                  22,
+                  26,
+                  28
+                ],
+                [
+                  2,
+                  3,
+                  6,
+                  7
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                16,
+                36,
+                16
+              ],
+              "shape": [
+                1,
+                4,
+                4
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  10,
+                  11,
+                  14,
+                  15
+                ],
+                [
+                  7,
+                  8,
+                  13,
+                  14,
+                  9,
+                  10,
+                  15,
+                  16,
+                  19,
+                  20,
+                  25,
+                  26,
+                  21,
+                  22,
+                  27,
+                  28
+                ],
+                [
+                  0,
+                  1,
+                  4,
+                  5
+                ]
+              ]
+            }
+          ],
+          "limitation": "Single-coordinate edits of retained accepted maps only; rejected maps do not expand, and pool limits can omit paths."
+        },
+        "joint_search": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 6,
+          "recognized_candidates": 0,
+          "retained_results": 0,
+          "max_results": 2,
+          "pair_pool_exhausted": true,
+          "budget_exhausted": false,
+          "limitation": "Pairs of the retained witness pool only; overlap is not independence, and failed recognition is not a general exclusion."
+        },
+        "baseline_shapes": [
+          [
+            1,
+            4,
+            4
+          ]
+        ],
+        "comparisons": [
+          {
+            "part": "sector-1-2-1-power-2-map-0",
+            "shape": [
+              1,
+              4,
+              4
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-1-2-1-power-2-map-1",
+            "shape": [
+              1,
+              4,
+              4
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-1-2-1-power-2-map-2",
+            "shape": [
+              1,
+              4,
+              4
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-1-2-1-power-2-map-3",
+            "shape": [
+              1,
+              4,
+              4
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          }
+        ],
+        "edit_outcomes": {
+          "support count mismatch": 1664
+        },
+        "pair_outcomes": {
+          "shared spaces; no dense union recognized": 6
+        },
+        "representative_rejected_edit": {
+          "parent_witness": 0,
+          "edit": {
+            "leg": 0,
+            "removed": 0,
+            "added": 2
+          },
+          "selected_coordinates": [
+            [
+              1,
+              2,
+              4,
+              5
+            ],
+            [
+              7,
+              8,
+              9,
+              10,
+              13,
+              14,
+              15,
+              16,
+              19,
+              20,
+              21,
+              22,
+              25,
+              26,
+              27,
+              28
+            ],
+            [
+              10,
+              11,
+              14,
+              15
+            ]
+          ],
+          "status": "support count mismatch"
+        },
+        "representative_rejected_pair": {
+          "shared_legs": [
+            1
+          ],
+          "union_coordinates": [
+            [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              7,
+              8,
+              9,
+              10,
+              13,
+              14,
+              15,
+              16,
+              19,
+              20,
+              21,
+              22,
+              25,
+              26,
+              27,
+              28
+            ],
+            [
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ]
+          ],
+          "dense_recognition_status": "not recognized",
+          "status": "shared spaces; no dense union recognized",
+          "pair": [
+            0,
+            1
+          ]
+        }
+      },
+      {
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "component_power": 1,
+        "source_dimensions": [
+          6,
+          4,
+          4
+        ],
+        "parts": [
+          "sector-2-1-1-power-1-map-0",
+          "sector-2-1-1-power-1-map-1"
+        ],
+        "status": "completed",
+        "seed_prefix": {
+          "candidate_budget": 2048,
+          "max_saved_parts": 2,
+          "attempted_candidates": 2048,
+          "recognized_candidates": 22,
+          "candidate_family_exhausted": false,
+          "budget_exhausted": true,
+          "candidate_order": "descending classical volume, balance, shape, lexicographic coordinate subsets",
+          "limitation": "Coordinate subsets and coefficient-one basis permutations only; no general linear maps or minimum-rank claim."
+        },
+        "neighborhood": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 32,
+          "seed_count": 2,
+          "recognized_new_candidates": 0,
+          "retained_witnesses": 2,
+          "max_witnesses": 64,
+          "accepted_maps_not_retained": 0,
+          "budget_exhausted": false,
+          "retained_frontier_exhausted": true,
+          "witnesses": [
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                6,
+                4,
+                4
+              ],
+              "shape": [
+                2,
+                2,
+                1
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  1,
+                  2,
+                  3,
+                  4
+                ],
+                [
+                  0,
+                  1
+                ],
+                [
+                  2,
+                  3
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                6,
+                4,
+                4
+              ],
+              "shape": [
+                2,
+                2,
+                1
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  1,
+                  3,
+                  2,
+                  4
+                ],
+                [
+                  2,
+                  3
+                ],
+                [
+                  0,
+                  1
+                ]
+              ]
+            }
+          ],
+          "limitation": "Single-coordinate edits of retained accepted maps only; rejected maps do not expand, and pool limits can omit paths."
+        },
+        "joint_search": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 1,
+          "recognized_candidates": 0,
+          "retained_results": 0,
+          "max_results": 2,
+          "pair_pool_exhausted": true,
+          "budget_exhausted": false,
+          "limitation": "Pairs of the retained witness pool only; overlap is not independence, and failed recognition is not a general exclusion."
+        },
+        "baseline_shapes": [
+          [
+            1,
+            1,
+            2
+          ],
+          [
+            1,
+            2,
+            1
+          ],
+          [
+            1,
+            3,
+            1
+          ],
+          [
+            2,
+            2,
+            1
+          ],
+          [
+            3,
+            1,
+            1
+          ]
+        ],
+        "comparisons": [
+          {
+            "part": "sector-2-1-1-power-1-map-0",
+            "shape": [
+              2,
+              2,
+              1
+            ],
+            "products": 4,
+            "same_target_classical_products": 4,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-2-1-1-power-1-map-1",
+            "shape": [
+              2,
+              2,
+              1
+            ],
+            "products": 4,
+            "same_target_classical_products": 4,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          }
+        ],
+        "edit_outcomes": {
+          "support count mismatch": 32
+        },
+        "pair_outcomes": {
+          "shared spaces; no dense union recognized": 1
+        },
+        "representative_rejected_edit": {
+          "parent_witness": 0,
+          "edit": {
+            "leg": 0,
+            "removed": 1,
+            "added": 0
+          },
+          "selected_coordinates": [
+            [
+              0,
+              2,
+              3,
+              4
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "status": "support count mismatch"
+        },
+        "representative_rejected_pair": {
+          "shared_legs": [
+            0
+          ],
+          "union_coordinates": [
+            [
+              1,
+              2,
+              3,
+              4
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ],
+          "dense_recognition_status": "not recognized",
+          "status": "shared spaces; no dense union recognized",
+          "pair": [
+            0,
+            1
+          ]
+        }
+      },
+      {
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "component_power": 2,
+        "source_dimensions": [
+          36,
+          16,
+          16
+        ],
+        "parts": [
+          "sector-2-1-1-power-2-map-0",
+          "sector-2-1-1-power-2-map-1",
+          "sector-2-1-1-power-2-map-2",
+          "sector-2-1-1-power-2-map-3"
+        ],
+        "status": "completed",
+        "seed_prefix": {
+          "candidate_budget": 2048,
+          "max_saved_parts": 1,
+          "attempted_candidates": 2048,
+          "recognized_candidates": 0,
+          "candidate_family_exhausted": false,
+          "budget_exhausted": true,
+          "candidate_order": "descending classical volume, balance, shape, lexicographic coordinate subsets",
+          "limitation": "Coordinate subsets and coefficient-one basis permutations only; no general linear maps or minimum-rank claim."
+        },
+        "neighborhood": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 1664,
+          "seed_count": 4,
+          "recognized_new_candidates": 0,
+          "retained_witnesses": 4,
+          "max_witnesses": 64,
+          "accepted_maps_not_retained": 0,
+          "budget_exhausted": false,
+          "retained_frontier_exhausted": true,
+          "witnesses": [
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                36,
+                16,
+                16
+              ],
+              "shape": [
+                4,
+                4,
+                1
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  7,
+                  8,
+                  13,
+                  14,
+                  9,
+                  10,
+                  15,
+                  16,
+                  19,
+                  20,
+                  25,
+                  26,
+                  21,
+                  22,
+                  27,
+                  28
+                ],
+                [
+                  0,
+                  1,
+                  4,
+                  5
+                ],
+                [
+                  10,
+                  11,
+                  14,
+                  15
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                36,
+                16,
+                16
+              ],
+              "shape": [
+                4,
+                4,
+                1
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  7,
+                  9,
+                  13,
+                  15,
+                  8,
+                  10,
+                  14,
+                  16,
+                  19,
+                  21,
+                  25,
+                  27,
+                  20,
+                  22,
+                  26,
+                  28
+                ],
+                [
+                  2,
+                  3,
+                  6,
+                  7
+                ],
+                [
+                  8,
+                  9,
+                  12,
+                  13
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                36,
+                16,
+                16
+              ],
+              "shape": [
+                4,
+                4,
+                1
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  7,
+                  8,
+                  19,
+                  20,
+                  9,
+                  10,
+                  21,
+                  22,
+                  13,
+                  14,
+                  25,
+                  26,
+                  15,
+                  16,
+                  27,
+                  28
+                ],
+                [
+                  8,
+                  9,
+                  12,
+                  13
+                ],
+                [
+                  2,
+                  3,
+                  6,
+                  7
+                ]
+              ]
+            },
+            {
+              "schema": "matrix-restriction-witness-v1",
+              "source_dimensions": [
+                36,
+                16,
+                16
+              ],
+              "shape": [
+                4,
+                4,
+                1
+              ],
+              "source_coordinates_in_matrix_order": [
+                [
+                  7,
+                  9,
+                  19,
+                  21,
+                  8,
+                  10,
+                  20,
+                  22,
+                  13,
+                  15,
+                  25,
+                  27,
+                  14,
+                  16,
+                  26,
+                  28
+                ],
+                [
+                  10,
+                  11,
+                  14,
+                  15
+                ],
+                [
+                  0,
+                  1,
+                  4,
+                  5
+                ]
+              ]
+            }
+          ],
+          "limitation": "Single-coordinate edits of retained accepted maps only; rejected maps do not expand, and pool limits can omit paths."
+        },
+        "joint_search": {
+          "candidate_budget": 2048,
+          "attempted_candidates": 6,
+          "recognized_candidates": 0,
+          "retained_results": 0,
+          "max_results": 2,
+          "pair_pool_exhausted": true,
+          "budget_exhausted": false,
+          "limitation": "Pairs of the retained witness pool only; overlap is not independence, and failed recognition is not a general exclusion."
+        },
+        "baseline_shapes": [
+          [
+            4,
+            4,
+            1
+          ]
+        ],
+        "comparisons": [
+          {
+            "part": "sector-2-1-1-power-2-map-0",
+            "shape": [
+              4,
+              4,
+              1
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-2-1-1-power-2-map-1",
+            "shape": [
+              4,
+              4,
+              1
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-2-1-1-power-2-map-2",
+            "shape": [
+              4,
+              4,
+              1
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          },
+          {
+            "part": "sector-2-1-1-power-2-map-3",
+            "shape": [
+              4,
+              4,
+              1
+            ],
+            "products": 16,
+            "same_target_classical_products": 16,
+            "strictly_better_than_classical": false,
+            "new_shape_relative_to_control": false
+          }
+        ],
+        "edit_outcomes": {
+          "support count mismatch": 1664
+        },
+        "pair_outcomes": {
+          "shared spaces; no dense union recognized": 6
+        },
+        "representative_rejected_edit": {
+          "parent_witness": 0,
+          "edit": {
+            "leg": 0,
+            "removed": 7,
+            "added": 0
+          },
+          "selected_coordinates": [
+            [
+              0,
+              8,
+              9,
+              10,
+              13,
+              14,
+              15,
+              16,
+              19,
+              20,
+              21,
+              22,
+              25,
+              26,
+              27,
+              28
+            ],
+            [
+              0,
+              1,
+              4,
+              5
+            ],
+            [
+              10,
+              11,
+              14,
+              15
+            ]
+          ],
+          "status": "support count mismatch"
+        },
+        "representative_rejected_pair": {
+          "shared_legs": [
+            0
+          ],
+          "union_coordinates": [
+            [
+              7,
+              8,
+              9,
+              10,
+              13,
+              14,
+              15,
+              16,
+              19,
+              20,
+              21,
+              22,
+              25,
+              26,
+              27,
+              28
+            ],
+            [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ]
+          ],
+          "dense_recognition_status": "not recognized",
+          "status": "shared spaces; no dense union recognized",
+          "pair": [
+            0,
+            1
+          ]
+        }
+      }
+    ],
+    "parts": [
+      {
+        "name": "sector-1-1-2-power-1-map-0",
+        "shape": [
+          2,
+          1,
+          2
+        ],
+        "products": 4,
+        "classical_products": 4,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-1-2-power-1-map-1",
+        "shape": [
+          2,
+          1,
+          2
+        ],
+        "products": 4,
+        "classical_products": 4,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-1-2-power-2-map-0",
+        "shape": [
+          4,
+          1,
+          4
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-1-2-power-2-map-1",
+        "shape": [
+          4,
+          1,
+          4
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-1-2-power-2-map-2",
+        "shape": [
+          4,
+          1,
+          4
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-1-2-power-2-map-3",
+        "shape": [
+          4,
+          1,
+          4
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-2-1-power-1-map-0",
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "products": 4,
+        "classical_products": 4,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-2-1-power-1-map-1",
+        "shape": [
+          1,
+          2,
+          2
+        ],
+        "products": 4,
+        "classical_products": 4,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-2-1-power-2-map-0",
+        "shape": [
+          1,
+          4,
+          4
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-2-1-power-2-map-1",
+        "shape": [
+          1,
+          4,
+          4
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-2-1-power-2-map-2",
+        "shape": [
+          1,
+          4,
+          4
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-1-2-1-power-2-map-3",
+        "shape": [
+          1,
+          4,
+          4
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-2-1-1-power-1-map-0",
+        "shape": [
+          2,
+          2,
+          1
+        ],
+        "products": 4,
+        "classical_products": 4,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-2-1-1-power-1-map-1",
+        "shape": [
+          2,
+          2,
+          1
+        ],
+        "products": 4,
+        "classical_products": 4,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-2-1-1-power-2-map-0",
+        "shape": [
+          4,
+          4,
+          1
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-2-1-1-power-2-map-1",
+        "shape": [
+          4,
+          4,
+          1
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-2-1-1-power-2-map-2",
+        "shape": [
+          4,
+          4,
+          1
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      },
+      {
+        "name": "sector-2-1-1-power-2-map-3",
+        "shape": [
+          4,
+          4,
+          1
+        ],
+        "products": 16,
+        "classical_products": 16,
+        "source_kind": "verified seed"
+      }
+    ],
+    "strict_recovery_savings": 0,
+    "strict_classical_savings": 0,
+    "new_verified_shapes": 0,
+    "limitation": "Only single-coordinate moves from accepted retained seeds and pairs from that pool are searched. No general linear restrictions, minimum-rank claim or impossibility proof."
+  },
+  "combined_suite": {
+    "source": "outputs/2026-10-15_164517_421537",
+    "status": "passed",
+    "stage_count": 23,
+    "configuration": {
+      "sizes": [
+        2,
+        4
+      ],
+      "cutoffs": [
+        1
+      ],
+      "algorithms": [
+        "naive",
+        "strassen"
+      ],
+      "input_seed": 1729,
+      "requested_compositions": {},
+      "reuse_equivalent_cutoffs": true,
+      "size_policy": "fringe",
+      "research": {
+        "search_size": 2,
+        "search_start": null,
+        "search_target_rank": null,
+        "search_target_exponent": null,
+        "search_steps": 50,
+        "search_restarts": 1,
+        "search_seeds": [
+          0
+        ],
+        "search_max_height": 1,
+        "search_extra_rank": 0,
+        "search_split_every": 50,
+        "cw_parameters": [
+          2
+        ],
+        "cw_powers": [
+          2
+        ],
+        "cw_packing_size": 2,
+        "interior_candidate_budget": 2048,
+        "interior_max_parts": 2,
+        "interior_max_source_dimension": 64,
+        "interior_max_source_terms": 4096,
+        "trace_limit": 10,
+        "measure_sweep_memory": true,
+        "projection_cycles": 2,
+        "neighborhood_budget": 4096,
+        "neighborhood_max_witnesses": 64
+      },
+      "reference_reports": [],
+      "source_sha256": {
+        "sweep.py": "dd3236da5bd3c099bfe9996eaa408addae8721003ab01e0601807f6e3d85cdfb",
+        "matrix_multiplication/__init__.py": "4ba2db1b62fb0246310afaa9b0f5444b3563ab9fb76a7bf1f3f029a00a74870d",
+        "matrix_multiplication/alphaevolve.py": "5836662d78d939c1665271c42e79d9b72817fbdb42203fa2d646351d638184e6",
+        "matrix_multiplication/certificate_checker.py": "1b43fe07bc8cc22c808ce596a9ba9bd371348b8d30ff7e21ea13f0e2f75cb51d",
+        "matrix_multiplication/certificates.py": "b733949364e486e6b5cdf246413848385779108d391a0eb3413885e528347ae3",
+        "matrix_multiplication/common.py": "1a514710b02957581af25b2d1f70660000e12aa5be38cede0caa70a4326a69c6",
+        "matrix_multiplication/composition.py": "ff74813b75e43b88bf29722278f12c7f08c2588ed5917649784ea1a18a3adbc2",
+        "matrix_multiplication/constructions.py": "9e4e45e5cf9a59eaa191e4f08d960ac044195374e30e0a185e3de8db4ed30ce4",
+        "matrix_multiplication/cw_coarsening.py": "96928a6c69f551e89578d44502907b8a6b70def243540b47cc0573fb16a8a987",
+        "matrix_multiplication/cw_extraction.py": "cfe734ead8e8c55a91cef2b7230eccda7cbe6228f9f9957fa8dbd072b8e8e216",
+        "matrix_multiplication/cw_interior.py": "2f8dfd8da29617ea4be4092d005142e098e65673090be8cb84c7bdc1038847cd",
+        "matrix_multiplication/cw_neighborhood.py": "f5c087dbc409d068d0e6484360919d5ef9984952dfa1f2072789d4a86d8bd296",
+        "matrix_multiplication/decomposition_search.py": "0f7dfc336a6676a99cda802c062302c4a0c8a222ac315876c4c515f553984ee5",
+        "matrix_multiplication/degenerations.py": "ba95c0bab85328065e43f2af1755ecb2c92e847085428d2e64d21d108398227c",
+        "matrix_multiplication/dense_packing.py": "0497a5e14921ea6e565409c046e3f66647ea6de3aed5fe27dea5a28884f87905",
+        "matrix_multiplication/experiments.py": "aafd668473daece1ee6f6435d565683b1dfa0840e80ef41bc12682cd308b2ce8",
+        "matrix_multiplication/instrumentation.py": "b061a10518f3ea2597350a1e5052118867c86f185949ed759d07344126393766",
+        "matrix_multiplication/naive.py": "8f64c82775a62d3a8bcba385434d3e387533d95166bb65609bc241901afdbed6",
+        "matrix_multiplication/operand_costs.py": "b273a480c3761baa60c7cc805a3767f6ac67feda269be4776a1caef5608d1f87",
+        "matrix_multiplication/recipe_parts.py": "222323c10916980557b6feb13f5339f98076349ccadbdf9ea33ca7f8735ce14f",
+        "matrix_multiplication/rectangular.py": "9765f1da67c55eaed968d9969d4523b717106f4b10a373d93fc62635948e2a65",
+        "matrix_multiplication/report_explanations.py": "d7e13a8e4b18f9624d687a1f7fbf201013a45f77b3fb0b46c058590fa39893af",
+        "matrix_multiplication/report_interactivity.py": "11f86b1b875ad56fc74c0210f4e1c6aa7a614ee94e400a90a86e3e76d2ba1e45",
+        "matrix_multiplication/reporting.py": "15909f90fd9018ca2a03e1c42bf67966f19229490c33daaed9f97ed295a0a00e",
+        "matrix_multiplication/research_suite.py": "4f87bd6df7b5ca194b6cea0d0b2436d85a1cb13ff31ba57d05168ca8b70d8f4f",
+        "matrix_multiplication/resource_bounds.py": "2d5bb55a10b5f778548f5933e64d01530d6759d6cb7b67af1ab93899d6d5429c",
+        "matrix_multiplication/restriction_neighborhoods.py": "0fba4d6adfcdcf1e608a4565c02fe17c7cf273ba435b138f61ea98f61fa4439d",
+        "matrix_multiplication/scalars.py": "a9521463087158af17fc961c68779d22841d65bf09f98422a8c1b225384ef7f2",
+        "matrix_multiplication/scaling.py": "246c9ea5400fb1e6baa63d05bb7b30998e4616b50261e1275a2698dcd5bcb7d6",
+        "matrix_multiplication/scheme_io.py": "431a30bc5a67173c4d7d46f8e5f31372be8e9c41b8fd527be787691c3efa67f9",
+        "matrix_multiplication/schemes.py": "c7a278cfc114c55521aae7137feb1e4f3d922e22e799b99bff8c4048afcf6188",
+        "matrix_multiplication/size_effects.py": "d701f3bb7d7ce6ef4ad246e02292cf3e8b279e5fe61add6ee08a99076dc2f4f5",
+        "matrix_multiplication/size_policy.py": "57acd86d97ed527aa3f524a0a78753378f840b879e31c0567ba32a872f1aa32e",
+        "matrix_multiplication/smirnov.py": "cbca0ad76c59664fb00d399598f9bb1bbe09ec60c20fa744123198c3b93aa86c",
+        "matrix_multiplication/strassen.py": "e3c47cd661e802b6025f22ca1b8a76b8b21947e0bcb1c13a55bf87588360a7ee",
+        "matrix_multiplication/strassen_winograd.py": "23e8a59d366284488832e325e277db8318eb17421c02cb0f8f3e588d691b09c1",
+        "matrix_multiplication/tensor_classification.py": "2ccf9046be35c3e520a51c61f127131fda59b3cb1c8b3613820b6e2fd5605f15",
+        "matrix_multiplication/tensor_execution.py": "94c182eae0db3598ec64cdf0281a2c0d6ba81b7d05cf7da3d60741d87548e17a",
+        "matrix_multiplication/tensor_restrictions.py": "ace81ba9de6559fea50de88a326c42d07be8c838d66946de984c49f95519e013",
+        "matrix_multiplication/tensors.py": "664be8ada154c3c68016235272e31cc8659a4a5f019e6f69603fcce209f0bc43",
+        "matrix_multiplication/verification.py": "1be1c0fd00c1f03eadd6f91fd9d108e58391e055967a1c655e1f5013722033ff",
+        "matrix_multiplication/work_sweep.py": "2f12507ec5c699a1b2e010572e9559db81e5941b9e988b1b301e53130cb42f15"
+      }
+    },
+    "neighborhood_stage": {
+      "name": "cw-neighborhood-q2-power2",
+      "family": "seeded CW neighborhoods and checked joint recovery",
+      "status": "passed",
+      "report": "cw-neighborhood-q2-power2/index.html",
+      "data": "cw-neighborhood-q2-power2/report.json",
+      "outcome": "Seeded coordinate and joint-restriction experiment completed: 0 new verified shapes and 0 joint-recovery savings. Bounded misses are not exclusions.",
+      "setup_measurements": {
+        "elapsed_seconds": 50.77532399992924,
+        "python_traced_peak_bytes": {
+          "status": "measured",
+          "value": 92488385
+        },
+        "scope": "suite stage including generation, exact checking and artifact writing; cached inputs may pre-exist",
+        "coefficient_arithmetic_operations": {
+          "status": "not_counted",
+          "value": null
+        }
+      }
+    }
+  },
+  "retention_scope": "Full attempted-map logs are reproducible from maintained generators. Selected examples and original setup observations are retained here without claiming a universal exclusion."
+}

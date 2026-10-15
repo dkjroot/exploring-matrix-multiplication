@@ -7,6 +7,7 @@ Each generation creates a unique dated output directory with the original JSON.
 """
 
 from datetime import datetime
+from fractions import Fraction
 from hashlib import sha256
 from html import escape
 import json
@@ -14,6 +15,7 @@ from math import isfinite, log10
 from pathlib import Path
 
 from .report_explanations import composition_guide, reading_guide, terminology_guide
+from .report_interactivity import range_chart_script
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,6 +50,10 @@ background:#f4f5f9; border-radius:8px; font-size:12px; } a { color:#5745b1; }
 .callout { border-left:4px solid #be5733; padding:12px 18px; background:#fff6ee; border-radius:4px; }
 footer { color:var(--muted); font-size:13px; } .hash { overflow-wrap:anywhere; }
 .chart-legend { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; }
+.chart-series[data-hidden="true"] { display:none; }
+.legend-button[aria-pressed="false"] { opacity:.5; text-decoration:line-through; }
+.series-controls { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.series-controls output { font-size:14px; color:var(--muted); }
 .legend-button { display:flex; align-items:center; gap:8px; padding:8px 10px;
 background:white; color:var(--ink); border:1px solid var(--line); border-radius:6px;
 font:inherit; font-size:14px; cursor:pointer; text-align:left; }
@@ -55,6 +61,11 @@ font:inherit; font-size:14px; cursor:pointer; text-align:left; }
 border-color:var(--ink); outline:2px solid var(--ink); outline-offset:2px; }
 svg.legend-swatch { width:52px; height:18px; margin:0; flex:none; }
 .chart-axis-label { font-size:15px; font-weight:600; }
+.range-control { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:14px 0; }
+.range-control label { display:flex; flex-wrap:wrap; align-items:center; gap:12px; flex:1; }
+.range-control input { flex:1; min-width:160px; max-width:400px; accent-color:#6554c0; }
+.range-control output { font-variant-numeric:tabular-nums; }
+.range-control button { font:inherit; padding:5px 10px; cursor:pointer; }
 @media(max-width:800px) { .grid { grid-template-columns:1fr; } main { padding:20px 14px; } .panel { padding:16px; } }
 @media print { body { background:white; } main { max-width:none; padding:0; } .grid { display:block; }
 .panel { margin:16px 0!important; break-inside:avoid; } .table-wrap { overflow:visible; } a { color:inherit; }
@@ -215,9 +226,10 @@ def comparison_warning(reports):
         keys = ("input_repr_sha256", "input_shapes", "cutoff", "atol", "rtol",
                 "primitive_timing_enabled")
         incomplete |= any(key not in experiment for key in keys)
-        signatures.append(json.dumps([experiment.get(key) for key in keys], sort_keys=True))
+        signatures.append(json.dumps([experiment.get(key) for key in keys]
+                                     + [experiment.get('size_policy', 'padded')], sort_keys=True))
     if len(set(signatures)) > 1:
-        return "These algorithms have different inputs, cutoffs, tolerances, or profiling settings. Side-by-side charts describe the runs; they do not establish a fair comparison."
+        return "These algorithms have different inputs, cutoffs, size policies, tolerances, or profiling settings. Side-by-side charts describe the runs; they do not establish a fair comparison."
     if incomplete:
         return "Some experiment metadata is missing. Comparability cannot be established from this report."
     memory_settings = {report.get("execution_measurements", {}).get("memory_tracking_enabled") for report in reports.values()}
@@ -239,8 +251,10 @@ def algorithm_details(name, report):
         body += f'<p class="callout">{text(report["error"])}</p>'
     rows = [("Input shapes", json.dumps(experiment.get("input_shapes"))),
             ("Classical leaf cutoff", experiment.get("cutoff")),
+            ("Size policy", experiment.get("size_policy", "padded (legacy report)")),
+            ("Fringe data products", report.get("counts", {}).get("fringe_data_products", 0)),
             ("Unpadded classical product baseline", experiment.get("classical_data_product_baseline")),
-            ("Padded input cells (both matrices)", report.get("counts", {}).get("padded_input_cells")),
+            ("Padded input cells (baseline only)", report.get("counts", {}).get("padded_input_cells")),
             ("Square family exponent", model.get("square_arithmetic_exponent")),
             ("Base dimension / bilinear rank", f'{display(model.get("base_dimension"))} / {display(model.get("base_bilinear_rank"))}'),
             ("Arithmetic domain", model.get("arithmetic_domain")),
@@ -315,7 +329,7 @@ def legend_swatch(line):
     color = COLORS[group % len(COLORS)]
     body = (f'<path d="M18 9h16 M26 2v14" stroke="{color}" stroke-width="2"/>' if kind == "prediction" else
             f'<path d="M2 9h48" stroke="{color}" stroke-width="2.5"' +
-            (' stroke-dasharray="6 4"' if kind == "ideal" else '') + '/>')
+            (' stroke-dasharray="6 4"' if kind == "ideal" else ' stroke-dasharray="2 5"' if kind == 'projected' else ' stroke-dasharray="10 3 2 3"' if kind == 'upper_bound' else '') + '/>')
     if kind == "observed":
         body += point_marker(26, 9, group, color, radius=4)
     return f'<svg class="legend-swatch" viewBox="0 0 52 18" aria-hidden="true">{body}</svg>'
@@ -332,9 +346,17 @@ def curve_chart(title, series, *, logarithmic=False, y_label="Arithmetic operati
     """Plot measured points and model curves with explicit linear or log-log axes.
 
 Solid lines connect sampled executions, dashed lines show the ideal recurrence
-curve, and crosses show padding-aware model predictions at measured dimensions.
+curve, and crosses show size-policy-aware model predictions at measured dimensions.
 No value on a theoretical curve is represented as a captured execution count.
 """
+    series = [{**line, 'line_id': f'l{index}'} for index, line in enumerate(series)]
+    full_series = series
+    limits = next((line['range_limits'] for line in series if line.get('range_limits')), [])
+    bounded = any(line.get('kind') == 'upper_bound' for line in series)
+    if limits:
+        series = [{**line, 'points': [(x, y) for x, y in line['points']
+                                     if x <= limits[0] and line.get('kind') not in ('projected', 'upper_bound')]}
+                  for line in series]
     all_points = [(x, y) for line in series for x, y in line["points"]
                   if number(x) not in (None, 0) and number(y) is not None and (not logarithmic or y > 0)]
     if not all_points:
@@ -347,7 +369,7 @@ No value on a theoretical curve is represented as a captured execution count.
     ymax = ymax if ymax > ymin else ymin + 1
     left, top, width, height = 120, 35, 700, 260
     parts = [f'<svg viewBox="0 0 900 365" role="img" aria-label="{text(title)}"><title>{text(title)}</title>',
-             f'<desc>{"Log-log" if logarithmic else "Linear"} axes. Solid measured points; dashed ideal model; crosses are padding-aware predictions.</desc>']
+             f'<desc>{"Log-log" if logarithmic else "Linear"} axes. Solid measured points; dashed ideal model; crosses are size-policy-aware predictions.</desc>']
     # Tick actual sampled dimensions, rather than incidental integer points in
     # the dense ideal curve. This makes the padding boundaries easier to read.
     sampled_xs = {x for line in series if line.get("kind") != "ideal"
@@ -372,12 +394,12 @@ No value on a theoretical curve is represented as a captured execution count.
         mapped = [(left + (transform(x) - xmin) / (xmax - xmin) * width,
                    top + height - (transform(y) - ymin) / (ymax - ymin) * height) for x, y in points]
         kind = line.get("kind", "observed")
-        parts.append(f'<g class="chart-series" data-series-group="g{line["color"]}" data-series-kind="{text(kind)}">')
+        parts.append(f'<g class="chart-series" data-series-id="{line["line_id"]}" data-series-group="g{line["color"]}" data-series-kind="{text(kind)}">')
         if kind != "prediction" and mapped:
             coordinates = " ".join(f"{x:.3f},{y:.3f}" for x, y in mapped)
-            dash = ' stroke-dasharray="8 6"' if kind == "ideal" else ""
+            dash = ' stroke-dasharray="8 6"' if kind == "ideal" else ' stroke-dasharray="2 5"' if kind == 'projected' else ""
             parts.append(f'<polyline points="{coordinates}" fill="none" stroke="{color}" stroke-width="2.5"{dash}><title>{text(line["label"])}</title></polyline>')
-        if kind != "ideal":
+        if kind not in ("ideal", "projected"):
             for (size, work), (x, y) in zip(points, mapped):
                 tooltip = text(f'{line["label"]}: n={display(size)}, work={display(work)}')
                 if kind == "prediction":
@@ -386,24 +408,65 @@ No value on a theoretical curve is represented as a captured execution count.
                     parts.append(f'<g><title>{tooltip}</title>{point_marker(x, y, line["color"], color)}</g>')
         parts.append('</g>')
     parts.append("</svg>")
-    legend = '<div class="chart-legend" aria-label="Chart legend">' + "".join(
-        f'<button type="button" class="legend-button" data-series-group="g{line["color"]}" aria-label="Isolate {text(line["label"])} and related curves">{legend_swatch(line)}<span>{text(line["label"])}</span></button>'
+    legend = ('<div class="series-controls" role="group" aria-label="Choose visible lines">'
+              '<button type="button" data-series-select="all">Select all</button>'
+              '<button type="button" data-series-select="none">Select none</button>'
+              f'<output data-series-status aria-live="polite">{len(series)} of {len(series)} lines enabled</output></div>'
+              '<div class="chart-legend" aria-label="Chart legend">') + "".join(
+        f'<button type="button" class="legend-button" data-series-id="{line["line_id"]}" data-series-group="g{line["color"]}" aria-pressed="true" aria-label="Toggle {text(line["label"])}">{legend_swatch(line)}<span>{text(line["label"])}</span></button>'
         for line in series) + "</div>"
     # :has scopes hover/focus to this chart. All series in the same group stay
-    # visible, including ideal curves and padded predictions. No JS is needed,
-    # so offline files retain the same behavior and no data enters script code.
+    # visible, including ideal curves and execution-policy predictions. Hover
+    # isolation uses CSS; click selections are reapplied after range redraws.
     rules = []
     for group in sorted({line["color"] for line in series}):
-        trigger = f'.legend-button[data-series-group="g{group}"]'
+        trigger = f'.legend-button[data-series-group="g{group}"][aria-pressed="true"]'
         rules.append(f'.work-chart:has({trigger}:hover) .chart-series:not([data-series-group="g{group}"]),'
                      f'.work-chart:not(:has(.legend-button:hover)):has({trigger}:focus-visible) .chart-series:not([data-series-group="g{group}"])'
                      '{visibility:hidden;}')
     observed = [line["points"] for line in series if line.get("kind", "observed") == "observed"]
     overlap = any(a == b and a for index, a in enumerate(observed) for b in observed[index + 1:])
-    note = '<p class="note">Hover a legend entry or focus it with Tab to isolate that series and its related models. Moving away restores all curves.</p>'
+    note = '<p class="note">Click legend entries to turn individual lines on or off. Select none, then enable two entries to compare them. Hover an entry or focus it with Tab to temporarily isolate its related visible curves; moving away restores your selection. Selections survive range changes and Reset.</p>'
     if overlap:
         note += '<p class="note">Some measured series have identical counts and overlap. Isolate their legend entries to see each one separately.</p>'
-    return '<div class="work-chart"><style>' + "".join(rules) + '</style>' + "".join(parts) + legend + note + '</div>'
+    attributes, controls = '', ''
+    if limits:
+        # Integers travel as decimal strings so browser JSON parsing cannot round
+        # authoritative counts above 2^53. JavaScript converts only coordinates.
+        payload = {'title': title, 'yLabel': y_label, 'logarithmic': logarithmic,
+                   'limits': [str(n) for n in limits], 'colors': list(COLORS), 'bounded': bounded,
+                   'series': [{**{k: line[k] for k in ('label', 'color', 'line_id')},
+                               'kind': line.get('kind', 'observed'),
+                               'points': [[str(x), str(y)] for x, y in line['points']
+                                          if number(x) not in (None, 0) and number(y) is not None]}
+                              for line in full_series]}
+        attributes = ' data-range-chart="' + text(json.dumps(payload, separators=(',', ':'), allow_nan=False)) + '"'
+        controls = ('<div class="range-control"><label>Extend dimension range '
+                    f'<input type="range" min="0" max="{len(limits)-1}" step="1" value="0" '
+                    f'aria-label="Maximum dimension for {text(title)}" /></label>'
+                    f'<output aria-live="polite">Sampled range through n={text(display(limits[0]))}</output>'
+                    '<button type="button" data-range-reset>Reset</button></div>')
+        note += ('<p class="note">' + ('Drag to reveal proved upper bounds for integer inputs with |entry| ≤ 4. These bound the worst case; they do not predict the observed curve. Dash-dot lines connect separately bounded integer dimensions; the connecting segments are not themselves guarantees. Bounds can overestimate actual work because they allow cancellation to be absent. '
+                 if bounded else 'Drag to reveal a dotted extension: exact schedule predictions, without matrix execution. ') +
+                 'The range doubles at each step. Lines connect selected integer sizes; not every large-size fluctuation is sampled. '
+                 'Measured points stay unchanged. Coordinates and axis labels are rounded for display.</p>'
+                 '<noscript><p class="note">Enable JavaScript to extend this graph; the sampled graph and exact JSON remain available offline.</p></noscript>')
+    return '<div class="work-chart"'+attributes+'><style>' + "".join(rules) + '</style>' + controls + "".join(parts) + legend + note + '</div>'
+
+
+def projected_series(line, index, metric, label):
+    """Adapt supported exact schedule counts into a distinct unexecuted curve."""
+    projection = line.get('range_projection', {})
+    if projection.get('status') != 'projected':
+        return None
+    if metric not in ('field_multiplications', 'coefficient_multiplications', 'field_additions',
+                      'field_subtractions', 'field_normalizations',
+                      'field_arithmetic_operations', 'atomic_arithmetic_operations'):
+        return None
+    points = [(p['size'], p['counts'][metric] if metric in p['counts'] else p[metric])
+              for p in projection['points'] if p['size'] >= projection['sampled_maximum_size']]
+    return {'label': label+' · projected schedule', 'color': index, 'kind': 'projected',
+            'points': points, 'range_limits': projection['range_limits']}
 
 
 def measured_series(lines, metric):
@@ -420,6 +483,9 @@ def measured_series(lines, metric):
                 points.append((sample["size"], value))
         result.append({"label": f'{line["algorithm"]}, cutoff {line["cutoff"]}',
                        "color": index, "points": points, "kind": "observed"})
+        projected = projected_series(line, index, metric, f'{line["algorithm"]}, cutoff {line["cutoff"]}')
+        if projected:
+            result.append(projected)
     return result
 
 
@@ -436,9 +502,13 @@ def comparison_series(lines, metric):
         observed = measured_series([line], metric)[0]
         observed.update(color=index, label=f'cutoff {line["cutoff"]} · measured')
         result.append(observed)
+        projected = projected_series(line, index, metric, f'cutoff {line["cutoff"]}')
+        if projected:
+            result.append(projected)
         for kind, label, points in (
-            ("ideal", "ideal model", [(point["size"], point.get(key)) for point in line.get("ideal_curve", [])]),
-            ("prediction", "padded prediction", [(sample["size"], sample["prediction"].get(f"padded_{key}")) for sample in line["samples"]]),
+            ("ideal", "ideal model", [(point["size"], point.get(key)) for point in
+                [*line.get("ideal_curve", []), *line.get('range_projection', {}).get('ideal_points', [])]]),
+            ("prediction", "execution-policy prediction", [(sample["size"], sample["prediction"].get(f"padded_{key}")) for sample in line["samples"]]),
         ):
             result.append({"label": f'cutoff {line["cutoff"]} · {label}', "color": index,
                            "kind": kind, "points": [(x, y) for x, y in points if number(y) is not None]})
@@ -472,10 +542,12 @@ def size_effects_section(lines):
             leaf = ' × '.join(map(str, evidence['leaf_dimensions']))
             trace = [evidence['padded_dimensions']]+[level['child_dimensions'] for level in evidence['levels']]
             path = ' → '.join('×'.join(map(str, shape)) for shape in trace)
+            cores = ' → '.join('×'.join(map(str, level.get('core_dimensions', level['parent_dimensions'])))
+                               for level in evidence['levels'])
             stages = ' → '.join(f"{level['stage']} ({level['child_products_per_node']} child products)" for level in evidence['levels'])
-            rows.append((line['cutoff'], sample['size'], padded, leaf, evidence['recursion_levels'],
+            rows.append((line['cutoff'], sample['size'], evidence.get('size_policy', 'padded'), padded, leaf, evidence['recursion_levels'],
                          evidence['extra_zero_input_cells'], 'Yes' if evidence['padding_added'] else 'No',
-                         path, stages or 'Classical leaf', evidence['status']))
+                         evidence.get('fringe_data_products', 0), path, cores or 'No split', stages or 'Classical leaf', evidence['status']))
             transition = evidence.get('transition_from_previous_sample')
             if transition:
                 transitions.append((line['cutoff'], transition.get('from_requested_size'),
@@ -493,19 +565,145 @@ def size_effects_section(lines):
             'columns), as explained in the glossary. The path is calculated from the recorded schedule; the arithmetic counters '
             'and output checks provide separate execution evidence. A row marked “declared_model_only” describes the model '
             'but does not prove how an unfamiliar replacement function actually handled sizes.</p>'
-            +table(('Cutoff', 'Requested n', 'Executed padded shape', 'Classical leaf shape', 'Levels',
-                    'Extra zero input cells', 'Padding added?', 'Dimension path', 'Stage path', 'Attribution'), rows))
+            +table(('Cutoff', 'Requested n', 'Size policy', 'Executed shape', 'Classical leaf shape', 'Levels',
+                    'Extra zero input cells', 'Padding added?', 'Fringe data products', 'Dimension path', 'Core path', 'Stage path', 'Attribution'), rows))
     if transitions:
         body += table(('Cutoff', 'Previous n', 'Current n', 'Budget transition', 'Observed data counts equal?', 'Why'), transitions)
     body += ''.join('<p class="callout">'+text(note)+'</p>' for note in cutoff_notes)
-    body += ('<p>We currently enlarge the whole request until its dimensions fit a prefix of the repeating stage schedule, '
-             'then compare that enlarged problem with the cutoff. This gives one uniform calculation whose rules we can verify. '
-             'It can be wasteful for some sizes: we could instead handle a leftover border separately, or stop at a larger '
-             'classical leaf that already fits the recipe. Those alternatives require their own exact recipes, counts and checks. '
+    body += ('<p>The default fringe policy tests the cutoff on the actual block, applies the recipe to a divisible core, '
+             'and computes the remaining dot terms explicitly. No input zeros are added. At every level the core rounds '
+             'each axis down by less than its stage block count; the fringe count includes all levels and their node multiplicities. '
+             'For square matrices and fixed stages this adds only quadratic work per node, preserving the justified family exponent. '
+             'A stage with an empty core falls back to classical multiplication. The optional padded baseline instead enlarges '
+             'the whole request to a covering schedule prefix before checking the cutoff. Earlier saved reports retain that policy. '
              'This is a portable size-handling choice, not a Python/GPU/home-computer restriction. Zero padding preserves the '
              'answer and the fixed-cutoff asymptotic exponent, while sometimes adding substantial work in a finite example. '
              'Two requests with equal field counts can still produce different-sized numbers or different memory peaks.</p></details>')
     return body
+
+
+def mathematical_work_explanation():
+    """Share the work-unit definition and limitations between report families."""
+    return ('The score compares the same input under a common exact-arithmetic model: classical work divided by candidate work. '
+            'One means equal estimated work; two means half the work of classical multiplication. Higher is better. '
+            'It is not a speedup prediction or a measure of proximity to an optimal algorithm. Each 64-bit word product, addition, '
+            'subtraction, carry/borrow step, comparison, shift and sign step has weight one. Those weights are a declared convention, '
+            'not measured instruction prices. The reference schedule uses schoolbook multiplication, binary restoring division and '
+            'Euclidean GCD. Rational addition shares denominator factors; multiplication cancels common factors before forming products. '
+            'Reduction and exact division are charged, as are coefficient arithmetic and exact complex components. '
+            'We check each replayed result against the original scalar result without changing the algorithm. '
+            'Memory, movement, preparation, observation and verification costs are separate. Partial or opaque arithmetic gets no headline score. '
+            'The exact numerator and denominator of each ratio are saved in JSON. Rankings can change with inputs, representation, cutoff or another cost model. '
+            'Scores describe the explicit executable schedule, including fixed-coefficient scales even by one; equivalent identities can have different schedules. '
+            'They do not establish the minimum work of every possible implementation of an identity.')
+
+
+def traffic_explanation():
+    """Define logical payload transfers without implying hardware traffic."""
+    return ('This model counts reads and writes at scalar arithmetic ports, plus explicit matrix/vector copies, zero initialization and stores. '
+            'A copy reads and writes the value once; repeated uses count repeatedly. Integers use 64-bit magnitude words, '
+            'fractions include numerator and denominator, and exact complex pairs include both components. '
+            'For example, copying a 4,096-bit integer counts 64 words read and 64 written. Python may actually copy only a reference: '
+            'we are describing logical mathematical payload flow, not measuring cache or DRAM traffic. '
+            'Internal scalar temporaries, pointer/object overhead, setup, validation, observer replay and verification are excluded. '
+            'There is no extrapolation from a few measured operand sizes. Unknown payloads remain unavailable.')
+
+
+def comparison_value(comparison):
+    """Convert an exact ratio only for plotting; raw evidence stays integral."""
+    if comparison.get('status') != 'compared':
+        return None
+    ratio = comparison['relative_efficiency']
+    try:
+        value = float(Fraction(ratio['numerator'], ratio['denominator']))
+        return value if value > 0 and isfinite(value) else None
+    except OverflowError:
+        return None
+
+
+def implementation_comparison_sections(lines):
+    """Show separate work, allocation-memory, and logical-movement comparisons.
+
+    Main curves use the smallest requested cutoff, matching the arithmetic
+    overview. Every cutoff retains exact raw evidence in the expandable table.
+    Older input files get no invented score or modelled movement measurement.
+    """
+    baseline_cutoff = min(line['cutoff'] for line in lines)
+    baseline = [line for line in lines if line['cutoff'] == baseline_cutoff]
+    work_curves, memory_curves, movement_curves, rows, statistics, traffic_rows = [], [], [], [], [], []
+    has_work = any('mathematical_work' in sample.get('observation', {}) for line in lines for sample in line['samples'])
+    for index, line in enumerate(baseline):
+        scores, memory, movement = [], [], []
+        for sample in line['samples']:
+            if sample['status'] != 'passed':
+                continue
+            observation = sample.get('observation', {})
+            value = comparison_value(sample.get('work_comparison', {}))
+            if value is not None:
+                scores.append((sample['size'], value))
+            peak = sample.get('execution_measurements', {}).get('python_traced_peak_bytes', {})
+            if peak.get('status') == 'measured':
+                memory.append((sample['size'], peak['value']))
+            traffic = observation.get('data_movement', {})
+            if traffic.get('status') == 'modelled':
+                movement.append((sample['size'], traffic['logical_word_transfers']))
+        label = line['algorithm']+f", cutoff {line['cutoff']}"
+        work_curves.append({'label': label, 'color': index, 'points': scores})
+        memory_curves.append({'label': label, 'color': index, 'points': memory})
+        movement_curves.append({'label': label, 'color': index, 'points': movement})
+    for line in lines:
+        for sample in line['samples']:
+            observation = sample.get('observation', {})
+            work = observation.get('mathematical_work')
+            traffic = observation.get('data_movement', {})
+            if work is None:
+                continue
+            score = sample.get('work_comparison', {})
+            ratio = score.get('relative_efficiency')
+            exact_ratio = f"{ratio['numerator']}/{ratio['denominator']}" if ratio else None
+            rows.append((line['algorithm'], line['cutoff'], sample['size'], sample['status'], work['status'],
+                         work.get('total_work_units'), score.get('baseline_work_units'), exact_ratio,
+                         traffic.get('logical_word_transfers'), traffic.get('status', 'not_recorded')))
+            for key, value in work.get('schedule_statistics', {}).items():
+                statistics.append((line['algorithm'], line['cutoff'], sample['size'], key, value))
+            for category, counts in traffic.get('by_category', {}).items():
+                traffic_rows.append((line['algorithm'], line['cutoff'], sample['size'], category,
+                                     counts.get('scalar_reads', 0), counts.get('scalar_writes', 0),
+                                     counts.get('word_reads', 0), counts.get('word_writes', 0),
+                                     counts.get('unknown_payload_reads', 0)+counts.get('unknown_payload_writes', 0)))
+    parts = []
+    if has_work:
+        parts.append('<nav aria-label="Candidate comparisons"><a href="#mathematical-work">Work efficiency</a> · '
+                     '<a href="#comparison-memory">Memory</a> · <a href="#logical-movement">Logical data movement</a></nav>')
+        if not any(line['algorithm'] == 'naive' for line in baseline):
+            sizes = sorted({x for curve in work_curves for x, _ in curve['points']})
+            work_curves.append({'label': 'Classical reference = 1', 'color': len(baseline), 'kind': 'prediction',
+                                'points': [(size, 1) for size in sizes]})
+        parts.append('<div id="mathematical-work"></div>'+panel('Mathematical work efficiency', mathematical_work_explanation()+
+                           f' These curves use cutoff {baseline_cutoff}; the table below retains all cutoffs. '
+                           'The classical denominator reuses a verified classical sample where available, or comes from a separate verified execution on identical inputs, outside candidate measurement scopes.',
+                           curve_chart('Mathematical work efficiency', work_curves, y_label='Classical / candidate work (ratio)')
+                           if any(curve['points'] for curve in work_curves) else '<p class="note">Unavailable: no complete verified work comparisons.</p>'))
+    if has_work or any(curve['points'] for curve in memory_curves):
+        parts.append('<div id="comparison-memory"></div>'+panel('Measured Python memory growth',
+            'This separate graph records the highest Python-traced allocation total during each public multiplication call. '
+            'Lower is better within this measurement scope. Inputs already exist; temporaries, cold preparation and observation machinery contribute. '
+            'The new arithmetic replay also contributes observer allocations, so this is not intrinsic algorithm storage or a whole-process/GPU peak. '
+            'Reused rows copy original evidence. Disabled memory probes remain unavailable. There is deliberately no extrapolation slider: '
+            'we have no justified model of allocator behavior or peak live payload storage at unexecuted sizes.',
+            curve_chart('Python allocation peaks', memory_curves, y_label='Traced peak allocation (bytes)')
+            if any(curve['points'] for curve in memory_curves) else '<p class="note">Unavailable: no verified Python allocation observations; the probe may be disabled.</p>'))
+    if has_work:
+        parts.append('<div id="logical-movement"></div>'+panel('Logical data movement', traffic_explanation()+' Lower transfer counts are better within this declared schedule.',
+                           curve_chart('Logical data movement', movement_curves, y_label='Logical 64-bit word reads + writes (model)')
+                           if any(curve['points'] for curve in movement_curves) else '<p class="note">Unavailable: no complete logical payload observations.</p>'))
+        parts.append('<details><summary>Exact work scores, coverage and schedule statistics</summary>'+table(
+            ('Algorithm', 'Cutoff', 'n', 'Execution', 'Work coverage', 'Candidate work units', 'Classical work units',
+             'Exact relative efficiency', 'Logical word transfers', 'Movement coverage'), rows)
+            +table(('Algorithm', 'Cutoff', 'n', 'Reference schedule statistic', 'Count'), statistics)
+            +table(('Algorithm', 'Cutoff', 'n', 'Movement category', 'Scalar reads', 'Scalar writes', 'Word reads',
+                    'Word writes', 'Unknown payload accesses'), traffic_rows)+'</details>')
+    return ''.join(parts)
 
 
 def resource_scaling_sections(lines):
@@ -530,20 +728,17 @@ def resource_scaling_sections(lines):
             points = [(s['size'], s['observation']['operand_costs'][metric]) for s in line['samples']
                       if s['status'] == 'passed' and 'operand_costs' in s['observation']]
             curves.append({'label': line['algorithm']+f", cutoff {line['cutoff']}", 'color': index, 'points': points})
+            bounds = line.get('resource_bounds', {})
+            if bounds.get('status') == 'bounded':
+                bound_key = {'equivalent_word_multiplications': 'word_multiplications_upper_bound',
+                             'equivalent_word_additions_subtractions': 'word_additions_subtractions_upper_bound',
+                             'observed_max_operand_bits': 'operand_bits_upper_bound'}[metric]
+                curves.append({'label': line['algorithm']+f" · proved upper bound, |entry| ≤ {bounds['input_absolute_bound']}",
+                    'color': index, 'kind': 'upper_bound', 'range_limits': bounds['range_limits'],
+                    'points': [(p['size'], p[bound_key]) for p in bounds['points']]})
         if any(curve['points'] for curve in curves):
-            parts.append(panel(heading, 'We inspect the exact numbers used by each scalar operation and record how many bits they need. The word-cost graphs then estimate work using 64-bit chunks: multiplying two 128-bit integers means two chunks times two chunks, or four word-pair products in this model. Fractions also need numerator and denominator work. This schoolbook estimate includes data, coefficient and combination arithmetic, but excludes GCD, cancellation, division and carry work. Those missing costs are on the research checklist. The estimate is not a measurement of CPU instructions or the faster big-integer methods Python may use.',
+            parts.append(panel(heading, 'We inspect the exact numbers used by each scalar operation and record how many bits they need. These original word-cost graphs retain their earlier definition for comparison with saved evidence and proved bounds. Multiplying two 128-bit integers means two chunks times two chunks, or four word-pair products. Fractions use unreduced numerator and denominator expressions. This original model excludes GCD, cancellation, division and carry work; the separate mathematical work score above includes a declared schedule for those operations. Neither model counts CPU instructions or Python’s internal big-integer work.',
                 curve_chart(heading, curves, logarithmic=True, y_label=unit)))
-    memory_curves = []
-    for index, line in enumerate(baseline):
-        points = []
-        for sample in line['samples']:
-            peak = sample.get('execution_measurements', {}).get('python_traced_peak_bytes', {})
-            if sample['status'] == 'passed' and peak.get('status') == 'measured':
-                points.append((sample['size'], peak['value']))
-        memory_curves.append({'label': line['algorithm'], 'color': index, 'points': points})
-    if any(curve['points'] for curve in memory_curves):
-        parts.append(panel('Measured Python memory growth', 'We start a Python allocation probe around the public multiplication call and record its highest traced allocation total. The input matrices already exist before the probe starts. Temporary matrices, newly created numbers, any preparation done inside the call and our measurement machinery can all contribute. A reused row copies the original measurement rather than making a fresh observation. Python cannot see all native or GPU allocations this way, so this is not a whole-process memory peak or a prediction of memory use for arbitrarily large matrices.',
-                           curve_chart('Python allocation peaks', memory_curves, y_label='Traced peak allocation (bytes)')))
     for line in lines:
         for sample in line['samples']:
             cost = sample['observation'].get('operand_costs')
@@ -556,6 +751,27 @@ def resource_scaling_sections(lines):
         parts.append(panel('Operand-size and word-model evidence', 'This table shows the largest values seen during each call, including the numerator and denominator sizes of fractions. We keep those values exact; recording their bit widths does not round them or convert them to 64-bit numbers. A zero uses one magnitude bit in our storage convention, and sign-handling work is not estimated. The data and coefficient columns are parts of the “All word products” total, so do not add them to that total again. “Partial” means some operations, such as an exact division used for normalization, do not yet have a word-cost model.',
                            table(('Algorithm', 'Cutoff', 'n', 'Max operand bits', 'Max result bits', 'Max denominator bits',
                                   'All word products', 'Data word products', 'Coefficient word products', 'Model status'), rows)))
+    bound_rows = []
+    for line in baseline:
+        bounds = line.get('resource_bounds', {})
+        if bounds.get('status') != 'bounded':
+            continue
+        lookup = {p['size']: p for p in bounds['points']}
+        for sample in line['samples']:
+            if (sample.get('resource_bounds_check_passed') is not True
+                    or 'operand_costs' not in sample.get('observation', {})
+                    or sample['size'] not in lookup):
+                continue
+            observed, upper = sample['observation']['operand_costs'], lookup[sample['size']]
+            bound_rows.append((line['algorithm'], sample['size'], observed['observed_max_operand_bits'],
+                upper['operand_bits_upper_bound'], observed['equivalent_word_multiplications'],
+                upper['word_multiplications_upper_bound'], observed['equivalent_word_additions_subtractions'],
+                upper['word_additions_subtractions_upper_bound']))
+    if bound_rows:
+        parts.append(panel('How conservative are the resource bounds?',
+            'Compare each captured execution with its bound at the same dimension. The bound covers any integer inputs with entry magnitudes at most 4, using this fixed recipe and cutoff. Triangle inequalities allow every combination to grow without cancellation; reduced denominators divide exact common-denominator bounds. A uniform enclosure covers all recursive children. These choices can make the bound substantially larger than an actual observation, especially for fractional recipes. A large bound does not prove that actual operands or work grow that quickly. Each saved point is justified independently; connecting segments are not guarantees at other dimensions. The scalar-call schedule and every measured width and word-work total are checked against the model. Python allocation peaks, time, GCD, division, carry and allocation work are excluded. This table uses the smallest cutoff, matching the resource charts.',
+            table(('Algorithm', 'n', 'Observed operand bits', 'Operand bit bound', 'Observed word products',
+                   'Word product bound', 'Observed word sums', 'Word sum bound'), bound_rows)))
     for line in lines:
         projection = line.get('scaling_projection', {})
         if projection.get('status') != 'projected':
@@ -599,20 +815,20 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
              f'<p class="note">Generated {text(generated)} · Sizes {text(configuration.get("sizes"))} · Cutoffs {text(configuration.get("cutoffs"))} · Seed {text(configuration.get("seed"))}</p>',
              f'<div class="summary"><span class="badge">{len(samples)} requested configurations</span><span class="badge">{executed} actual executions</span><span class="badge">{reused} reused measurements</span><span class="badge">{passed} configurations verified</span><span class="badge">{matches} multiplication budgets match the recurrence</span><span class="badge">{step_matches} full arithmetic budgets match</span></div></header>',
              '<p class="note">Sometimes two cutoff settings lead to exactly the same calculation. For example, a radix-four recipe may reach 1×1 leaves at both cutoff 1 and cutoff 2. When we know that the padding, stage sequence and leaf dimensions are identical, we run that calculation once and copy its verified evidence into the equivalent rows. The Measurement source column identifies which cutoff actually ran. Every requested setting still has its own model and graph; a copied row is not presented as a second independent execution.</p>',
-             reading_guide(), terminology_guide(),
+             reading_guide(), terminology_guide(), implementation_comparison_sections(lines),
              '<p class="callout">The theoretical exponent comes from the recipe and its justified counting rule. The measured slopes below describe only the finite range we executed; they are not proofs of an asymptotic exponent. A log-log graph makes a pure power law appear straight, which helps compare growth rates. Padding, leaf choices and extra additions can make the observed points depart from that straight line.</p>',
-             panel("What does cutoff mean?", "The cutoff is the maximum block size at which recursion stops and ordinary row-by-column multiplication starts.",
-                   '<p>For Strassen on a 16×16 matrix, cutoff 4 splits into 8×8 blocks, then 4×4 blocks, and multiplies those leaves classically. Cutoff 1 continues down to individual numbers. More recursion can save data multiplications while adding combination work.</p><p>The naive algorithm never recurses, so its cutoff does nothing and its curves overlap. AlphaEvolve splits in powers of four, so cutoff 2 still produces 1×1 leaves. The exact-count table records the actual leaf size.</p>')]
+             panel("What does cutoff mean?", "The cutoff is the dimension threshold for stopping recursion and using ordinary row-by-column multiplication. A stage that cannot form nonempty blocks also stops.",
+                   '<p>For Strassen on a 16×16 matrix, cutoff 4 splits into 8×8 blocks, then 4×4 blocks, and multiplies those leaves classically. Cutoff 1 continues down to individual numbers. More recursion can save data multiplications while adding combination work.</p><p>The naive algorithm never recurses, so its cutoff does nothing and its curves overlap. For AlphaEvolve at size 16, cutoff 2 still produces 1×1 leaves. At unpadded size 8, the size-2 child blocks can be classical leaves. An empty divisible core can produce a leaf larger than the cutoff. The exact-count table records the actual leaf size.</p>')]
     parts.append(panel('Why can the graphs have steps?',
         'Recursion alone does not force a staircase. The exponent describes asymptotic growth, not an exact smooth cost at every integer size.',
         table(('Source', 'What is inherent?', 'What is our choice?', 'Platform necessity'), (
             ('Recursive recipe', 'Each stage prescribes integer equal-block divisions and a number of child products.',
              'How arbitrary sizes are adapted to those stages.', 'The formula is mathematical; the adaptation is portable.'),
-            ('Zero padding', 'The current fixed-block traversal needs compatible dimensions before a stage executes.',
-             'Round the whole request up to a covering schedule prefix; keep computing padded entries.',
+            ('Zero padding', 'Each formula needs compatible core dimensions before a stage executes.',
+             'Default: round the core down and finish the fringe explicitly. Optional baseline: round the whole request up.',
              'Required by this traversal policy, not universally required by the algorithm or hardware.'),
             ('Classical cutoff', 'Recursion must have a terminating base case.',
-             'The threshold and testing it after padding; a fixed cutoff preserves the family exponent.',
+             'Default: test actual dimensions before splitting. The padded baseline tests enlarged dimensions; a fixed cutoff preserves the family exponent.',
              'A configurable interpreter choice, not a hardware constraint.'),
             ('Smooth theory curve', 'The recurrence and asymptotic bound apply under their stated assumptions.',
              'Draw an unpadded continuous comparison curve; it is not an executable matrix at fractional sizes.',
@@ -626,11 +842,11 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
             ('Sampled graph', 'Captured operation counts are integers.',
              'Connect only requested sizes with straight guides; sparse sampling can hide boundaries.',
              'A plotting choice, not extra algorithm work.')))
-        +'<p>For Strassen at cutoff one, n=5 through n=8 all pad to 8 and use 343 data products. '
-         'At n=9 the chosen padded size becomes 16, using 2,401. The equal-halves formula is inherent; '
-         'rounding 9 all the way to 16 is our size-handling choice. Natural sizes 8 and 16 follow the '
-         'same n<sup>log₂7</sup> product law without a padding penalty. Border handling could change '
-         'the off-grid counts while preserving the exponent.</p>'
+        +'<p>For Strassen at cutoff one, the historical padded baseline makes n=5 through n=8 all use 343 data products, '
+         'and n=9 use 2,401. The default fringe policy instead uses 110 at n=5: 49 for the 4×4 core plus '
+         '5³−4³=61 remaining dot terms. It uses 343 at n=8 and 560 at n=9. The equal-halves formula is inherent; '
+         'rounding 9 all the way to 16 was our size-handling choice. Core and stage changes can still cause '
+         'finite jumps or dips; removing padding does not assert a smooth or monotone cost curve.</p>'
         '<p>Inspect “Where this algorithm’s steps come from” beside each comparison, when size metadata is available, for the actual stage and leaf path. '
         'A plateau in field counts need not be a plateau in bit costs or memory. These policies and their alternatives '
         'preserve exact arithmetic; no rounding of numerical values is involved.</p>'))
@@ -683,7 +899,7 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
             body += '<p class="note">This recipe repeats several stages, so stopping at different points in that order can give different finite costs. We show exact discrete predictions at each sampled size. A smooth ideal curve is omitted rather than pretending one uniform stage describes all those phases. The dimension and stage paths above show which phase each calculation reaches.</p>'
         if group[0]["work_model"].get("unavailable_reason"):
             body += '<p class="callout">Coefficient setup unavailable: ' + text(group[0]["work_model"]["unavailable_reason"]) + '</p>'
-        parts.append(panel(f"{name} · measured versus theoretical multiplications", "Solid points are the counts captured while this algorithm ran; the lines between them are visual guides, not measurements of every intervening size. Dashed curves, when available, show the smooth ideal model without the whole-input padding used by our interpreter. Crosses show what the discrete counting rule predicts after applying the actual padding and cutoff. When a cross lands on a measured point, that is evidence that execution followed the model. The size-path table explains the difference between the requested problem and the one we actually executed.", body))
+        parts.append(panel(f"{name} · measured versus theoretical multiplications", "Solid points are the counts captured while this algorithm ran; the lines between them are visual guides, not measurements of every intervening size. Dashed curves, when available, show a continuous comparison model, separate from the actual discrete traversal. Crosses show what the discrete counting rule predicts after applying the actual size policy and cutoff. When a cross lands on a measured point, that is evidence that execution followed the model. The size-path table explains the difference between the requested problem and the one we actually executed.", body))
     rows = []
     for line in lines:
         for sample in line["samples"]:
@@ -697,7 +913,7 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
                          observation.get("field_arithmetic_operations"), observation.get("atomic_arithmetic_operations"), sample["status"],
                          measurement_label(sample, line["cutoff"])))
     parts.append(panel("Exact sampled counts and effective blocks", "Use this table when you want the exact values behind the graph. Data multiplications act on input-dependent values; coefficient multiplications use the fixed numbers in the recipe. Field steps and component steps overlap, so they must not be added. The cutoff is a maximum leaf size, not a promise to reach a block of exactly that size: the stage’s integer divisions determine which leaf sizes are available.",
-                       table(("Algorithm", "Cutoff", "n", "Padded n", "Actual leaf n", "Data multiplications", "Padded prediction", "Coefficient multiplications", "Field steps", "Component steps", "Output check", "Measurement source"), rows)))
+                       table(("Algorithm", "Cutoff", "n", "Executed dimensions", "Actual leaf n", "Data multiplications", "Execution prediction", "Coefficient multiplications", "Field steps", "Component steps", "Output check", "Measurement source"), rows)))
     parts.append(sweep_evidence(data))
     parts.append(resource_scaling_sections(lines))
     for line in lines:
@@ -713,6 +929,7 @@ def render_work_sweep(data, *, title, source_name, source_hash, generated):
         parts.append('<details><summary>Original earlier JSON snapshot</summary><pre>' + text(reference["source_json"]) + '</pre></details></details></section>')
     parts.append(f'<section class="panel"><h2>Reproducibility</h2><p><a href="measurements.json">Original sweep JSON</a> · Source: {text(source_name)}</p><p class="hash note">SHA-256: {text(source_hash)}</p>')
     parts.append('<details><summary>Complete data and captured counters</summary><pre>' + text(json.dumps(data, indent=2, ensure_ascii=False, allow_nan=False)) + '</pre></details></section>')
+    parts.append(range_chart_script())
     parts.append('<footer>Observed work excludes input generation, the exact oracle, report calculations, and measurement bookkeeping. Counts assume unit-cost scalar operations; integer bit complexity is separate.</footer></main></body></html>')
     return "".join(parts)
 
@@ -797,6 +1014,36 @@ def experiment_sections(reports):
     return render_html(reports, title="", source_name="", source_hash="", generated="", sections_only=True)
 
 
+def work_and_traffic_evidence(reports):
+    """Expose the same model definitions and exact details in single-pair reports."""
+    work, traffic, rows, statistics = [], [], [], []
+    for name, report in reports.items():
+        cost = report.get('mathematical_work')
+        if cost is None:
+            continue
+        movement = report.get('data_movement', {})
+        comparison = report.get('work_comparison', {})
+        work.append((name, comparison_value(comparison)))
+        traffic.append((name, movement.get('logical_word_transfers')))
+        ratio = comparison.get('relative_efficiency')
+        rows.append((name, report.get('status'), cost['status'], cost.get('total_work_units'),
+                     comparison.get('baseline_work_units'),
+                     f"{ratio['numerator']}/{ratio['denominator']}" if ratio else None,
+                     movement.get('status'), movement.get('logical_word_transfers'), str(cost['unmodelled_calls'])))
+        for key, value in cost.get('schedule_statistics', {}).items():
+            statistics.append((name, key, value))
+    if not rows:
+        return ''
+    return (panel('Mathematical work efficiency', mathematical_work_explanation(),
+                  bar_chart('Mathematical work efficiency', work, 'classical work / candidate work'))
+            +panel('Logical data movement', traffic_explanation(),
+                   bar_chart('Logical word transfers', traffic, 'logical 64-bit word reads + writes'))
+            +'<details><summary>Exact work and movement evidence</summary>'+table(
+                ('Algorithm', 'Execution', 'Work coverage', 'Candidate work units', 'Classical work units',
+                 'Exact relative efficiency', 'Movement coverage', 'Logical transfers', 'Unmodelled calls'), rows)
+            +table(('Algorithm', 'Reference schedule statistic', 'Count'), statistics)+'</details>')
+
+
 def operand_evidence(reports):
     """Expose word costs in individual-pair reports without inventing older data."""
     rows, primitive_rows, products = [], [], []
@@ -813,7 +1060,7 @@ def operand_evidence(reports):
     if not rows:
         return ''
     return panel('Exact operand sizes and 64-bit word equivalents',
-        'Our numbers stay exact while we record their bit widths. To compare a small multiplication with a much larger one, this model imagines breaking integers into 64-bit chunks and multiplying the chunk pairs. Fractions need numerator and denominator work too, and coefficient work is included. GCD, cancellation, division and carry propagation are excluded for now: the mathematical calculation still performs whatever exact arithmetic it needs, but this estimate does not yet describe all of it. These are not CPU instruction counts. Floating diagnostics remain unmodelled rather than being treated as exact integers.',
+        'Our numbers stay exact while we record their bit widths. This original model breaks integers into 64-bit chunks and counts chunk pairs. Fractions use unreduced numerator and denominator expressions. GCD, cancellation, division and carry propagation remain excluded from this original estimate; the separate mathematical work model includes its own explicit schedule for these costs. Keeping both preserves earlier evidence and resource-bound definitions. These are not CPU instruction counts. Floating diagnostics remain unmodelled rather than being treated as exact integers.',
         bar_chart('64-bit multiplication equivalents', products, 'modelled word products')
         +table(('Algorithm', 'Model status', 'Max operand bits', 'Max result bits', 'Max denominator bits',
                 'Word products', 'Word sums', 'Unmodelled calls'), rows)
@@ -874,6 +1121,7 @@ def render_html(reports, *, title, source_name, source_hash, generated, sections
     parts.append(panel("Secondary · Python allocation peak", "We record the highest Python-traced allocation total during the call. The inputs already exist when tracking starts, while temporary arrays, numbers, setup and observation may create new allocations. Native libraries and GPU storage may be invisible to this probe. Treat the value as a measurement with those boundaries, not the total memory of the process or the exact storage required by the mathematical algorithm.",
                        bar_chart("Traced Python allocation peak", memory, "bytes")))
     parts.append("</div>")
+    parts.append(work_and_traffic_evidence(reports))
     parts.append(operand_evidence(reports))
     diagnostics = []
     for name, report in reports.items():

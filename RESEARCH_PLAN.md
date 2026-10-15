@@ -25,8 +25,13 @@ Finite-size reports now distinguish a recipe's equal-block divisions from our
 portable zero-padding and cutoff policies. Per-sample shapes and stage paths
 explain padded plateaus and geometry changes. Smooth curves and sparse connecting
 lines are presentation models, not proof that every integer size has that cost.
-Add exact optional fringe handling while preserving the current padded baseline;
-derive its budgets and recurrence before admitting its costs to comparisons.
+Exact fringe handling is now the default; the historical padded baseline remains
+explicitly selectable. At each recursive node, apply the recipe to the divisible
+core and finish each remaining dot term exactly once. The complete count budget
+includes fringe work at every depth. Fixed stage counts bound the remainder on
+each axis, so square-node overhead is O(n²), preserving the justified recurrence
+exponent and any existing borderline logarithmic factor. Core transitions may
+still produce finite jumps; this does not promise a smooth cost at every size.
 GCD, cancellation, division/normalization, and multiword carries/accumulation each
 remain explicit cost-model tasks in the README checklist.
 
@@ -111,6 +116,12 @@ mathematically justified algorithmic change.
 
 ## Next work
 
+Maintain this plan as promising new angles arise, updating the README checklist
+where relevant. For each angle, record its motivation, source or exact local
+evidence, limitations, and a bounded next experiment with a success criterion.
+Preserve existing paths and failed candidates; explain priority changes and keep
+proposals distinct from verified constructions.
+
 The combined runner is now `python sweep.py`: all supported report families
 share one dated output tree, generated schemes join the arithmetic comparison,
 and an outcome/fingerprint manifest preserves completed work. Finite search/CW
@@ -183,6 +194,123 @@ source attribution, finite work accounting, and the remaining milestones.
 
 ### Remaining mathematical construction work
 
+The first bounded interior experiment is implemented in `cw_interior.py`, using
+the reusable `tensor_restrictions.py` and `recipe_parts.py` primitives. The command
+`python -m matrix_multiplication.constructions cw-interior --certificate` tries
+2,048 coordinate candidates for each of the three interior sectors and its
+square, retaining every attempted map and outcome. For CW₂ squared, the base
+sectors recognize 23, 23 and 22 candidates in this prefix. Two parts per base
+sector are retained; their shapes are (2,1,2), (1,2,2) and (2,2,1), with four
+products each after full exact polynomial recovery. Squaring a known witness
+gives a 16-product part in each orientation. The fresh square-search prefixes
+recognize no additional parts. These misses are bounded coordinate-search
+evidence, not exclusions. Combining the three orientations from separate source
+copies gives a completely verified 4-by-4 recipe with 64 products and exponent
+three. This establishes reusable finite parts, not an improved bound.
+
+The experiment is extraction from the retained interior components
+of CW₂ squared. The current `coarse_catalog(2, 2)` reconstructs the full tensor
+and retains the three sectors (1,1,2), (1,2,1) and (2,1,1), with permutations of
+space dimensions (4,4,6). These dimensions obstruct treating a whole component
+as a matrix product; they do not exclude useful restrictions or products from
+its powers. See CONSTRUCTIONS.md for the dimension argument and exact evidence.
+
+The experiment tries coordinate restrictions of each component, then its square
+under explicit candidate and size budgets, checking all three orientations.
+It saves source-coordinate maps, budgets, failures and complete coefficient
+checks for each retained extraction. Recovery pays the restricted polynomial
+recipe's finite cost before comparison with the existing fine/coarse extraction
+and dense packing. Nontrivial exactly verified matrix restrictions now establish
+the first milestone; an improvement still requires a lower verified
+recovered cost for the same product, or a better verified dense recurrence after
+packing. A restricted search miss excludes only the enumerated candidates.
+This experiment does not yet implement general linear restrictions, recursive
+laser extraction or the asymptotic sum conversion. It is prioritized because it
+investigates exact components that the current matrix-only selector cannot use.
+
+The bounded seeded follow-up is now implemented in `restriction_neighborhoods.py`
+and `cw_neighborhood.py`, with the command
+`python -m matrix_multiplication.constructions cw-neighborhood`. Each sector and
+component power has a 4,096-attempt cap, split into 2,048 single-coordinate edits
+and 2,048 pair tests; original prefix controls use their separate 2,048-attempt
+budget. Unused budgets are not counted as work. The default experiment tests 32
+edits and one pair per base sector, then 1,664 edits and six pairs per squared
+sector: 5,088 edits and 21 pairs in total. It finds no new accepted edit, dense
+union, independent sum, shape or product-count saving. Eighteen verified seed
+recipes are recovered and executed at their full classical costs. Every source,
+candidate map and rejection is retained in the generated report; a compact
+selected record is in reports/2026-10-15-cw-neighborhood/.
+
+Joint checking accepts a larger matrix only after complete recognition and an
+independent source coefficient check. An independent direct sum additionally
+requires disjoint spaces and a complete identity excluding all cross terms.
+Accepted sums recover the joint polynomial restriction as a whole and compare
+it with paid separate recovery of the same target. An overlapping dense union
+uses its own classical target as the comparator: summing separate costs can
+compare different computations. Positive and contaminated-source fixtures test
+these paths even though the CW experiment has no accepted joint target.
+
+The support angle follows from these exact misses and the move definition. A
+single-coordinate replacement preserves all three space dimensions, so it
+cannot change the inferred matrix shape. A verified witness may also require
+coordinated input/output changes; the accepted-neighbor graph can be isolated
+without excluding useful restrictions elsewhere. Try support-guided,
+shape-changing restrictions on the pooled seed coordinates and the original
+component spaces, starting with target (2,2,2) on squared sources under 4,096
+candidate attempts. For chosen four-coordinate A and B subsets, a retained C
+coordinate must contain exactly two supported products; use this necessary
+condition to prune candidates, then verify every coefficient of the proposed
+matrix layout. Enumerate mixed seed footprints as well as whole unions, retain
+all attempted maps and reasons for pruning, and recover every admitted recipe
+before claiming a saving. A new verified shape relative to the present controls
+or a strictly smaller fully paid product count is success. General linear maps
+and broader fields remain separate paths; this local search supplies no
+exclusion beyond its explicitly tested candidates.
+
+That follow-up has now been run as three sequential experiments, implemented in
+`support_search.py` and `cw_support.py`. `cw-support` is a shared CLI/suite path.
+Each input-pair screen and each output-layout proposal consumes one of 4,096
+attempt units per target and sector; separate counters make degree pruning and
+full recognition visible. Diagonal interleaving of lazy A/B subset streams avoids
+spending a whole prefix on one A subset. All retained maps still pass complete
+recognition and independent checks against the exact source coefficients.
+
+1. **Seed-coordinate pool.** Search the squared interior sectors for (2,2,2)
+   using only the old seed coordinate pools. All three 4,096-unit prefixes miss.
+2. **Whole spaces and coordinated shape changes.** Broaden to the full squared
+   components and targets (2,2,2), (2,2,3), (2,3,2), (3,2,2), each under its own
+   4,096-unit cap. Eight completely verified (2,2,2) layouts appear in the
+   squared (1,1,2) sector; two are retained. The nearby larger targets and other
+   orientation prefixes miss. All four selected outputs of the first retained
+   map lie outside its old seed output pool, explaining that pooled miss.
+3. **Paid recovery, exact rank walks and recombination.** Both retained layouts
+   recover from 432 interpolation products to eight executable products by exact
+   coefficient expansion. One recipe enters the declared rank walk: seed 0
+   misses after 10,000 flips; seed 1 reaches rank seven after 1,779 flips. Its
+   transcript replays exactly and the complete identity passes independently.
+   Tensoring that refined part with itself yields a certified 4-by-4 recipe
+   with 49 products. This gives log₄(49) = log₂(7), about 2.8074, reproducing the
+   known seven-product case; it does not improve the 2.7742999804 Smirnov baseline.
+
+These are construction results relative to our earlier finite controls, not
+claims of new mathematical bounds or a global public-code record. The selected
+maps, executable parts, unsuccessful seed, successful replay and original run
+evidence are retained under reports/2026-10-15-cw-support-three-step/. Full attempt
+logs remain reproducible from maintained code in ignored dated output trees.
+
+The next bounded angle is exact symmetry transport and joint selection of these
+balanced layouts. The three interior sectors are cyclically related, while a
+finite search order can miss equivalent witnesses in another orientation. Build
+explicit leg/index permutations and verify their complete coefficient identities
+before transporting a map or rank recipe. Then retain all eight known layouts
+from the same search prefix, test their 28 within-source pairs and bounded
+cross-orientation transported candidates (at most 4,096 pairs), and recover any
+accepted independent sum as a whole. Success means a cheaper fully recovered
+recipe for the same sum, or an improved verified dense construction after
+packing. Space overlap or a favorable border-rank annotation supplies neither
+independence nor a free conversion. Larger-power extraction and the effective
+OpenAI witness audit remain distinct open paths.
+
 The next implementation priorities are now more concrete:
 
 1. **Stronger CW extraction and large-power constructive conversion.** The first exact
@@ -201,9 +329,9 @@ The next implementation priorities are now more concrete:
    induced coarse sum. For CW₂ squared, twelve of fifteen components are matrix
    products; the three interior components have dimension obstructions. Their
    exact coefficients are retained. The coarse packing is still cubic.
-   Next, extract products from powers/restrictions of those interior tensors
-   rather than assigning them unsupported matrix shapes. Investigate more
-   effective sector selections,
+   Initial interior restrictions now yield reusable classical-cost parts and
+   checked products of their witnesses. Next, seek cheaper or larger extractions
+   using the symmetry/joint-selection follow-up above, and investigate more effective sector selections,
    larger powers, and recovery schedules that exploit their low rank relative
    to extracted volume. Implement a constructive large-power conversion rather
    than assign an asymptotic-sum bound to the current finite tiling. All finite
@@ -307,3 +435,30 @@ The RTX 3090 and reported 128 GB host RAM support useful initial experiments.
 No cloud resources were rented or provisioned during this audit.
 
 All upstream references and license links are also recorded in README.md.
+
+## Comparing candidates for later implementation
+
+The 15 October instrumentation adds the portable mathematical work schedule
+described in MATHEMATICAL_WORK.md, including GCD, cross-cancellation, exact
+division and carry/borrow accounting. Same-input classical-relative scores,
+measured Python allocation peaks and logical value traffic have separate graphs
+in the single automatic sweep. Original field counts and proved bounds retain
+their meanings. No better exponent follows from a cheaper finite work score.
+
+The next promising modelling angle is lifetime-aware payload storage and
+cache-capacity-aware movement. Local evidence is that `common.py` explicitly
+copies blocks and columns, while scalar-port traffic depends on each operand's
+word width. Counts of cumulative copies and Python allocation peaks cannot tell
+us which intermediates must coexist, or which reads can reuse fast memory.
+These models should help shortlist candidates without optimizing the Python
+executor or assigning memory an arbitrary weight inside arithmetic efficiency.
+
+The next bounded experiment is to model classical, Strassen and Winograd
+execution graphs at dimensions 2, 4 and 8, with leaf cutoffs 1 and 2. Track exact
+payload lifetimes under a stated sequential schedule, then simulate two declared
+fast-memory capacities. Success requires hand-checked one-cell and 2-by-2
+storage/transfer budgets, unchanged exact products and arithmetic counters, and
+separate total transfers versus peak live storage. Do not infer a hardware
+bandwidth measurement, parallel storage bound, or infinite-size memory recurrence
+from this finite exercise. This path augments the existing construction research;
+it does not replace the lower-exponent witness and extraction searches above.

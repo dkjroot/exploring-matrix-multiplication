@@ -69,8 +69,12 @@ class RectangularCycle:
                 "identity_validation": "complete exact identity for each cyclic orientation",
                 "assumptions": ["unit-cost field arithmetic", "fixed cutoff", "balanced repeating cycle"]}
 
-    def budget(self, rows, inner, columns, *, cutoff=1):
-        """Count each level's distinct input/output block areas independently."""
+    def budget(self, rows, inner, columns, *, cutoff=1, size_policy="fringe"):
+        """Count each level's distinct block areas and all selected boundary work."""
+        from .size_policy import fringe_budget, validate_size_policy
+        validate_size_policy(size_policy)
+        if size_policy == "fringe":
+            return fringe_budget(self.stages, (rows, inner, columns), cutoff)
         if type(cutoff) is not int or cutoff < 1:
             raise ValueError("cutoff must be positive")
         if any(type(x) is not int or x < 1 for x in (rows, inner, columns)):
@@ -101,7 +105,7 @@ class RectangularCycle:
                 "atomic_arithmetic_operations": operations+2*products,
                 "atomic_domain": "real scalars; native complex operations opaque"}
 
-    def multiply(self, a, b, *, cutoff=1, instrumentation=None):
+    def multiply(self, a, b, *, cutoff=1, instrumentation=None, size_policy="fringe"):
         """Run the square-target cycle through shared rectangular block primitives."""
         validate(a, b, cutoff)
 
@@ -118,8 +122,8 @@ class RectangularCycle:
         def kernel(left, right, leaf):
             """Use the same recursive engine as Strassen and AlphaEvolve."""
             return recursive_kernel(left, right, leaf, self.shapes[0], None,
-                                    name="rectangular-cycle", select_step=select)
+                                    name="rectangular-cycle", select_step=select, size_policy=size_policy)
 
         return recursive_product(a, b, cutoff, self.shapes[0], kernel,
                                  name="rectangular-cycle", radices=self.shapes,
-                                 instrumentation=instrumentation)
+                                 instrumentation=instrumentation, size_policy=size_policy)

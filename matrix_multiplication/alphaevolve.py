@@ -90,7 +90,7 @@ def _scheme(factors):
     return BilinearScheme("alphaevolve", 4, left, right, output, divisor=8)
 
 
-def _multiply(a, b, cutoff, factors):
+def _multiply(a, b, cutoff, factors, *, size_policy="fringe"):
     """Bind a fixed scheme to radix-four traversal without duplicating recursion."""
     scheme = _scheme(factors)
 
@@ -98,10 +98,10 @@ def _multiply(a, b, cutoff, factors):
         """Supply the shared traversal with this adapter's verified rank-48 recipe."""
         return bilinear_step(a_blocks, b_blocks, product, scheme)
 
-    return recursive_kernel(a, b, cutoff, 4, step, name="alphaevolve")
+    return recursive_kernel(a, b, cutoff, 4, step, name="alphaevolve", size_policy=size_policy)
 
 
-def multiply(a, b, *, cutoff=1, instrumentation=None):
+def multiply(a, b, *, cutoff=1, instrumentation=None, size_policy="fringe"):
     """Multiply through exact pairs, restoring the caller's real/complex domain.
 
     Only computation of the product is observed; published tensor validation and
@@ -116,7 +116,7 @@ def multiply(a, b, *, cutoff=1, instrumentation=None):
 
     def kernel(left, right, leaf_size):
         """Close over loaded coefficients while keeping the generic kernel API."""
-        return _multiply(left, right, leaf_size, factors)
+        return _multiply(left, right, leaf_size, factors, size_policy=size_policy)
 
     def decode(value):
         """Restore public values; discard only floating imaginary cancellation noise."""
@@ -128,4 +128,4 @@ def multiply(a, b, *, cutoff=1, instrumentation=None):
 
     return recursive_product(a, b, cutoff, 4, kernel, name="alphaevolve",
                              instrumentation=instrumentation, encode=Gaussian.from_number,
-                             decode=decode)
+                             decode=decode, size_policy=size_policy)
