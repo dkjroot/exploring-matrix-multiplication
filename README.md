@@ -1,5 +1,27 @@
 # Exploring matrix multiplication
 
+**[Support my work on Buy Me a Coffee](https://buymeacoffee.com/dkjroot)**
+
+### Free to use. Please help keep it that way.
+
+I develop this project to be freely available to everyone, supported, if at all,
+by voluntary contributions. I do not want other people to profit from my work
+by selling copies, putting it behind a paywall, or building a paid application
+or hosted service around it. I ask you to respect that intention: please keep
+this work freely available, credit its origins, and direct people to
+[my official GitHub repository](https://github.com/dkjroot/exploring-matrix-multiplication) for the software.
+
+If you want to help fund my development, please contribute **directly to me**
+through [Buy Me a Coffee](https://buymeacoffee.com/dkjroot). Paying a distributor
+or hosting provider does not fund my work unless I explicitly say otherwise.
+There is no obligation to contribute.
+
+**This is a personal request, not an additional license restriction.** The
+[GNU General Public License v3.0](LICENSE) permits commercial use and
+redistribution, including forks, subject to its terms. Those legal permissions
+remain unchanged by this request. See [licensing details](LICENSING.md) and
+[third-party credits](THIRD_PARTY_NOTICES.md).
+
 Our mission is to make advanced matrix-multiplication algorithms understandable
 as working code. We explore their real implementation costs so that readers can
 see how the mathematics becomes a computation, where savings arise, and what
