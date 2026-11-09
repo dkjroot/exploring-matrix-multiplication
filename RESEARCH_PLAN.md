@@ -298,18 +298,77 @@ maps, executable parts, unsuccessful seed, successful replay and original run
 evidence are retained under reports/2026-10-15-cw-support-three-step/. Full attempt
 logs remain reproducible from maintained code in ignored dated output trees.
 
-The next bounded angle is exact symmetry transport and joint selection of these
-balanced layouts. The three interior sectors are cyclically related, while a
-finite search order can miss equivalent witnesses in another orientation. Build
-explicit leg/index permutations and verify their complete coefficient identities
-before transporting a map or rank recipe. Then retain all eight known layouts
-from the same search prefix, test their 28 within-source pairs and bounded
-cross-orientation transported candidates (at most 4,096 pairs), and recover any
-accepted independent sum as a whole. Success means a cheaper fully recovered
-recipe for the same sum, or an improved verified dense construction after
-packing. Space overlap or a favorable border-rank annotation supplies neither
-independence nor a free conversion. Larger-power extraction and the effective
-OpenAI witness audit remain distinct open paths.
+The cyclic follow-up in `cw_symmetry.py` checks every coefficient of the three
+squared interior sectors under a leg rotation. The eight known layouts give
+24 verified maps, including 16 transported ones. The earlier rank-seven
+recipe also survives both rotations. The experiment checks 28 pairs within
+the original sector and 64 between that sector and its next rotation.
+These cross-sector pairs represent the other sector combinations up to
+simultaneous rotation. Only the 92 tested pairs enter the counts. Their common
+source is the restriction of CW₂ to the fourth power that keeps the union of
+all 24 maps, so coefficients mixing the sectors remain visible to the checker.
+
+Of the 92 pairs, 64 are independent sums, eight form a single (2,2,4) matrix
+product, and 20 share coordinates without forming a recognized dense product.
+Exact recovery yields 16 executable products for every accepted pair. The
+independent sums tie separate polynomial recovery. When one or both maps have
+a retained source-derived rank-seven recipe, executing those separate recipes
+takes 15 or 14 products. Applying Strassen separately to any verified pair
+also takes 14. The dense unions tie their own classical count. The run establishes
+no exponent improvement. See
+[the selected cyclic follow-up evidence](reports/2026-11-09-cw-symmetry/README.md)
+for the exact maps, rejected pairs, and reloadable recipes.
+
+The rectangular unions are useful controls. The exact rank of (2,2,4) is
+already known to be 14, so a walk targeting 13 or 12 would search below a
+proved minimum. The direct sum of two 2-by-2 products also has rank 14.
+The experiment contains a pair whose two retained rank-seven recipes meet
+that count. [Alekseev and Smirnov](https://www.mathnet.ru/eng/spm47),
+[Shitov, Theorem 2](https://www.researchgate.net/publication/413758894_Determining_the_tensor_rank_of_2_2_m_matrix_multiplication_with_GPT-56_Sol),
+and [Rupniewski](https://arxiv.org/abs/2209.11040).
+
+The 14-product pair now runs recursively in `recursive_batching.py`. Each
+node groups its 14 block products into seven calls and routes each returned
+block back to its original term. Expanding two levels yields a 98-product
+recipe for two 4-by-4 matrix products. Its full identity passes all 32,768
+coefficient checks, including the zeros between the two outputs. Actual
+signed rational runs at dimensions 2, 4 and 8 pass independent output
+checks with 14, 98 and 686 products, matching both the recurrence and two
+separate Strassen calls. The batched interpreter uses more additions and
+coefficient scalings than the hand-written Strassen calls. The two outputs
+in this control start from separate rank-seven recipes, so the count verifies
+the recursion without giving a lower exponent.
+[Run evidence](reports/2026-11-09-cw-batching/README.md).
+
+Pan's exact two-product aggregation now runs through that scheduler. At
+dimension 4, 64 aggregate terms mix entries from the two input pairs and 48
+correction terms cancel 384 unwanted coefficients. The full base identity
+and the expanded dimension-16 identity both pass, covering 32,768 and
+134,217,728 coefficients by sparse comparison. Signed rational runs give
+both exact outputs at each size. The observed data-product counts are 112
+and 6,272, compared with 128 and 8,192 for separate classical calls and 98
+and 4,802 for separate Strassen calls. The extra additions and scalings
+also exceed both comparators. The experiment verifies a genuinely mixed
+recipe and its finite recurrence. Its product exponent is log₄(56), above
+the known Strassen and Smirnov exponents.
+[Run evidence](reports/2026-11-09-pan-batching/README.md).
+[Solomonik and Bläser, equations 1–3 and Appendix A](https://arxiv.org/html/2610.26563v2).
+
+The next bounded experiment is to handle an incomplete final child group.
+Split one term of the checked 14-product CW pair into two half-weight
+terms to make a 15-term control with the same exact identity. With two
+slots, the straightforward schedule uses one zero-filled slot at each
+non-leaf call. Execute it at dimensions 2, 4 and 8, checking both outputs
+and accounting for the scheduled 16, 128 and 1,024 scalar products.
+Then build one tensor-square base with explicit lane and matrix coordinate
+maps. It should have 225 terms for four independent 4-by-4 products.
+Check the complete identity, then measure the four-slot schedule with
+228 scalar products, including three dummy slots. Compare with 256
+products from two separate runs of the padded two-slot schedule on the
+same four products. This is a test of the finite rounding overhead in the
+equal-size sum construction. The comparison still uses an artificial
+control and separate Strassen needs only 196 products for the four outputs.
+Larger-power extraction and the effective OpenAI witness audit remain open.
 
 The next implementation priorities are now more concrete:
 
@@ -331,7 +390,7 @@ The next implementation priorities are now more concrete:
    exact coefficients are retained. The coarse packing is still cubic.
    Initial interior restrictions now yield reusable classical-cost parts and
    checked products of their witnesses. Next, seek cheaper or larger extractions
-   using the symmetry/joint-selection follow-up above, and investigate more effective sector selections,
+   using the finite batching work above, and investigate more effective sector selections,
    larger powers, and recovery schedules that exploit their low rank relative
    to extracted volume. Implement a constructive large-power conversion rather
    than assign an asymptotic-sum bound to the current finite tiling. All finite

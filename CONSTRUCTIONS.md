@@ -501,7 +501,7 @@ outside ignored output. Full reproducible attempt logs remain in each dated
 generated report. RESEARCH_PLAN.md records the next bounded angle: support-guided
 coordinated changes that can alter the retained matrix shape.
 
-### Three sequential support experiments
+### Support search, rank reuse and cyclic joint recovery
 
 ```
 python -m matrix_multiplication.constructions cw-support --certificate
@@ -556,6 +556,65 @@ the derivation report separately retains its source maps and rank transcripts.
 The selected evidence and reloadable parts are preserved outside ignored output
 in `reports/2026-10-15-cw-support-three-step/`.
 
+The CW₂ follow-up keeps the first eight recognized maps from the same search
+prefix, including the six beyond the original saved-part cap. It cycles
+the left, right and output spaces through the three sectors and transposes
+the old output and left input in their new roles. The code checks whole-sector
+coefficient equality as well as each transported matrix layout. For pair
+checks it keeps the union of all candidate coordinates in a single CW
+fourth-power source, including any terms that span different sectors.
+
+The follow-up tests 28 pairs inside the original sector and 64 pairs with its
+next rotation. It recovers every accepted pair from the polynomial as one
+target and executes it on exact rational inputs. All 64 independent sums
+and eight dense unions recover to 16 products each. Separate polynomial
+recovery also uses 16 products for an independent sum, and the retained
+source-derived rank-seven recipes lower that separate cost to 15 or 14 where
+available. Two separate Strassen calls use 14 for any such pair. Each dense
+union computes a (2,2,4) matrix product and ties the classical count of 16.
+The exact maps, full pair outcomes and executable recipes are in
+[the selected cyclic follow-up evidence](reports/2026-11-09-cw-symmetry/README.md).
+
+### Recursive batching of independent products
+
+```sh
+python -m matrix_multiplication.constructions cw-batch
+```
+
+The command uses the two rank-seven recipes from the archived CW pair. Above
+size one, each call needs 14 smaller block products. It puts two in each child
+call and sends each returned block back to the parent term that requested it.
+This is how seven recursive calls produce the two answers together. The
+implementation counts the sparse scale-and-add operations separately from
+the data products.
+
+The command checks the complete two-level identity and independently verifies
+both rational outputs at sizes 2, 4 and 8. It saves the term-to-slot schedule
+and two executable recipes in the generic parts format. The combined sweep
+runs the same control with the archived inputs. See
+[the recursive batching report](reports/2026-11-09-cw-batching/README.md).
+
+### Pan's exact two-product aggregation
+
+```sh
+python -m matrix_multiplication.constructions pan-batch
+```
+
+The generator implements the published trilinear identity directly. It puts
+entries from two independent matrix pairs in the same intermediate product,
+then cancels the mixed terms with three explicit families of correction
+products. In the dimension-4 recipe, 64 aggregate products and 48 correction
+products give both outputs.
+
+The default command checks the base and the expanded dimension-16 recipe,
+then executes both sizes with the same recursive scheduler as `cw-batch`.
+It also runs separate classical and Strassen calls on the same signed
+rational inputs. Use `--power 1` for the base alone. The combined sweep always
+runs the base and includes the larger check and execution when its requested
+sizes include 16. The standalone command and sweep retain exact term maps,
+operation observations, and a reloadable parts library.
+[Pan aggregation report](reports/2026-11-09-pan-batching/README.md).
+
 ## Relation to the OpenAI witness problem
 
 For any chosen positive epsilon, the 9/4 argument claims a finite size u and
@@ -580,4 +639,10 @@ measurements support it.
 - Manuel Kauers and Jakob Moosbauer, [Flip Graphs for Matrix Multiplication](https://arxiv.org/abs/2212.01175): mathematical flip/reduction search framework. Our rational elimination, walk, split operations, and transcript implementation are independently written; no upstream implementation was copied or executed.
 - Markus Bläser and Vladimir Lysikov, [On Degeneration of Tensors and Algebras](https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf), MFCS 2016, equation (2): CW degeneration. The publication identifies CC-BY licensing. We credit the mathematical formula; no publication text or implementation code is redistributed here.
 - Josh Alman and coauthors, [More Asymmetry Yields Faster Matrix Multiplication](https://arxiv.org/abs/2404.16349): tensor powers, CW sectors and extraction; sections 2.2 and 3.7 describe the sum-index coarsening motivating this implementation. The paper's exponent is not assigned to our finite experiments.
+- Edgar Solomonik and Markus Bläser describe the recursive batching argument
+  in [Appendix A of Simultaneous Matrix Multiplication by Tensor Contraction Aggregation](https://arxiv.org/html/2610.26563v2#A1).
+  Our scheduler and verification are independently written.
+- Victor Pan's [trilinear aggregation method](https://doi.org/10.1137/0209027)
+  supplies the exact two-product control. Our independently generated
+  recipe follows [the equations given by Solomonik and Bläser](https://arxiv.org/html/2610.26563v2#S1).
 - [OpenAI 9/4 manuscript](https://raw.githubusercontent.com/openai/math/main/preprints/Matrix-Multiplication-Nine-Fourths-October-2-2026/paper.pdf): existence target, distinct from the finite executable witness we still seek.

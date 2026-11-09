@@ -13,9 +13,10 @@ from matrix_multiplication import Instrumentation, certificate_checker
 from matrix_multiplication.composition import Composition
 from matrix_multiplication.constructions import ConstructionRequest, main, run_experiment
 from matrix_multiplication.cw_support import explore_support
+from matrix_multiplication.cw_symmetry import common_source, rotate_matrix_recipe
 from matrix_multiplication.decomposition_search import replay
 from matrix_multiplication.recipe_parts import load_parts
-from matrix_multiplication.tensors import classical
+from matrix_multiplication.tensors import classical, coppersmith_winograd, direct_sum, restrict_coordinates, tensor_power
 from matrix_multiplication.verification import check_product
 
 
@@ -60,10 +61,42 @@ class CWSupportTests(unittest.TestCase):
         replayed = replay(parent, campaign['runs'][campaign['best_run_index']]['events'])
         self.assertEqual(replayed, self.parts[1][0])
         self.assertEqual(replayed.rank, 7)
-        for tensor, evidence in self.parts:
+        original_parts = self.parts[:len(self.report['parts'])]
+        for tensor, evidence in original_parts:
             self.assertEqual(tensor.expand(), classical(evidence['shape']).expand())
             self.assertEqual(evidence['execution']['observation']['counts']['field_multiplications'], tensor.rank)
-        self.assertEqual((self.parts[-1][0].rank, self.parts[-1][1]['shape']), (49, [4, 4, 4]))
+        self.assertEqual((original_parts[-1][0].rank, original_parts[-1][1]['shape']), (49, [4, 4, 4]))
+
+    def test_symmetry_and_joint_recovery_use_the_shared_source(self):
+        """Retain clipped maps, preserve cross terms and compare paid costs."""
+        symmetry = self.report['step_four']
+        self.assertEqual(len(symmetry['maps']), 24)
+        self.assertEqual(len(symmetry['pairs']), 92)
+        self.assertEqual(symmetry['outcomes']['within original sector']['verified independent direct sum'], 16)
+        self.assertEqual(symmetry['outcomes']['between cyclic sectors']['verified independent direct sum'], 48)
+        self.assertEqual(symmetry['outcomes']['between cyclic sectors']['verified dense union'], 8)
+        self.assertEqual(symmetry['joint_recovery_savings'], 0)
+        self.assertEqual(symmetry['dense_union_savings'], 0)
+        self.assertIn(14, {p.get('best_known_separate_products') for p in symmetry['pairs']})
+        pool = symmetry['common_source_coordinates']
+        source = common_source(pool, symmetry['common_source_literal_products'])
+        self.assertEqual(source.expand(), restrict_coordinates(tensor_power(coppersmith_winograd(2), 4), pool).expand())
+        self.assertIsNone(common_source(pool, source.rank-1))
+        for tensor, evidence in self.parts[len(self.report['parts']):]:
+            self.assertEqual(evidence['execution']['observation']['counts']['field_multiplications'], tensor.rank)
+            if 'shape' in evidence:
+                expected = classical(evidence['shape'])
+            else:
+                expected = direct_sum(*(classical(s) for s in evidence['component_shapes']))
+            self.assertEqual(tensor.expand(), expected.expand())
+
+    def test_cyclic_matrix_recipe_transposes_rectangular_spaces(self):
+        """Check the old output and left input reorderings with unequal axes."""
+        original = classical((2, 3, 4))
+        first = rotate_matrix_recipe(original, (2, 3, 4))
+        second = rotate_matrix_recipe(first, (3, 4, 2))
+        third = rotate_matrix_recipe(second, (4, 2, 3))
+        self.assertEqual(third, original)
 
     def test_actual_certificate_library_and_recursive_execution(self):
         """The exported recombination survives independent checks and multiple levels."""
@@ -84,13 +117,15 @@ class CWSupportTests(unittest.TestCase):
                 self.assertTrue(check_product(a, b, result).passed)
                 self.assertEqual(observer.snapshot()['field_arithmetic_operations'], plan.budget(size, size, size)['field_arithmetic_operations'])
             html = (folder / 'index.html').read_text(encoding='utf-8')
-            for phrase in ('Three sequential support experiments', 'necessary conditions', 'not a new bound', 'not an exclusion'):
+            for phrase in ('Three sequential support experiments', 'Cyclic transport and joint recovery',
+                           'necessary conditions', 'not a new bound', 'not an exclusion'):
                 self.assertTrue(phrase in html, phrase)
             self.assertNotIn('&quot;eligible_outputs&quot;', html)
 
     def test_no_walk_and_preflight_leave_honest_outcomes(self):
         """Zero rank steps preserve eight-product parts rather than inventing success."""
-        parts, report = explore_support(steps=0)
+        with patch('matrix_multiplication.cw_support.explore_symmetry', return_value=((), {'status': 'omitted in this test'})):
+            parts, report = explore_support(steps=0)
         self.assertEqual([t.rank for t, _ in parts], [8, 8])
         self.assertFalse(report['step_three']['campaigns'][0]['improved'])
         self.assertEqual(report['step_three']['recombinations'], [])

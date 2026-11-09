@@ -472,6 +472,14 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
     if product["status"] == "passed":
         run.perform("register-generated-tensor-product", "candidate integration", lambda: run.register_candidate(
             "generated-tensor-product", directory / product["scheme"], plans))
+    # The control uses the maintained, checked CW pair, so it is independent of
+    # the current sweep's search budgets and does not require another rank walk.
+    run.perform("cw-batch", "recursive independent-product batching", lambda: run.construction(
+        "cw-batch", ConstructionRequest("cw-batch")))
+    # Always retain the mixed-input base control. The larger execution shares
+    # the size-16 budget of the default sweep, so smaller sweeps stay bounded.
+    run.perform("pan-batch", "exact two-product aggregation", lambda: run.construction(
+        "pan-batch", ConstructionRequest("pan-batch", power=2 if 16 in sizes else 1)))
     packing_candidates = []
     for q in dict.fromkeys(settings.cw_parameters):
         for power in dict.fromkeys(settings.cw_powers):
@@ -524,7 +532,7 @@ def run_suite(sizes, cutoffs, *, algorithms=None, compositions=None, settings=No
                 run.perform('register-'+name, 'candidate integration', lambda: run.register_candidate(
                     name, directory / neighborhood['scheme'], plans))
             support_label = f'cw-support-q{q}-power{power}'
-            support = run.perform(support_label, 'three-step support search and exact rank reuse', lambda: run.construction(
+            support = run.perform(support_label, 'support search, exact rank reuse and cyclic joint recovery', lambda: run.construction(
                 support_label, ConstructionRequest('cw-support', q=q, power=power,
                     candidate_budget=settings.interior_candidate_budget, support_budget=settings.support_budget,
                     max_parts=settings.interior_max_parts, steps=settings.support_steps,

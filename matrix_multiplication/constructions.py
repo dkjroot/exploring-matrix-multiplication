@@ -22,6 +22,8 @@ from .certificates import formula_recipe, write_bundle
 from .composition import Composition
 from .decomposition_search import beats_exponent, replay, search
 from .degenerations import recover_cw
+from .cw_batching import REFERENCE as BATCH_REFERENCE, batch_summary, run_control as run_batch_control
+from .pan_batching import pan_summary, run_pan_batch
 from .cw_extraction import extract_cw
 from .cw_interior import explore_interiors, interior_summary
 from .cw_neighborhood import explore_neighborhoods, neighborhood_summary, compact_neighborhood_report
@@ -290,6 +292,12 @@ def write_summary(directory, report):
     support = report.get('cw_support')
     if support:
         curve += support_summary(support)
+    batch = report.get("cw_batching")
+    if batch:
+        curve += batch_summary(batch)
+    pan = report.get("pan_batching")
+    if pan:
+        curve += pan_summary(pan)
     display = {k: v for k, v in report.items() if k != "starting_recipe"}
     if interior:
         # Preserve all attempted maps in JSON; the readable HTML uses outcome
@@ -331,7 +339,8 @@ def run_experiment(args, directory=None):
     suite artifacts predictably named under one dated run, without nested dates.
     Existing directories are refused; callers retain earlier experiment output.
     """
-    if args.command not in ("search", "product", "replay", "cw", "cw-extract", "cw-pack", "cw-coarse", "cw-interior", "cw-neighborhood", "cw-support"):
+    if args.command not in ("search", "product", "replay", "cw", "cw-extract", "cw-pack", "cw-coarse", "cw-interior",
+                            "cw-neighborhood", "cw-support", "cw-batch", "pan-batch"):
         raise ValueError("unknown construction experiment")
     if args.command == "search" and args.target_rank is not None and args.target_exponent is not None:
         raise ValueError("choose a rank or exponent target")
@@ -463,6 +472,21 @@ def run_experiment(args, directory=None):
                 tensor = candidate
                 scheme = to_scheme(tensor, shape, "cw-neighborhood-matrix")
                 break
+    elif args.command == "cw-batch":
+        interior_parts, evidence = run_batch_control()
+        report["cw_batching"] = evidence
+        report["outcome"] = "Verified and executed two independent square matrix products at dimensions 2, 4 and 8."
+        provenance.update(method_reference=BATCH_REFERENCE,
+                          construction="recursive equal-size direct-sum batching from verified CW parts",
+                          input_provenance=evidence["source"])
+    elif args.command == "pan-batch":
+        interior_parts, evidence = run_pan_batch(args.power)
+        report["pan_batching"] = evidence
+        dimensions = " and ".join(str(item["dimension"]) for item in evidence["executions"])
+        report["outcome"] = f"Verified Pan’s two-product aggregation and executed both outputs at dimension {dimensions}."
+        provenance.update(method_reference=evidence["source"]["formula"],
+                          original_method=evidence["source"]["original_method"],
+                          construction="independent generation of Pan’s exact aggregate and correction terms")
     else:
         if args.sector_words is not None:
             raise ValueError('fine sector words cannot select support-search targets')
@@ -473,16 +497,15 @@ def run_experiment(args, directory=None):
             reduction_limit=args.support_reduction_limit,
             max_source_dimension=args.max_source_dimension, max_source_terms=args.max_source_terms)
         report['cw_support'] = evidence
-        report['outcome'] = ('Three bounded support/recovery experiments completed; '
-            'known rank-seven recovery is not a stronger bound than our Smirnov baseline.')
+        report['outcome'] = 'Bounded support, recovery and cyclic follow-up outcomes are recorded below.'
         provenance.update(method_reference='https://arxiv.org/abs/2404.16349',
             polynomial_reference='https://drops.dagstuhl.de/opus/volltexte/2016/6434/pdf/LIPIcs-MFCS-2016-19.pdf',
             search_reference='https://arxiv.org/abs/2212.01175',
-            construction='seed-pool support, full-space balanced targets, paid recovery and replayed rank reduction',
+            construction='seed-pool support, balanced targets, paid recovery, replayed rank reduction and cyclic joint selection',
             source_parameters={'q': args.q, 'cw_power': args.power, 'component_power': 2})
         # Prefer the explicit recombination; its source parts and rank walks
         # remain available in the library and report, including unsuccessful seeds.
-        for candidate, description in reversed(interior_parts):
+        for candidate, description in reversed(interior_parts[:len(evidence['parts'])]):
             shape = tuple(description['shape'])
             if min(shape) >= 2 and candidate.rank <= shape[0]*shape[1]*shape[2]:
                 tensor = candidate
@@ -528,7 +551,7 @@ def run_experiment(args, directory=None):
             report["portable_certificate"] = "certificate/certificate.json"
     elif tensor is not None:
         write_json(directory / "tensor.json", tensor_document(tensor))
-    if args.command in ("cw-interior", "cw-neighborhood", 'cw-support'):
+    if args.command in ("cw-interior", "cw-neighborhood", "cw-support", "cw-batch", "pan-batch"):
         # Unit-axis pieces remain generic exact tensors, with their proved
         # matrix shape and recovery provenance. Do not relax scheme contracts
         # just to label them recursive square algorithms.
@@ -601,7 +624,7 @@ def main(argv=None):
     neighborhood_parser.add_argument("--max-source-dimension", type=int, default=64)
     neighborhood_parser.add_argument("--max-source-terms", type=int, default=4096)
     neighborhood_parser.add_argument("--certificate", action="store_true")
-    support_parser = commands.add_parser('cw-support', help='run three sequential exact support, broader-shape and rank-reuse experiments')
+    support_parser = commands.add_parser('cw-support', help='search coordinate support, reduce recipes and check cyclic joint selections')
     support_parser.add_argument('--q', type=int, default=2)
     support_parser.add_argument('--power', type=int, default=2)
     support_parser.add_argument('--candidate-budget', dest='support_budget', type=int, default=4096)
@@ -615,6 +638,10 @@ def main(argv=None):
     support_parser.add_argument('--max-source-dimension', type=int, default=64)
     support_parser.add_argument('--max-source-terms', type=int, default=4096)
     support_parser.add_argument('--certificate', action='store_true')
+    commands.add_parser("cw-batch", help="verify and execute recursive batches from the archived rank-seven CW pair")
+    pan_parser = commands.add_parser("pan-batch", help="verify and execute Pan's exact two-product aggregation")
+    pan_parser.add_argument("--power", type=int, choices=(1, 2), default=2,
+                            help="verify and execute the base only (1) or also dimension sixteen (2)")
     replay_parser = commands.add_parser("replay", help="replay a prior report.json independently of random search")
     replay_parser.add_argument("report", type=Path)
     replay_parser.add_argument("--certificate", action="store_true")

@@ -157,6 +157,7 @@ def search_support(source, shape=(2, 2, 2), *, seeds=(), pools=None, candidate_b
                 if witness.shape != shape:
                     raise AssertionError('support recognition changed the requested matrix shape')
                 record['complete_identity_verified'] = True
+                record['witness'] = witness.document()
                 hits += 1
                 if len(witnesses) < max_parts:
                     record['saved_part_index'] = len(witnesses)

@@ -1,0 +1,2453 @@
+{
+  "schema": "construction-experiment-v1",
+  "command": "pan-batch",
+  "coefficient_field": "Q",
+  "limitations": "Finite exact recipes only; no new exponent bound follows from a search attempt.",
+  "pan_batching": {
+    "schema": "pan-recursive-batch-v1",
+    "source": {
+      "formula": "https://arxiv.org/html/2610.26563v2#S1",
+      "original_method": "https://doi.org/10.1137/0209027",
+      "base_dimension": 4
+    },
+    "radix": 4,
+    "lanes": 2,
+    "base_products": 112,
+    "base_identity": {
+      "dimension": 4,
+      "coefficient_checks": 32768,
+      "nonzero_coefficients": 128
+    },
+    "corrections": {
+      "aggregate_terms": 64,
+      "correction_terms_by_family": {
+        "right": 16,
+        "output": 16,
+        "left": 16
+      },
+      "cancelled_mixed_coefficients": 384
+    },
+    "child_calls_per_node": 56,
+    "parent_terms_by_child_slot": [
+      [
+        0,
+        1
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        14,
+        15
+      ],
+      [
+        16,
+        17
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        20,
+        21
+      ],
+      [
+        22,
+        23
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        28,
+        29
+      ],
+      [
+        30,
+        31
+      ],
+      [
+        32,
+        33
+      ],
+      [
+        34,
+        35
+      ],
+      [
+        36,
+        37
+      ],
+      [
+        38,
+        39
+      ],
+      [
+        40,
+        41
+      ],
+      [
+        42,
+        43
+      ],
+      [
+        44,
+        45
+      ],
+      [
+        46,
+        47
+      ],
+      [
+        48,
+        49
+      ],
+      [
+        50,
+        51
+      ],
+      [
+        52,
+        53
+      ],
+      [
+        54,
+        55
+      ],
+      [
+        56,
+        57
+      ],
+      [
+        58,
+        59
+      ],
+      [
+        60,
+        61
+      ],
+      [
+        62,
+        63
+      ],
+      [
+        64,
+        65
+      ],
+      [
+        66,
+        67
+      ],
+      [
+        68,
+        69
+      ],
+      [
+        70,
+        71
+      ],
+      [
+        72,
+        73
+      ],
+      [
+        74,
+        75
+      ],
+      [
+        76,
+        77
+      ],
+      [
+        78,
+        79
+      ],
+      [
+        80,
+        81
+      ],
+      [
+        82,
+        83
+      ],
+      [
+        84,
+        85
+      ],
+      [
+        86,
+        87
+      ],
+      [
+        88,
+        89
+      ],
+      [
+        90,
+        91
+      ],
+      [
+        92,
+        93
+      ],
+      [
+        94,
+        95
+      ],
+      [
+        96,
+        97
+      ],
+      [
+        98,
+        99
+      ],
+      [
+        100,
+        101
+      ],
+      [
+        102,
+        103
+      ],
+      [
+        104,
+        105
+      ],
+      [
+        106,
+        107
+      ],
+      [
+        108,
+        109
+      ],
+      [
+        110,
+        111
+      ]
+    ],
+    "product_recurrence": "P(1) = 2, P(n) = 56 P(n/4)",
+    "execution_scope": "instrumented public calls with validation, excluding construction and independent checks",
+    "input_pattern": "batch_experiments.rational_inputs, zero-based row, column and lane indices",
+    "executions": [
+      {
+        "dimension": 4,
+        "exact_outputs_verified": [
+          true,
+          true
+        ],
+        "budget": {
+          "field_multiplications": 112,
+          "field_additions": 864,
+          "coefficient_multiplications": 864
+        },
+        "observation": {
+          "operand_costs": {
+            "schema": "exact-operand-word-cost-v1",
+            "word_bits": 64,
+            "status": "modelled",
+            "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+            "is_hardware_instruction_count": false,
+            "excluded_work": [
+              "GCD and cancellation",
+              "division",
+              "carry propagation",
+              "sign handling",
+              "allocation"
+            ],
+            "observed_max_operand_bits": 12,
+            "observed_max_result_bits": 12,
+            "observed_max_denominator_bits": 9,
+            "operand_word_bucket_upper_bounds": {
+              "1": 3680
+            },
+            "modelled_atomic_operations": {
+              "multiply": 976,
+              "add": 864
+            },
+            "primitive_word_costs": {
+              "real.multiply": {
+                "calls": 976,
+                "word_multiplications": 1063,
+                "word_additions_subtractions": 0
+              },
+              "real.add": {
+                "calls": 864,
+                "word_multiplications": 1633,
+                "word_additions_subtractions": 864
+              }
+            },
+            "unmodelled_calls": {},
+            "equivalent_word_multiplications": 2696,
+            "equivalent_word_additions_subtractions": 864,
+            "word_multiplications_by_role": {
+              "coefficient": 864,
+              "combination": 1633,
+              "data": 199
+            },
+            "word_additions_subtractions_by_role": {
+              "coefficient": 0,
+              "combination": 864,
+              "data": 0
+            }
+          },
+          "mathematical_work": {
+            "schema": "exact-schoolbook-euclid-64-v1",
+            "status": "modelled",
+            "word_bits": 64,
+            "total_work_units": 136133,
+            "covered_work_units": 136133,
+            "work_categories": {
+              "word_products": 2389,
+              "word_additions": 5185,
+              "word_subtractions": 10350,
+              "carry_borrow_steps": 15535,
+              "word_comparisons": 38205,
+              "word_shifts": 53074,
+              "sign_steps": 11395
+            },
+            "schedule_statistics": {
+              "word_products": 2389,
+              "word_additions": 5185,
+              "word_subtractions": 10350,
+              "carry_borrow_steps": 15535,
+              "word_comparisons": 38205,
+              "word_shifts": 53074,
+              "sign_steps": 11395,
+              "integer_divisions": 8142,
+              "division_bit_steps": 26537,
+              "exact_divisions": 1018,
+              "gcd_calls": 3680,
+              "gcd_iterations": 7124,
+              "rational_operations": 1840,
+              "normalizations": 1840,
+              "normalization_reductions": 165,
+              "cross_cancellations": 52,
+              "word_products_saved_by_cross_cancellation": 14
+            },
+            "work_by_role": {
+              "coefficient": 31987,
+              "combination": 95098,
+              "data": 9048
+            },
+            "modelled_calls": {
+              "real.multiply": 976,
+              "real.add": 864
+            },
+            "unmodelled_calls": {},
+            "weights": {
+              "word_products": 1,
+              "word_additions": 1,
+              "word_subtractions": 1,
+              "carry_borrow_steps": 1,
+              "word_comparisons": 1,
+              "word_shifts": 1,
+              "sign_steps": 1
+            },
+            "scope": "replayed exact arithmetic schedule; all word categories have weight one; not execution time",
+            "excluded_work": [
+              "allocation",
+              "data movement",
+              "control flow outside arithmetic",
+              "setup",
+              "verification"
+            ],
+            "is_hardware_instruction_count": false
+          },
+          "data_movement": {
+            "schema": "logical-value-traffic-64-v1",
+            "word_bits": 64,
+            "status": "modelled",
+            "logical_word_transfers": 13376,
+            "covered_word_transfers": 13376,
+            "counts": {
+              "scalar_reads": 3776,
+              "word_reads": 7296,
+              "scalar_writes": 3168,
+              "word_writes": 6080
+            },
+            "by_category": {
+              "structural": {
+                "scalar_reads": 96,
+                "word_reads": 192,
+                "scalar_writes": 1328,
+                "word_writes": 2400
+              },
+              "arithmetic_ports": {
+                "scalar_reads": 3680,
+                "word_reads": 7104,
+                "scalar_writes": 1840,
+                "word_writes": 3680
+              }
+            },
+            "is_hardware_memory_traffic": false,
+            "scope": "scalar ports plus explicit matrix/vector copies, initializations and stores; mathematical payloads",
+            "excluded_work": [
+              "cache behavior",
+              "pointers and object headers",
+              "internal scalar temporaries",
+              "setup",
+              "validation",
+              "observer replay",
+              "verification"
+            ]
+          },
+          "counts": {
+            "recursive_nodes": 57,
+            "matrix_cells_allocated": 464,
+            "matrix_cells_copied": 96,
+            "coefficient_multiplications": 864,
+            "real_multiplications": 976,
+            "field_additions": 864,
+            "real_additions": 864,
+            "classical_leaves": 56,
+            "field_multiplications": 112
+          },
+          "atomic_arithmetic_operations": 1840,
+          "field_arithmetic_operations": 1840,
+          "counter_convention": "omitted arithmetic categories have zero observed calls",
+          "primitive_calls": {
+            "block.split": 4,
+            "matrix.zeros": 256,
+            "real.multiply": 976,
+            "scalar.scale": 864,
+            "real.add": 864,
+            "scalar.add": 864,
+            "block.accumulate_scaled": 864,
+            "block.linear_combination": 224,
+            "scalar.multiply": 112,
+            "recursive_batch.node": 57,
+            "recursive_batch.child": 56,
+            "block.join": 2
+          },
+          "profiles": {
+            "block.split": {
+              "calls": 4,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "matrix_cells_allocated": 64,
+                "matrix_cells_copied": 64
+              }
+            },
+            "matrix.zeros": {
+              "calls": 256,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "matrix_cells_allocated": 256
+              }
+            },
+            "real.multiply": {
+              "calls": 976,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "real_multiplications": 976
+              }
+            },
+            "scalar.scale": {
+              "calls": 864,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "coefficient_multiplications": 864,
+                "real_multiplications": 864
+              }
+            },
+            "real.add": {
+              "calls": 864,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "real_additions": 864
+              }
+            },
+            "scalar.add": {
+              "calls": 864,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "field_additions": 864,
+                "real_additions": 864
+              }
+            },
+            "block.accumulate_scaled": {
+              "calls": 864,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "coefficient_multiplications": 864,
+                "real_multiplications": 864,
+                "field_additions": 864,
+                "real_additions": 864
+              }
+            },
+            "block.linear_combination": {
+              "calls": 224,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "matrix_cells_allocated": 224,
+                "coefficient_multiplications": 576,
+                "real_multiplications": 576,
+                "field_additions": 576,
+                "real_additions": 576
+              }
+            },
+            "scalar.multiply": {
+              "calls": 112,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "real_multiplications": 112,
+                "field_multiplications": 112
+              }
+            },
+            "recursive_batch.node": {
+              "calls": 57,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "recursive_nodes": 113,
+                "matrix_cells_allocated": 576,
+                "real_multiplications": 1088,
+                "classical_leaves": 112,
+                "field_multiplications": 224,
+                "matrix_cells_copied": 96,
+                "coefficient_multiplications": 864,
+                "field_additions": 864,
+                "real_additions": 864
+              }
+            },
+            "recursive_batch.child": {
+              "calls": 56,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "recursive_nodes": 56,
+                "matrix_cells_allocated": 336,
+                "coefficient_multiplications": 864,
+                "real_multiplications": 976,
+                "field_additions": 864,
+                "real_additions": 864,
+                "classical_leaves": 56,
+                "field_multiplications": 112
+              }
+            },
+            "block.join": {
+              "calls": 2,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "matrix_cells_allocated": 32,
+                "matrix_cells_copied": 32
+              }
+            }
+          },
+          "products_by_depth": {
+            "1": 112
+          },
+          "maximum_depth": 1,
+          "retained_trace_events": 0,
+          "dropped_trace_events": 0
+        },
+        "execution_measurements": {
+          "elapsed_algorithm_call_seconds": 0.08915379201062024,
+          "timing_scope": "public Python algorithm call including setup and observation; excluding verification",
+          "classical_equivalent_field_operations_per_second": null,
+          "equivalent_rate_is_hardware_throughput": false,
+          "accuracy": {
+            "status": "unavailable",
+            "maximum_absolute_error": null
+          },
+          "python_traced_peak_bytes": {
+            "status": "not_requested",
+            "value": null
+          },
+          "memory_scope": "Python-traced allocations including setup and observation; excludes pre-existing inputs",
+          "process_peak_memory_bytes": {
+            "status": "not_measured",
+            "value": null
+          },
+          "gpu_peak_memory_bytes": {
+            "status": "not_measured",
+            "value": null
+          },
+          "hardware_memory_traffic_bytes": {
+            "status": "not_measured",
+            "value": null
+          },
+          "hardware_instruction_count": {
+            "status": "not_measured",
+            "value": null
+          },
+          "memory_tracking_enabled": false
+        },
+        "separate_strassen": {
+          "observation": {
+            "operand_costs": {
+              "schema": "exact-operand-word-cost-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+              "is_hardware_instruction_count": false,
+              "excluded_work": [
+                "GCD and cancellation",
+                "division",
+                "carry propagation",
+                "sign handling",
+                "allocation"
+              ],
+              "observed_max_operand_bits": 7,
+              "observed_max_result_bits": 7,
+              "observed_max_denominator_bits": 5,
+              "operand_word_bucket_upper_bounds": {
+                "1": 1184
+              },
+              "modelled_atomic_operations": {
+                "add": 362,
+                "multiply": 98,
+                "subtract": 132
+              },
+              "primitive_word_costs": {
+                "real.add": {
+                  "calls": 362,
+                  "word_multiplications": 684,
+                  "word_additions_subtractions": 362
+                },
+                "real.multiply": {
+                  "calls": 98,
+                  "word_multiplications": 151,
+                  "word_additions_subtractions": 0
+                },
+                "real.subtract": {
+                  "calls": 132,
+                  "word_multiplications": 291,
+                  "word_additions_subtractions": 132
+                }
+              },
+              "unmodelled_calls": {},
+              "equivalent_word_multiplications": 1126,
+              "equivalent_word_additions_subtractions": 494,
+              "word_multiplications_by_role": {
+                "combination": 975,
+                "data": 151
+              },
+              "word_additions_subtractions_by_role": {
+                "combination": 494,
+                "data": 0
+              }
+            },
+            "mathematical_work": {
+              "schema": "exact-schoolbook-euclid-64-v1",
+              "status": "modelled",
+              "word_bits": 64,
+              "total_work_units": 45010,
+              "covered_work_units": 45010,
+              "work_categories": {
+                "word_products": 639,
+                "word_additions": 1500,
+                "word_subtractions": 3570,
+                "carry_borrow_steps": 5070,
+                "word_comparisons": 12648,
+                "word_shifts": 17332,
+                "sign_steps": 4251
+              },
+              "schedule_statistics": {
+                "word_products": 639,
+                "word_additions": 1500,
+                "word_subtractions": 3570,
+                "carry_borrow_steps": 5070,
+                "word_comparisons": 12648,
+                "word_shifts": 17332,
+                "sign_steps": 4251,
+                "integer_divisions": 3118,
+                "division_bit_steps": 8666,
+                "exact_divisions": 814,
+                "gcd_calls": 1184,
+                "gcd_iterations": 2304,
+                "rational_operations": 592,
+                "normalizations": 592,
+                "normalization_reductions": 122,
+                "cross_cancellations": 40,
+                "word_products_saved_by_cross_cancellation": 17
+              },
+              "work_by_role": {
+                "combination": 39663,
+                "data": 5347
+              },
+              "modelled_calls": {
+                "real.add": 362,
+                "real.multiply": 98,
+                "real.subtract": 132
+              },
+              "unmodelled_calls": {},
+              "weights": {
+                "word_products": 1,
+                "word_additions": 1,
+                "word_subtractions": 1,
+                "carry_borrow_steps": 1,
+                "word_comparisons": 1,
+                "word_shifts": 1,
+                "sign_steps": 1
+              },
+              "scope": "replayed exact arithmetic schedule; all word categories have weight one; not execution time",
+              "excluded_work": [
+                "allocation",
+                "data movement",
+                "control flow outside arithmetic",
+                "setup",
+                "verification"
+              ],
+              "is_hardware_instruction_count": false
+            },
+            "data_movement": {
+              "schema": "logical-value-traffic-64-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "logical_word_transfers": 5988,
+              "covered_word_transfers": 5988,
+              "counts": {
+                "scalar_reads": 1546,
+                "word_reads": 2994,
+                "scalar_writes": 1546,
+                "word_writes": 2994
+              },
+              "by_category": {
+                "structural": {
+                  "scalar_reads": 362,
+                  "word_reads": 724,
+                  "scalar_writes": 954,
+                  "word_writes": 1810
+                },
+                "arithmetic_ports": {
+                  "scalar_reads": 1184,
+                  "word_reads": 2270,
+                  "scalar_writes": 592,
+                  "word_writes": 1184
+                }
+              },
+              "is_hardware_memory_traffic": false,
+              "scope": "scalar ports plus explicit matrix/vector copies, initializations and stores; mathematical payloads",
+              "excluded_work": [
+                "cache behavior",
+                "pointers and object headers",
+                "internal scalar temporaries",
+                "setup",
+                "validation",
+                "observer replay",
+                "verification"
+              ]
+            },
+            "counts": {
+              "input_cells": 64,
+              "recursive_nodes": 114,
+              "matrix_cells_allocated": 758,
+              "matrix_cells_copied": 264,
+              "field_additions": 362,
+              "real_additions": 362,
+              "classical_leaves": 98,
+              "vector_cells_allocated": 98,
+              "vector_cells_copied": 98,
+              "field_multiplications": 98,
+              "real_multiplications": 98,
+              "field_subtractions": 132,
+              "real_subtractions": 132
+            },
+            "atomic_arithmetic_operations": 592,
+            "field_arithmetic_operations": 592,
+            "counter_convention": "omitted arithmetic categories have zero observed calls",
+            "primitive_calls": {
+              "block.split": 32,
+              "real.add": 362,
+              "scalar.add": 362,
+              "block.add": 192,
+              "matrix.zeros": 98,
+              "vector.column": 98,
+              "real.multiply": 98,
+              "scalar.multiply": 98,
+              "vector.dot": 98,
+              "matrix.classical": 98,
+              "strassen.node": 114,
+              "real.subtract": 132,
+              "scalar.subtract": 132,
+              "block.subtract": 96,
+              "strassen.step": 16,
+              "block.join": 16,
+              "strassen.multiply": 2
+            },
+            "profiles": {
+              "block.split": {
+                "calls": 32,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 176,
+                  "matrix_cells_copied": 176
+                }
+              },
+              "real.add": {
+                "calls": 362,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_additions": 362
+                }
+              },
+              "scalar.add": {
+                "calls": 362,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 362,
+                  "real_additions": 362
+                }
+              },
+              "block.add": {
+                "calls": 192,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 264,
+                  "field_additions": 264,
+                  "real_additions": 264
+                }
+              },
+              "matrix.zeros": {
+                "calls": 98,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 98
+                }
+              },
+              "vector.column": {
+                "calls": 98,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "vector_cells_allocated": 98,
+                  "vector_cells_copied": 98
+                }
+              },
+              "real.multiply": {
+                "calls": 98,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 98
+                }
+              },
+              "scalar.multiply": {
+                "calls": 98,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_multiplications": 98,
+                  "real_multiplications": 98
+                }
+              },
+              "vector.dot": {
+                "calls": 98,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 98,
+                  "real_additions": 98,
+                  "field_multiplications": 98,
+                  "real_multiplications": 98
+                }
+              },
+              "matrix.classical": {
+                "calls": 98,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 98,
+                  "field_additions": 98,
+                  "real_additions": 98,
+                  "vector_cells_allocated": 98,
+                  "vector_cells_copied": 98,
+                  "field_multiplications": 98,
+                  "real_multiplications": 98
+                }
+              },
+              "strassen.node": {
+                "calls": 114,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "recursive_nodes": 324,
+                  "matrix_cells_allocated": 1374,
+                  "field_additions": 726,
+                  "real_additions": 726,
+                  "classical_leaves": 294,
+                  "vector_cells_allocated": 294,
+                  "vector_cells_copied": 294,
+                  "field_multiplications": 294,
+                  "real_multiplications": 294,
+                  "matrix_cells_copied": 432,
+                  "field_subtractions": 216,
+                  "real_subtractions": 216
+                }
+              },
+              "real.subtract": {
+                "calls": 132,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_subtractions": 132
+                }
+              },
+              "scalar.subtract": {
+                "calls": 132,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_subtractions": 132,
+                  "real_subtractions": 132
+                }
+              },
+              "block.subtract": {
+                "calls": 96,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 132,
+                  "field_subtractions": 132,
+                  "real_subtractions": 132
+                }
+              },
+              "strassen.step": {
+                "calls": 16,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "recursive_nodes": 210,
+                  "matrix_cells_allocated": 1012,
+                  "field_additions": 628,
+                  "real_additions": 628,
+                  "classical_leaves": 196,
+                  "vector_cells_allocated": 196,
+                  "vector_cells_copied": 196,
+                  "field_multiplications": 196,
+                  "real_multiplications": 196,
+                  "field_subtractions": 216,
+                  "real_subtractions": 216,
+                  "matrix_cells_copied": 168
+                }
+              },
+              "block.join": {
+                "calls": 16,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 88,
+                  "matrix_cells_copied": 88
+                }
+              },
+              "strassen.multiply": {
+                "calls": 2,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "input_cells": 64,
+                  "recursive_nodes": 114,
+                  "matrix_cells_allocated": 758,
+                  "matrix_cells_copied": 264,
+                  "field_additions": 362,
+                  "real_additions": 362,
+                  "classical_leaves": 98,
+                  "vector_cells_allocated": 98,
+                  "vector_cells_copied": 98,
+                  "field_multiplications": 98,
+                  "real_multiplications": 98,
+                  "field_subtractions": 132,
+                  "real_subtractions": 132
+                }
+              }
+            },
+            "products_by_depth": {
+              "2": 98
+            },
+            "maximum_depth": 2,
+            "retained_trace_events": 0,
+            "dropped_trace_events": 0
+          },
+          "execution_measurements": {
+            "elapsed_algorithm_call_seconds": 0.034490915975766256,
+            "timing_scope": "public Python algorithm call including setup and observation; excluding verification",
+            "classical_equivalent_field_operations_per_second": null,
+            "equivalent_rate_is_hardware_throughput": false,
+            "accuracy": {
+              "status": "unavailable",
+              "maximum_absolute_error": null
+            },
+            "python_traced_peak_bytes": {
+              "status": "not_requested",
+              "value": null
+            },
+            "memory_scope": "Python-traced allocations including setup and observation; excludes pre-existing inputs",
+            "process_peak_memory_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "gpu_peak_memory_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "hardware_memory_traffic_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "hardware_instruction_count": {
+              "status": "not_measured",
+              "value": null
+            },
+            "memory_tracking_enabled": false
+          }
+        },
+        "classical_products": 128,
+        "separate_classical": {
+          "observation": {
+            "operand_costs": {
+              "schema": "exact-operand-word-cost-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+              "is_hardware_instruction_count": false,
+              "excluded_work": [
+                "GCD and cancellation",
+                "division",
+                "carry propagation",
+                "sign handling",
+                "allocation"
+              ],
+              "observed_max_operand_bits": 7,
+              "observed_max_result_bits": 7,
+              "observed_max_denominator_bits": 5,
+              "operand_word_bucket_upper_bounds": {
+                "1": 512
+              },
+              "modelled_atomic_operations": {
+                "multiply": 128,
+                "add": 128
+              },
+              "primitive_word_costs": {
+                "real.multiply": {
+                  "calls": 128,
+                  "word_multiplications": 202,
+                  "word_additions_subtractions": 0
+                },
+                "real.add": {
+                  "calls": 128,
+                  "word_multiplications": 254,
+                  "word_additions_subtractions": 128
+                }
+              },
+              "unmodelled_calls": {},
+              "equivalent_word_multiplications": 456,
+              "equivalent_word_additions_subtractions": 128,
+              "word_multiplications_by_role": {
+                "data": 202,
+                "combination": 254
+              },
+              "word_additions_subtractions_by_role": {
+                "data": 0,
+                "combination": 128
+              }
+            },
+            "mathematical_work": {
+              "schema": "exact-schoolbook-euclid-64-v1",
+              "status": "modelled",
+              "word_bits": 64,
+              "total_work_units": 19045,
+              "covered_work_units": 19045,
+              "work_categories": {
+                "word_products": 370,
+                "word_additions": 811,
+                "word_subtractions": 1377,
+                "carry_borrow_steps": 2188,
+                "word_comparisons": 5290,
+                "word_shifts": 7194,
+                "sign_steps": 1815
+              },
+              "schedule_statistics": {
+                "word_products": 370,
+                "word_additions": 811,
+                "word_subtractions": 1377,
+                "carry_borrow_steps": 2188,
+                "word_comparisons": 5290,
+                "word_shifts": 7194,
+                "sign_steps": 1815,
+                "integer_divisions": 1317,
+                "division_bit_steps": 3597,
+                "exact_divisions": 264,
+                "gcd_calls": 512,
+                "gcd_iterations": 1053,
+                "rational_operations": 256,
+                "normalizations": 256,
+                "normalization_reductions": 19,
+                "cross_cancellations": 59,
+                "word_products_saved_by_cross_cancellation": 28
+              },
+              "work_by_role": {
+                "data": 6724,
+                "combination": 12321
+              },
+              "modelled_calls": {
+                "real.multiply": 128,
+                "real.add": 128
+              },
+              "unmodelled_calls": {},
+              "weights": {
+                "word_products": 1,
+                "word_additions": 1,
+                "word_subtractions": 1,
+                "carry_borrow_steps": 1,
+                "word_comparisons": 1,
+                "word_shifts": 1,
+                "sign_steps": 1
+              },
+              "scope": "replayed exact arithmetic schedule; all word categories have weight one; not execution time",
+              "excluded_work": [
+                "allocation",
+                "data movement",
+                "control flow outside arithmetic",
+                "setup",
+                "verification"
+              ],
+              "is_hardware_instruction_count": false
+            },
+            "data_movement": {
+              "schema": "logical-value-traffic-64-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "logical_word_transfers": 2112,
+              "covered_word_transfers": 2112,
+              "counts": {
+                "scalar_writes": 448,
+                "word_writes": 864,
+                "scalar_reads": 640,
+                "word_reads": 1248
+              },
+              "by_category": {
+                "structural": {
+                  "scalar_writes": 192,
+                  "word_writes": 352,
+                  "scalar_reads": 128,
+                  "word_reads": 256
+                },
+                "arithmetic_ports": {
+                  "scalar_reads": 512,
+                  "word_reads": 992,
+                  "scalar_writes": 256,
+                  "word_writes": 512
+                }
+              },
+              "is_hardware_memory_traffic": false,
+              "scope": "scalar ports plus explicit matrix/vector copies, initializations and stores; mathematical payloads",
+              "excluded_work": [
+                "cache behavior",
+                "pointers and object headers",
+                "internal scalar temporaries",
+                "setup",
+                "validation",
+                "observer replay",
+                "verification"
+              ]
+            },
+            "counts": {
+              "input_cells": 64,
+              "classical_leaves": 2,
+              "matrix_cells_allocated": 32,
+              "vector_cells_allocated": 128,
+              "vector_cells_copied": 128,
+              "field_multiplications": 128,
+              "real_multiplications": 128,
+              "field_additions": 128,
+              "real_additions": 128
+            },
+            "atomic_arithmetic_operations": 256,
+            "field_arithmetic_operations": 256,
+            "counter_convention": "omitted arithmetic categories have zero observed calls",
+            "primitive_calls": {
+              "matrix.zeros": 2,
+              "vector.column": 32,
+              "real.multiply": 128,
+              "scalar.multiply": 128,
+              "real.add": 128,
+              "scalar.add": 128,
+              "vector.dot": 32,
+              "matrix.classical": 2,
+              "naive.multiply": 2
+            },
+            "profiles": {
+              "matrix.zeros": {
+                "calls": 2,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 32
+                }
+              },
+              "vector.column": {
+                "calls": 32,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "vector_cells_allocated": 128,
+                  "vector_cells_copied": 128
+                }
+              },
+              "real.multiply": {
+                "calls": 128,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 128
+                }
+              },
+              "scalar.multiply": {
+                "calls": 128,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_multiplications": 128,
+                  "real_multiplications": 128
+                }
+              },
+              "real.add": {
+                "calls": 128,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_additions": 128
+                }
+              },
+              "scalar.add": {
+                "calls": 128,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 128,
+                  "real_additions": 128
+                }
+              },
+              "vector.dot": {
+                "calls": 32,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_multiplications": 128,
+                  "real_multiplications": 128,
+                  "field_additions": 128,
+                  "real_additions": 128
+                }
+              },
+              "matrix.classical": {
+                "calls": 2,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 32,
+                  "vector_cells_allocated": 128,
+                  "vector_cells_copied": 128,
+                  "field_multiplications": 128,
+                  "real_multiplications": 128,
+                  "field_additions": 128,
+                  "real_additions": 128
+                }
+              },
+              "naive.multiply": {
+                "calls": 2,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "input_cells": 64,
+                  "classical_leaves": 2,
+                  "matrix_cells_allocated": 32,
+                  "vector_cells_allocated": 128,
+                  "vector_cells_copied": 128,
+                  "field_multiplications": 128,
+                  "real_multiplications": 128,
+                  "field_additions": 128,
+                  "real_additions": 128
+                }
+              }
+            },
+            "products_by_depth": {
+              "0": 128
+            },
+            "maximum_depth": 0,
+            "retained_trace_events": 0,
+            "dropped_trace_events": 0
+          },
+          "execution_measurements": {
+            "elapsed_algorithm_call_seconds": 0.011537291022250429,
+            "timing_scope": "public Python algorithm call including setup and observation; excluding verification",
+            "classical_equivalent_field_operations_per_second": null,
+            "equivalent_rate_is_hardware_throughput": false,
+            "accuracy": {
+              "status": "unavailable",
+              "maximum_absolute_error": null
+            },
+            "python_traced_peak_bytes": {
+              "status": "not_requested",
+              "value": null
+            },
+            "memory_scope": "Python-traced allocations including setup and observation; excludes pre-existing inputs",
+            "process_peak_memory_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "gpu_peak_memory_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "hardware_memory_traffic_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "hardware_instruction_count": {
+              "status": "not_measured",
+              "value": null
+            },
+            "memory_tracking_enabled": false
+          }
+        }
+      },
+      {
+        "dimension": 16,
+        "exact_outputs_verified": [
+          true,
+          true
+        ],
+        "budget": {
+          "field_multiplications": 6272,
+          "field_additions": 62208,
+          "coefficient_multiplications": 62208
+        },
+        "observation": {
+          "operand_costs": {
+            "schema": "exact-operand-word-cost-v1",
+            "word_bits": 64,
+            "status": "modelled",
+            "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+            "is_hardware_instruction_count": false,
+            "excluded_work": [
+              "GCD and cancellation",
+              "division",
+              "carry propagation",
+              "sign handling",
+              "allocation"
+            ],
+            "observed_max_operand_bits": 14,
+            "observed_max_result_bits": 14,
+            "observed_max_denominator_bits": 9,
+            "operand_word_bucket_upper_bounds": {
+              "1": 261376
+            },
+            "modelled_atomic_operations": {
+              "multiply": 68480,
+              "add": 62208
+            },
+            "primitive_word_costs": {
+              "real.multiply": {
+                "calls": 68480,
+                "word_multiplications": 73362,
+                "word_additions_subtractions": 0
+              },
+              "real.add": {
+                "calls": 62208,
+                "word_multiplications": 130421,
+                "word_additions_subtractions": 62208
+              }
+            },
+            "unmodelled_calls": {},
+            "equivalent_word_multiplications": 203783,
+            "equivalent_word_additions_subtractions": 62208,
+            "word_multiplications_by_role": {
+              "coefficient": 62208,
+              "combination": 130421,
+              "data": 11154
+            },
+            "word_additions_subtractions_by_role": {
+              "coefficient": 0,
+              "combination": 62208,
+              "data": 0
+            }
+          },
+          "mathematical_work": {
+            "schema": "exact-schoolbook-euclid-64-v1",
+            "status": "modelled",
+            "word_bits": 64,
+            "total_work_units": 11059112,
+            "covered_work_units": 11059112,
+            "work_categories": {
+              "word_products": 159062,
+              "word_additions": 347474,
+              "word_subtractions": 858562,
+              "carry_borrow_steps": 1206036,
+              "word_comparisons": 3108315,
+              "word_shifts": 4540612,
+              "sign_steps": 839051
+            },
+            "schedule_statistics": {
+              "word_products": 159062,
+              "word_additions": 347474,
+              "word_subtractions": 858562,
+              "carry_borrow_steps": 1206036,
+              "word_comparisons": 3108315,
+              "word_shifts": 4540612,
+              "sign_steps": 839051,
+              "integer_divisions": 617781,
+              "division_bit_steps": 2270306,
+              "exact_divisions": 103356,
+              "gcd_calls": 261376,
+              "gcd_iterations": 514425,
+              "rational_operations": 130688,
+              "normalizations": 130688,
+              "normalization_reductions": 16910,
+              "cross_cancellations": 3122,
+              "word_products_saved_by_cross_cancellation": 729
+            },
+            "work_by_role": {
+              "coefficient": 2752159,
+              "combination": 7767378,
+              "data": 539575
+            },
+            "modelled_calls": {
+              "real.multiply": 68480,
+              "real.add": 62208
+            },
+            "unmodelled_calls": {},
+            "weights": {
+              "word_products": 1,
+              "word_additions": 1,
+              "word_subtractions": 1,
+              "carry_borrow_steps": 1,
+              "word_comparisons": 1,
+              "word_shifts": 1,
+              "sign_steps": 1
+            },
+            "scope": "replayed exact arithmetic schedule; all word categories have weight one; not execution time",
+            "excluded_work": [
+              "allocation",
+              "data movement",
+              "control flow outside arithmetic",
+              "setup",
+              "verification"
+            ],
+            "is_hardware_instruction_count": false
+          },
+          "data_movement": {
+            "schema": "logical-value-traffic-64-v1",
+            "word_bits": 64,
+            "status": "modelled",
+            "logical_word_transfers": 948736,
+            "covered_word_transfers": 948736,
+            "counts": {
+              "scalar_reads": 268288,
+              "word_reads": 518144,
+              "scalar_writes": 224512,
+              "word_writes": 430592
+            },
+            "by_category": {
+              "structural": {
+                "scalar_reads": 6912,
+                "word_reads": 13824,
+                "scalar_writes": 93824,
+                "word_writes": 169216
+              },
+              "arithmetic_ports": {
+                "scalar_reads": 261376,
+                "word_reads": 504320,
+                "scalar_writes": 130688,
+                "word_writes": 261376
+              }
+            },
+            "is_hardware_memory_traffic": false,
+            "scope": "scalar ports plus explicit matrix/vector copies, initializations and stores; mathematical payloads",
+            "excluded_work": [
+              "cache behavior",
+              "pointers and object headers",
+              "internal scalar temporaries",
+              "setup",
+              "validation",
+              "observer replay",
+              "verification"
+            ]
+          },
+          "counts": {
+            "recursive_nodes": 3193,
+            "matrix_cells_allocated": 31616,
+            "matrix_cells_copied": 6912,
+            "coefficient_multiplications": 62208,
+            "real_multiplications": 68480,
+            "field_additions": 62208,
+            "real_additions": 62208,
+            "classical_leaves": 3136,
+            "field_multiplications": 6272
+          },
+          "atomic_arithmetic_operations": 130688,
+          "field_arithmetic_operations": 130688,
+          "counter_convention": "omitted arithmetic categories have zero observed calls",
+          "primitive_calls": {
+            "block.split": 228,
+            "matrix.zeros": 14592,
+            "real.multiply": 68480,
+            "scalar.scale": 62208,
+            "real.add": 62208,
+            "scalar.add": 62208,
+            "block.accumulate_scaled": 49248,
+            "block.linear_combination": 12768,
+            "scalar.multiply": 6272,
+            "recursive_batch.node": 3193,
+            "recursive_batch.child": 3192,
+            "block.join": 114
+          },
+          "profiles": {
+            "block.split": {
+              "calls": 228,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "matrix_cells_allocated": 4608,
+                "matrix_cells_copied": 4608
+              }
+            },
+            "matrix.zeros": {
+              "calls": 14592,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "matrix_cells_allocated": 18432
+              }
+            },
+            "real.multiply": {
+              "calls": 68480,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "real_multiplications": 68480
+              }
+            },
+            "scalar.scale": {
+              "calls": 62208,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "coefficient_multiplications": 62208,
+                "real_multiplications": 62208
+              }
+            },
+            "real.add": {
+              "calls": 62208,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "real_additions": 62208
+              }
+            },
+            "scalar.add": {
+              "calls": 62208,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "field_additions": 62208,
+                "real_additions": 62208
+              }
+            },
+            "block.accumulate_scaled": {
+              "calls": 49248,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "coefficient_multiplications": 62208,
+                "real_multiplications": 62208,
+                "field_additions": 62208,
+                "real_additions": 62208
+              }
+            },
+            "block.linear_combination": {
+              "calls": 12768,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "matrix_cells_allocated": 16128,
+                "coefficient_multiplications": 41472,
+                "real_multiplications": 41472,
+                "field_additions": 41472,
+                "real_additions": 41472
+              }
+            },
+            "scalar.multiply": {
+              "calls": 6272,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "real_multiplications": 6272,
+                "field_multiplications": 6272
+              }
+            },
+            "recursive_batch.node": {
+              "calls": 3193,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "recursive_nodes": 9521,
+                "matrix_cells_allocated": 63872,
+                "real_multiplications": 129408,
+                "classical_leaves": 9408,
+                "field_multiplications": 18816,
+                "matrix_cells_copied": 12288,
+                "coefficient_multiplications": 110592,
+                "field_additions": 110592,
+                "real_additions": 110592
+              }
+            },
+            "recursive_batch.child": {
+              "calls": 3192,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "recursive_nodes": 6328,
+                "matrix_cells_allocated": 48384,
+                "coefficient_multiplications": 110592,
+                "real_multiplications": 123136,
+                "field_additions": 110592,
+                "real_additions": 110592,
+                "classical_leaves": 6272,
+                "field_multiplications": 12544,
+                "matrix_cells_copied": 5376
+              }
+            },
+            "block.join": {
+              "calls": 114,
+              "inclusive_seconds": 0.0,
+              "exclusive_seconds": 0.0,
+              "inclusive_counts": {
+                "matrix_cells_allocated": 2304,
+                "matrix_cells_copied": 2304
+              }
+            }
+          },
+          "products_by_depth": {
+            "2": 6272
+          },
+          "maximum_depth": 2,
+          "retained_trace_events": 0,
+          "dropped_trace_events": 0
+        },
+        "execution_measurements": {
+          "elapsed_algorithm_call_seconds": 6.2258909580123145,
+          "timing_scope": "public Python algorithm call including setup and observation; excluding verification",
+          "classical_equivalent_field_operations_per_second": null,
+          "equivalent_rate_is_hardware_throughput": false,
+          "accuracy": {
+            "status": "unavailable",
+            "maximum_absolute_error": null
+          },
+          "python_traced_peak_bytes": {
+            "status": "not_requested",
+            "value": null
+          },
+          "memory_scope": "Python-traced allocations including setup and observation; excludes pre-existing inputs",
+          "process_peak_memory_bytes": {
+            "status": "not_measured",
+            "value": null
+          },
+          "gpu_peak_memory_bytes": {
+            "status": "not_measured",
+            "value": null
+          },
+          "hardware_memory_traffic_bytes": {
+            "status": "not_measured",
+            "value": null
+          },
+          "hardware_instruction_count": {
+            "status": "not_measured",
+            "value": null
+          },
+          "memory_tracking_enabled": false
+        },
+        "separate_strassen": {
+          "observation": {
+            "operand_costs": {
+              "schema": "exact-operand-word-cost-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+              "is_hardware_instruction_count": false,
+              "excluded_work": [
+                "GCD and cancellation",
+                "division",
+                "carry propagation",
+                "sign handling",
+                "allocation"
+              ],
+              "observed_max_operand_bits": 9,
+              "observed_max_result_bits": 9,
+              "observed_max_denominator_bits": 5,
+              "operand_word_bucket_upper_bounds": {
+                "1": 70688
+              },
+              "modelled_atomic_operations": {
+                "add": 21962,
+                "multiply": 4802,
+                "subtract": 8580
+              },
+              "primitive_word_costs": {
+                "real.add": {
+                  "calls": 21962,
+                  "word_multiplications": 38349,
+                  "word_additions_subtractions": 21962
+                },
+                "real.multiply": {
+                  "calls": 4802,
+                  "word_multiplications": 6897,
+                  "word_additions_subtractions": 0
+                },
+                "real.subtract": {
+                  "calls": 8580,
+                  "word_multiplications": 18300,
+                  "word_additions_subtractions": 8580
+                }
+              },
+              "unmodelled_calls": {},
+              "equivalent_word_multiplications": 63546,
+              "equivalent_word_additions_subtractions": 30542,
+              "word_multiplications_by_role": {
+                "combination": 56649,
+                "data": 6897
+              },
+              "word_additions_subtractions_by_role": {
+                "combination": 30542,
+                "data": 0
+              }
+            },
+            "mathematical_work": {
+              "schema": "exact-schoolbook-euclid-64-v1",
+              "status": "modelled",
+              "word_bits": 64,
+              "total_work_units": 2643552,
+              "covered_work_units": 2643552,
+              "work_categories": {
+                "word_products": 33829,
+                "word_additions": 81913,
+                "word_subtractions": 212368,
+                "carry_borrow_steps": 294281,
+                "word_comparisons": 747363,
+                "word_shifts": 1030032,
+                "sign_steps": 243766
+              },
+              "schedule_statistics": {
+                "word_products": 33829,
+                "word_additions": 81913,
+                "word_subtractions": 212368,
+                "carry_borrow_steps": 294281,
+                "word_comparisons": 747363,
+                "word_shifts": 1030032,
+                "sign_steps": 243766,
+                "integer_divisions": 179395,
+                "division_bit_steps": 515016,
+                "exact_divisions": 48278,
+                "gcd_calls": 70688,
+                "gcd_iterations": 131117,
+                "rational_operations": 35344,
+                "normalizations": 35344,
+                "normalization_reductions": 7425,
+                "cross_cancellations": 2404,
+                "word_products_saved_by_cross_cancellation": 581
+              },
+              "work_by_role": {
+                "combination": 2382734,
+                "data": 260818
+              },
+              "modelled_calls": {
+                "real.add": 21962,
+                "real.multiply": 4802,
+                "real.subtract": 8580
+              },
+              "unmodelled_calls": {},
+              "weights": {
+                "word_products": 1,
+                "word_additions": 1,
+                "word_subtractions": 1,
+                "carry_borrow_steps": 1,
+                "word_comparisons": 1,
+                "word_shifts": 1,
+                "sign_steps": 1
+              },
+              "scope": "replayed exact arithmetic schedule; all word categories have weight one; not execution time",
+              "excluded_work": [
+                "allocation",
+                "data movement",
+                "control flow outside arithmetic",
+                "setup",
+                "verification"
+              ],
+              "is_hardware_instruction_count": false
+            },
+            "data_movement": {
+              "schema": "logical-value-traffic-64-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "logical_word_transfers": 360996,
+              "covered_word_transfers": 360996,
+              "counts": {
+                "scalar_reads": 92650,
+                "word_reads": 180498,
+                "scalar_writes": 92650,
+                "word_writes": 180498
+              },
+              "by_category": {
+                "structural": {
+                  "scalar_reads": 21962,
+                  "word_reads": 43924,
+                  "scalar_writes": 57306,
+                  "word_writes": 109810
+                },
+                "arithmetic_ports": {
+                  "scalar_reads": 70688,
+                  "word_reads": 136574,
+                  "scalar_writes": 35344,
+                  "word_writes": 70688
+                }
+              },
+              "is_hardware_memory_traffic": false,
+              "scope": "scalar ports plus explicit matrix/vector copies, initializations and stores; mathematical payloads",
+              "excluded_work": [
+                "cache behavior",
+                "pointers and object headers",
+                "internal scalar temporaries",
+                "setup",
+                "validation",
+                "observer replay",
+                "verification"
+              ]
+            },
+            "counts": {
+              "input_cells": 1024,
+              "recursive_nodes": 5602,
+              "matrix_cells_allocated": 47702,
+              "matrix_cells_copied": 17160,
+              "field_additions": 21962,
+              "real_additions": 21962,
+              "classical_leaves": 4802,
+              "vector_cells_allocated": 4802,
+              "vector_cells_copied": 4802,
+              "field_multiplications": 4802,
+              "real_multiplications": 4802,
+              "field_subtractions": 8580,
+              "real_subtractions": 8580
+            },
+            "atomic_arithmetic_operations": 35344,
+            "field_arithmetic_operations": 35344,
+            "counter_convention": "omitted arithmetic categories have zero observed calls",
+            "primitive_calls": {
+              "block.split": 1600,
+              "real.add": 21962,
+              "scalar.add": 21962,
+              "block.add": 9600,
+              "matrix.zeros": 4802,
+              "vector.column": 4802,
+              "real.multiply": 4802,
+              "scalar.multiply": 4802,
+              "vector.dot": 4802,
+              "matrix.classical": 4802,
+              "strassen.node": 5602,
+              "real.subtract": 8580,
+              "scalar.subtract": 8580,
+              "block.subtract": 4800,
+              "strassen.step": 800,
+              "block.join": 800,
+              "strassen.multiply": 2
+            },
+            "profiles": {
+              "block.split": {
+                "calls": 1600,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 11440,
+                  "matrix_cells_copied": 11440
+                }
+              },
+              "real.add": {
+                "calls": 21962,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_additions": 21962
+                }
+              },
+              "scalar.add": {
+                "calls": 21962,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 21962,
+                  "real_additions": 21962
+                }
+              },
+              "block.add": {
+                "calls": 9600,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 17160,
+                  "field_additions": 17160,
+                  "real_additions": 17160
+                }
+              },
+              "matrix.zeros": {
+                "calls": 4802,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 4802
+                }
+              },
+              "vector.column": {
+                "calls": 4802,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "vector_cells_allocated": 4802,
+                  "vector_cells_copied": 4802
+                }
+              },
+              "real.multiply": {
+                "calls": 4802,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 4802
+                }
+              },
+              "scalar.multiply": {
+                "calls": 4802,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_multiplications": 4802,
+                  "real_multiplications": 4802
+                }
+              },
+              "vector.dot": {
+                "calls": 4802,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 4802,
+                  "real_additions": 4802,
+                  "field_multiplications": 4802,
+                  "real_multiplications": 4802
+                }
+              },
+              "matrix.classical": {
+                "calls": 4802,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 4802,
+                  "field_additions": 4802,
+                  "real_additions": 4802,
+                  "vector_cells_allocated": 4802,
+                  "vector_cells_copied": 4802,
+                  "field_multiplications": 4802,
+                  "real_multiplications": 4802
+                }
+              },
+              "strassen.node": {
+                "calls": 5602,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "recursive_nodes": 27078,
+                  "matrix_cells_allocated": 158890,
+                  "field_additions": 77962,
+                  "real_additions": 77962,
+                  "classical_leaves": 24010,
+                  "vector_cells_allocated": 24010,
+                  "vector_cells_copied": 24010,
+                  "field_multiplications": 24010,
+                  "real_multiplications": 24010,
+                  "matrix_cells_copied": 53952,
+                  "field_subtractions": 26976,
+                  "real_subtractions": 26976
+                }
+              },
+              "real.subtract": {
+                "calls": 8580,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_subtractions": 8580
+                }
+              },
+              "scalar.subtract": {
+                "calls": 8580,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_subtractions": 8580,
+                  "real_subtractions": 8580
+                }
+              },
+              "block.subtract": {
+                "calls": 4800,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 8580,
+                  "field_subtractions": 8580,
+                  "real_subtractions": 8580
+                }
+              },
+              "strassen.step": {
+                "calls": 800,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "recursive_nodes": 21476,
+                  "matrix_cells_allocated": 136928,
+                  "field_additions": 73160,
+                  "real_additions": 73160,
+                  "classical_leaves": 19208,
+                  "vector_cells_allocated": 19208,
+                  "vector_cells_copied": 19208,
+                  "field_multiplications": 19208,
+                  "real_multiplications": 19208,
+                  "field_subtractions": 26976,
+                  "real_subtractions": 26976,
+                  "matrix_cells_copied": 36792
+                }
+              },
+              "block.join": {
+                "calls": 800,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 5720,
+                  "matrix_cells_copied": 5720
+                }
+              },
+              "strassen.multiply": {
+                "calls": 2,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "input_cells": 1024,
+                  "recursive_nodes": 5602,
+                  "matrix_cells_allocated": 47702,
+                  "matrix_cells_copied": 17160,
+                  "field_additions": 21962,
+                  "real_additions": 21962,
+                  "classical_leaves": 4802,
+                  "vector_cells_allocated": 4802,
+                  "vector_cells_copied": 4802,
+                  "field_multiplications": 4802,
+                  "real_multiplications": 4802,
+                  "field_subtractions": 8580,
+                  "real_subtractions": 8580
+                }
+              }
+            },
+            "products_by_depth": {
+              "4": 4802
+            },
+            "maximum_depth": 4,
+            "retained_trace_events": 0,
+            "dropped_trace_events": 0
+          },
+          "execution_measurements": {
+            "elapsed_algorithm_call_seconds": 2.1196426670067012,
+            "timing_scope": "public Python algorithm call including setup and observation; excluding verification",
+            "classical_equivalent_field_operations_per_second": null,
+            "equivalent_rate_is_hardware_throughput": false,
+            "accuracy": {
+              "status": "unavailable",
+              "maximum_absolute_error": null
+            },
+            "python_traced_peak_bytes": {
+              "status": "not_requested",
+              "value": null
+            },
+            "memory_scope": "Python-traced allocations including setup and observation; excludes pre-existing inputs",
+            "process_peak_memory_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "gpu_peak_memory_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "hardware_memory_traffic_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "hardware_instruction_count": {
+              "status": "not_measured",
+              "value": null
+            },
+            "memory_tracking_enabled": false
+          }
+        },
+        "classical_products": 8192,
+        "separate_classical": {
+          "observation": {
+            "operand_costs": {
+              "schema": "exact-operand-word-cost-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "model": "schoolbook 64-bit word products; unreduced rational expressions; unit denominators omitted",
+              "is_hardware_instruction_count": false,
+              "excluded_work": [
+                "GCD and cancellation",
+                "division",
+                "carry propagation",
+                "sign handling",
+                "allocation"
+              ],
+              "observed_max_operand_bits": 7,
+              "observed_max_result_bits": 7,
+              "observed_max_denominator_bits": 5,
+              "operand_word_bucket_upper_bounds": {
+                "1": 32768
+              },
+              "modelled_atomic_operations": {
+                "multiply": 8192,
+                "add": 8192
+              },
+              "primitive_word_costs": {
+                "real.multiply": {
+                  "calls": 8192,
+                  "word_multiplications": 12814,
+                  "word_additions_subtractions": 0
+                },
+                "real.add": {
+                  "calls": 8192,
+                  "word_multiplications": 19378,
+                  "word_additions_subtractions": 8192
+                }
+              },
+              "unmodelled_calls": {},
+              "equivalent_word_multiplications": 32192,
+              "equivalent_word_additions_subtractions": 8192,
+              "word_multiplications_by_role": {
+                "data": 12814,
+                "combination": 19378
+              },
+              "word_additions_subtractions_by_role": {
+                "data": 0,
+                "combination": 8192
+              }
+            },
+            "mathematical_work": {
+              "schema": "exact-schoolbook-euclid-64-v1",
+              "status": "modelled",
+              "word_bits": 64,
+              "total_work_units": 1319110,
+              "covered_work_units": 1319110,
+              "work_categories": {
+                "word_products": 24048,
+                "word_additions": 52153,
+                "word_subtractions": 98091,
+                "carry_borrow_steps": 150244,
+                "word_comparisons": 362721,
+                "word_shifts": 513292,
+                "sign_steps": 118561
+              },
+              "schedule_statistics": {
+                "word_products": 24048,
+                "word_additions": 52153,
+                "word_subtractions": 98091,
+                "carry_borrow_steps": 150244,
+                "word_comparisons": 362721,
+                "word_shifts": 513292,
+                "sign_steps": 118561,
+                "integer_divisions": 86321,
+                "division_bit_steps": 256646,
+                "exact_divisions": 21206,
+                "gcd_calls": 32768,
+                "gcd_iterations": 65115,
+                "rational_operations": 16384,
+                "normalizations": 16384,
+                "normalization_reductions": 2150,
+                "cross_cancellations": 3413,
+                "word_products_saved_by_cross_cancellation": 1601
+              },
+              "work_by_role": {
+                "data": 423975,
+                "combination": 895135
+              },
+              "modelled_calls": {
+                "real.multiply": 8192,
+                "real.add": 8192
+              },
+              "unmodelled_calls": {},
+              "weights": {
+                "word_products": 1,
+                "word_additions": 1,
+                "word_subtractions": 1,
+                "carry_borrow_steps": 1,
+                "word_comparisons": 1,
+                "word_shifts": 1,
+                "sign_steps": 1
+              },
+              "scope": "replayed exact arithmetic schedule; all word categories have weight one; not execution time",
+              "excluded_work": [
+                "allocation",
+                "data movement",
+                "control flow outside arithmetic",
+                "setup",
+                "verification"
+              ],
+              "is_hardware_instruction_count": false
+            },
+            "data_movement": {
+              "schema": "logical-value-traffic-64-v1",
+              "word_bits": 64,
+              "status": "modelled",
+              "logical_word_transfers": 132096,
+              "covered_word_transfers": 132096,
+              "counts": {
+                "scalar_writes": 25600,
+                "word_writes": 50688,
+                "scalar_reads": 40960,
+                "word_reads": 81408
+              },
+              "by_category": {
+                "structural": {
+                  "scalar_writes": 9216,
+                  "word_writes": 17920,
+                  "scalar_reads": 8192,
+                  "word_reads": 16384
+                },
+                "arithmetic_ports": {
+                  "scalar_reads": 32768,
+                  "word_reads": 65024,
+                  "scalar_writes": 16384,
+                  "word_writes": 32768
+                }
+              },
+              "is_hardware_memory_traffic": false,
+              "scope": "scalar ports plus explicit matrix/vector copies, initializations and stores; mathematical payloads",
+              "excluded_work": [
+                "cache behavior",
+                "pointers and object headers",
+                "internal scalar temporaries",
+                "setup",
+                "validation",
+                "observer replay",
+                "verification"
+              ]
+            },
+            "counts": {
+              "input_cells": 1024,
+              "classical_leaves": 2,
+              "matrix_cells_allocated": 512,
+              "vector_cells_allocated": 8192,
+              "vector_cells_copied": 8192,
+              "field_multiplications": 8192,
+              "real_multiplications": 8192,
+              "field_additions": 8192,
+              "real_additions": 8192
+            },
+            "atomic_arithmetic_operations": 16384,
+            "field_arithmetic_operations": 16384,
+            "counter_convention": "omitted arithmetic categories have zero observed calls",
+            "primitive_calls": {
+              "matrix.zeros": 2,
+              "vector.column": 512,
+              "real.multiply": 8192,
+              "scalar.multiply": 8192,
+              "real.add": 8192,
+              "scalar.add": 8192,
+              "vector.dot": 512,
+              "matrix.classical": 2,
+              "naive.multiply": 2
+            },
+            "profiles": {
+              "matrix.zeros": {
+                "calls": 2,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 512
+                }
+              },
+              "vector.column": {
+                "calls": 512,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "vector_cells_allocated": 8192,
+                  "vector_cells_copied": 8192
+                }
+              },
+              "real.multiply": {
+                "calls": 8192,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_multiplications": 8192
+                }
+              },
+              "scalar.multiply": {
+                "calls": 8192,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_multiplications": 8192,
+                  "real_multiplications": 8192
+                }
+              },
+              "real.add": {
+                "calls": 8192,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "real_additions": 8192
+                }
+              },
+              "scalar.add": {
+                "calls": 8192,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_additions": 8192,
+                  "real_additions": 8192
+                }
+              },
+              "vector.dot": {
+                "calls": 512,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "field_multiplications": 8192,
+                  "real_multiplications": 8192,
+                  "field_additions": 8192,
+                  "real_additions": 8192
+                }
+              },
+              "matrix.classical": {
+                "calls": 2,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "matrix_cells_allocated": 512,
+                  "vector_cells_allocated": 8192,
+                  "vector_cells_copied": 8192,
+                  "field_multiplications": 8192,
+                  "real_multiplications": 8192,
+                  "field_additions": 8192,
+                  "real_additions": 8192
+                }
+              },
+              "naive.multiply": {
+                "calls": 2,
+                "inclusive_seconds": 0.0,
+                "exclusive_seconds": 0.0,
+                "inclusive_counts": {
+                  "input_cells": 1024,
+                  "classical_leaves": 2,
+                  "matrix_cells_allocated": 512,
+                  "vector_cells_allocated": 8192,
+                  "vector_cells_copied": 8192,
+                  "field_multiplications": 8192,
+                  "real_multiplications": 8192,
+                  "field_additions": 8192,
+                  "real_additions": 8192
+                }
+              }
+            },
+            "products_by_depth": {
+              "0": 8192
+            },
+            "maximum_depth": 0,
+            "retained_trace_events": 0,
+            "dropped_trace_events": 0
+          },
+          "execution_measurements": {
+            "elapsed_algorithm_call_seconds": 0.7037187500100117,
+            "timing_scope": "public Python algorithm call including setup and observation; excluding verification",
+            "classical_equivalent_field_operations_per_second": null,
+            "equivalent_rate_is_hardware_throughput": false,
+            "accuracy": {
+              "status": "unavailable",
+              "maximum_absolute_error": null
+            },
+            "python_traced_peak_bytes": {
+              "status": "not_requested",
+              "value": null
+            },
+            "memory_scope": "Python-traced allocations including setup and observation; excludes pre-existing inputs",
+            "process_peak_memory_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "gpu_peak_memory_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "hardware_memory_traffic_bytes": {
+              "status": "not_measured",
+              "value": null
+            },
+            "hardware_instruction_count": {
+              "status": "not_measured",
+              "value": null
+            },
+            "memory_tracking_enabled": false
+          }
+        }
+      }
+    ],
+    "second_level_identity": {
+      "dimension": 16,
+      "coefficient_checks": 134217728,
+      "nonzero_coefficients": 8192
+    }
+  },
+  "outcome": "Verified Pan\u2019s two-product aggregation and executed both outputs at dimension 4 and 16.",
+  "provenance": {
+    "implementation": "independent rational tensor construction primitives",
+    "implementation_license": "GPL-3.0; repository LICENSE",
+    "method_reference": "https://arxiv.org/html/2610.26563v2#S1",
+    "original_method": "https://doi.org/10.1137/0209027",
+    "construction": "independent generation of Pan\u2019s exact aggregate and correction terms"
+  }
+}

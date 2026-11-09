@@ -1,11 +1,12 @@
-"""Three sequential exact experiments: pooled support, broader shapes, rank reuse.
+"""Three exact support experiments followed by cyclic transport and joint recovery.
 
 Step one searches only the coordinate pool of existing seed witnesses. Step two
 broadens to the whole squared component and neighboring balanced target shapes.
 Step three recovers retained identities from the actual polynomial, runs bounded
 exact rank-reduction walks, replays every retained path, and tensors a successful
-refined part with itself. This is a finite construction pipeline, not a claim of
-a new mathematical record. Every unsuccessful search remains explicit evidence.
+refined part with itself. The CW₂ follow-up transports balanced layouts and
+recovers checked pairs in a common source. Every unsuccessful search remains
+explicit evidence.
 """
 
 from html import escape
@@ -15,6 +16,7 @@ from math import prod
 from .cw_coarsening import coarse_catalog
 from .cw_extraction import execution_evidence, restrict_polynomial
 from .cw_interior import powered_selections
+from .cw_symmetry import explore_symmetry
 from .decomposition_search import height, replay, search
 from .degenerations import cw_family
 from .recipe_parts import identity_witness, recombine_parts
@@ -27,7 +29,7 @@ def explore_support(q=2, power=2, *, candidate_budget=4096, seed_budget=2048,
                     max_parts=2, steps=1000, restarts=10, search_seeds=(0, 1),
                     max_height=1, reduction_limit=1,
                     max_source_dimension=64, max_source_terms=4096):
-    """Execute the three research steps in order with independent declared caps.
+    """Execute the support and cyclic experiments in order under declared caps.
 
     Each support target/scope has its own attempt budget. Seed-prefix setup has
     a separate cap, as do rank walks per seed and restart. At most max_parts maps
@@ -134,6 +136,7 @@ def explore_support(q=2, power=2, *, candidate_budget=4096, seed_budget=2048,
                 'shape': list(witness.shape), 'products': best.rank, 'classical_products': prod(witness.shape),
                 'source_kind': 'replayed exact rank reduction of recovered support part',
                 'parent_part': name, 'campaign_index': len(campaigns)-1,
+                'ambient_source_coordinates_in_matrix_order': description['ambient_source_coordinates_in_matrix_order'],
                 'complete_identity_verified': True, 'execution': execution_evidence(best, (witness,))}
             parts.append((best, refined_description))
             refined.append((best, witness.shape, refined_name))
@@ -147,6 +150,16 @@ def explore_support(q=2, power=2, *, candidate_budget=4096, seed_budget=2048,
             'execution': execution_evidence(combined, (identity_witness(combined, shape),))}
         parts.append((combined, description))
         recombinations.append(description)
+    symmetry_parts = ()
+    symmetry = {'status': 'follow-up scoped to CW₂ squared'}
+    if (q, power) == (2, 2):
+        recognized = [record['witness']['source_coordinates_in_matrix_order']
+                      for entry in step_two if (entry['sector'], entry['shape']) == ([1, 1, 2], [2, 2, 2])
+                      for record in entry['search']['candidates'] if 'witness' in record]
+        refined_for_transport = [(t, d) for t, d in parts if 'parent_part' in d]
+        symmetry_parts, symmetry = explore_symmetry(
+            [c['component'] for c in contexts], recognized, refined_for_transport,
+            max_source_dimension=max_source_dimension, max_source_terms=max_source_terms)
     report = {'schema': 'cw-three-step-support-v1', 'q': q, 'cw_power': power,
         'settings': {'candidate_budget_per_target_scope': candidate_budget, 'seed_prefix_budget': seed_budget,
             'step_one_target': [2, 2, 2], 'step_two_targets': [list(s) for s in targets],
@@ -155,9 +168,10 @@ def explore_support(q=2, power=2, *, candidate_budget=4096, seed_budget=2048,
             'max_source_dimension': max_source_dimension, 'max_source_terms': max_source_terms},
         'seed_setup': seed_records, 'step_one': step_one, 'step_two': step_two,
         'step_three': {'recoveries': recoveries, 'campaigns': campaigns, 'recombinations': recombinations},
+        'step_four': symmetry,
         'parts': [d for _, d in parts],
         'limitation': 'Bounded coordinate support searches and exact rational walks only. New relative to earlier controls is not mathematical novelty. No stronger bound than the verified Smirnov baseline is claimed.'}
-    return tuple(parts), report
+    return tuple(parts)+symmetry_parts, report
 
 
 def compact_support_report(report):
@@ -169,6 +183,7 @@ def compact_support_report(report):
     for step in ('step_one', 'step_two'):
         result[step] = [{**item, 'search': {k: v for k, v in item['search'].items() if k != 'candidates'}}
                         for item in report[step]]
+    result['step_four'] = {k: v for k, v in report['step_four'].items() if k not in ('maps', 'pairs')}
     return result
 
 
@@ -207,4 +222,27 @@ def support_summary(report):
         'using separate source copies and explicit matrix index maps, then executed on rational inputs. '
         'A recovered 2×2 seven-product identity reproduces the known rank-seven case; its exponent '
         'is not a new bound and does not improve our Smirnov baseline. The reusable extraction maps, '
-        'exact recipe transformations and failed larger-shape targets remain useful research evidence.</p>')
+        'exact recipe transformations and failed larger-shape targets remain useful research evidence.</p>'
+        + symmetry_summary(report['step_four']))
+
+
+def symmetry_summary(report):
+    """Explain which pairs actually ran and what their recovery costs compare."""
+    if report['status'] != 'completed':
+        return f'<h2>Cyclic follow-up</h2><p>{escape(report["status"])}</p>'
+    rows = ''.join(f'<tr><td>{escape(scope)}</td><td>{escape(status)}</td><td>{count}</td></tr>'
+                   for scope, outcomes in report['outcomes'].items() for status, count in outcomes.items())
+    return ('<h2>Cyclic transport and joint recovery</h2>'
+        '<p>Matrix multiplication uses three coordinate spaces, for the left input, right input and output. '
+        'Cycling them transposes the old output and old left input in their new roles. '
+        'We check that rotating every coefficient of a squared CW sector gives the corresponding sector. '
+        f'All {len(report["maps"])} maps are also checked and recovered from the polynomial in the shared CW source.</p>'
+        '<p>We test all pairs inside the original sector and all pairs from that sector to the next one. '
+        'The shared source retains any cross coefficients, so disjoint coordinate sets alone '
+        'cannot establish independence. Every accepted pair is recovered as one target.</p>'
+        f'<table><thead><tr><th>Pair scope</th><th>Outcome</th><th>Pairs</th></tr></thead><tbody>{rows}</tbody></table>'
+        f'<p>Joint recovery used fewer products than separate polynomial recovery in {report["joint_recovery_savings"]} '
+        f'cases, and fewer than the best known separate recipes in {report["savings_against_best_known_separate"]}. '
+        f'A dense union has its own classical comparator, with {report["dense_union_savings"]} savings observed. '
+        'Full maps, rejection reasons, recovery costs '
+        'and executed recipes are available in the JSON files.</p>')

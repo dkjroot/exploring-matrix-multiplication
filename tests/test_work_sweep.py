@@ -271,6 +271,7 @@ class WorkSweepTests(unittest.TestCase):
             source.write_bytes(raw.encode("utf-8"))
             with redirect_stdout(io.StringIO()):
                 status = sweep.main(["--sizes", "1", "--cutoffs", "1", "--algorithms", "naive",
+                                     "--cw-parameters", "1", "--cw-powers", "1",
                                      "--reference-report", str(source), "--output-root", str(root / "outputs")])
             self.assertEqual(status, 0)
             folder = next((root / "outputs").iterdir())
@@ -293,6 +294,7 @@ class WorkSweepTests(unittest.TestCase):
         """A complete small experiment preserves its JSON beside its offline graphs."""
         with tempfile.TemporaryDirectory(dir=visual.ROOT) as directory, redirect_stdout(io.StringIO()):
             status = sweep.main(["--sizes", "1", "2", "--cutoffs", "1", "--algorithms", "naive",
+                                 "--cw-parameters", "1", "--cw-powers", "1",
                                  "--output-root", directory])
             self.assertEqual(status, 0)
             folders = list(Path(directory).iterdir())

@@ -224,3 +224,8 @@ __marimo__/
 
 # Generated experiment visualizations; publish selected reports manually
 /outputs/
+
+# Local agent instructions and working notes
+/AGENTS.md
+/DEVELOPMENT.md
+/agent_docs/

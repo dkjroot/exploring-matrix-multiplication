@@ -828,9 +828,19 @@ of priority. A proposed direction is not a verified construction or bound.
   layouts in a squared interior component; a retained eight-product recipe
   reduces to seven and recombines into a 49-product 4-by-4 base. This reproduces
   the known rank-seven exponent, not a stronger bound than Smirnov.
-- [ ] Transport verified support maps across exact cyclic symmetries, then test
-  independent selections of the newly found layouts and recover their joint
-  recipes. Compare the same products with all finite overhead included.
+- [x] Transport the eight verified support maps around the three CW sectors and
+  recover checked pairs from the shared source. The 92 tested pairs yield 64
+  independent sums and eight rectangular products of shape (2,2,4). All
+  recover to 16 products, with no saving over the corresponding baselines.
+- [x] Use the verified pair of rank-seven recipes to test recursive batching.
+  The two-level identity passes all 32,768 coefficient checks. At dimensions
+  2, 4 and 8, the schedule produces both outputs with 14, 98 and 686 scalar
+  products, respectively, matching separate Strassen calls.
+- [x] Generate Pan's exact two-product aggregation and verify it at
+  dimensions 4 and 16. Its corrections cancel the mixed terms and the
+  two outputs cost 112 and 6,272 scalar products, respectively.
+- [ ] Extend batching to an incomplete final group and check whether
+  grouping two levels into one base reduces the finite padding cost.
 - [ ] Search reductions of existing explicit real schemes, especially the smaller
   Smirnov rectangular base. A cyclic rank-39 base would give about 2.7553; rank
   38 would give about 2.7357. These are targets, not discovered coefficients.
@@ -860,10 +870,14 @@ The first seeded-neighborhood and pair experiment found no new shape or saving.
 The three-step support follow-up now extracts a 2-by-2 product, reduces its paid
 recipe from eight products to seven, and certifies a 49-product 4-by-4
 recombination. Its exponent is the familiar log₂(7), so Smirnov remains the
-stronger baseline. Next, investigate exact symmetry transport and independently
-checked joint selections of the new layouts, comparing fully recovered costs
-with the existing extraction and packing paths. Targeted reductions of
-Smirnov's rectangular recipe provide
+stronger baseline. Cycling the layouts uncovered eight checked rectangular
+products where a 2-by-2 matrix multiplies a 2-by-4 matrix, a shape with known
+exact rank 14. A pair of independent 2-by-2 products now verifies the recursive
+batching schedule. Pan's exact aggregation now verifies it when intermediate
+products combine entries from both pairs. The next experiment accounts for
+the extra slots when the number of products does not divide evenly into
+child calls.
+Targeted reductions of Smirnov's rectangular recipe provide
 a complementary finite search. Campaign checkpoints, broader exact coefficient
 fields and compact representations support these mathematical paths; custom
 CUDA execution follows when a concrete construction needs it. The bounded next

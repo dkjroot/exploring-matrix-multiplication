@@ -1,0 +1,17 @@
+{
+  "python": "3.15.1",
+  "original_run": "outputs/construction_2026-11-09_175740_421768",
+  "source_base_commit": "0227957ed34cf6892bb7d40bae2267f14a4e3863",
+  "source_sha256": {
+    "matrix_multiplication/recursive_batching.py": "04feb80ce4a555bb8eb05ea5ff47d9dd5a6111b6f7fbaea27d70244086c2b0ea",
+    "matrix_multiplication/cw_batching.py": "79d6961d2b0def7dd2da9cd0363ac9b8fb1ac019ff263f0914ee791eba4f3ca3",
+    "matrix_multiplication/constructions.py": "0286ec701409559ec485598fbfd763beee467b52d20c1017de6fa9aa8528b449",
+    "matrix_multiplication/research_suite.py": "3f3848de4ada139134eb886214d15d94af9d5545eec1ca6704ea6a8db7bcbba4"
+  },
+  "artifact_sha256": {
+    "index.html": "bb3f4c3bfa297e586eda6cd43c196c96933da8dc79da5c345308e32e58b295a6",
+    "parts.json": "4d3a1b74031aef94da0917cc705b70c13d91768d5c1d081034908143e25423f1",
+    "report.json": "4199009cd6741c1502d762fc68c7d04d45dccaf985f2f55dfa072be134f15afd",
+    "run.log": "188b4cc642512cbfc9c3b20f89950ebc5b67e4088602bb324d837fb18baf8568"
+  }
+}

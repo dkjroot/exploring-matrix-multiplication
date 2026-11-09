@@ -1,0 +1,6021 @@
+{
+  "schema": "selected-cw-cyclic-support-evidence-v1",
+  "source_run": "outputs/construction_2026-11-09_174459_510550",
+  "source_report_sha256": "45b1bd51b7d88b2af294cfcf19c8d355e5da9a2be9c7ad15ec47584b3512a9ab",
+  "source_parts_sha256": "0c35b4531dd5029aac723c424a62ee971d5bb5d18246b390557d23141141bff7",
+  "source_base_commit": "0227957ed34cf6892bb7d40bae2267f14a4e3863",
+  "changed_source_files_sha256": {
+    "matrix_multiplication/constructions.py": "f5c396ec9cb8685f56ebc5e640b977d3d0e166d008984d3a54396c16bb602d37",
+    "matrix_multiplication/cw_support.py": "c95f8f7ae49c6e22f4cf70485f2f2bec3de291c856dae74ad100257604d3760b",
+    "matrix_multiplication/cw_symmetry.py": "2c77ff51397a0562b6f4894b1956d1cedc077007aa48b92f762df0adda951389",
+    "matrix_multiplication/support_search.py": "ff7a635fca619942c74574b64925deffd50824256e1d98513c4dfb4b36601818"
+  },
+  "python": "3.15.1",
+  "settings": {
+    "candidate_budget_per_target_scope": 4096,
+    "seed_prefix_budget": 2048,
+    "step_one_target": [
+      2,
+      2,
+      2
+    ],
+    "step_two_targets": [
+      [
+        2,
+        2,
+        2
+      ],
+      [
+        2,
+        2,
+        3
+      ],
+      [
+        2,
+        3,
+        2
+      ],
+      [
+        3,
+        2,
+        2
+      ]
+    ],
+    "max_parts_per_target": 2,
+    "steps_per_restart": 1000,
+    "restarts_per_seed": 10,
+    "search_seeds": [
+      0,
+      1
+    ],
+    "max_height": 1,
+    "reduction_limit": 1,
+    "max_source_dimension": 64,
+    "max_source_terms": 4096
+  },
+  "follow_up": {
+    "status": "completed",
+    "origin_map_cap": 8,
+    "pair_cap": 92,
+    "sectors": [
+      [
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        2,
+        1
+      ],
+      [
+        2,
+        1,
+        1
+      ]
+    ],
+    "complete_sector_symmetry_verified": true,
+    "common_source_coordinates": [
+      [
+        17,
+        18,
+        20,
+        24,
+        33,
+        34,
+        36,
+        40,
+        53,
+        54,
+        57,
+        58,
+        65,
+        66,
+        68,
+        72,
+        83,
+        92,
+        99,
+        108,
+        129,
+        130,
+        132,
+        136,
+        147,
+        156,
+        163,
+        172,
+        197,
+        198,
+        201,
+        202
+      ],
+      [
+        17,
+        18,
+        20,
+        24,
+        33,
+        34,
+        36,
+        40,
+        53,
+        54,
+        57,
+        58,
+        65,
+        66,
+        68,
+        72,
+        83,
+        92,
+        99,
+        108,
+        129,
+        130,
+        132,
+        136,
+        147,
+        156,
+        163,
+        172,
+        197,
+        198,
+        201,
+        202
+      ],
+      [
+        17,
+        18,
+        20,
+        24,
+        33,
+        34,
+        36,
+        40,
+        53,
+        54,
+        57,
+        58,
+        65,
+        66,
+        68,
+        72,
+        83,
+        92,
+        99,
+        108,
+        129,
+        130,
+        132,
+        136,
+        147,
+        156,
+        163,
+        172,
+        197,
+        198,
+        201,
+        202
+      ]
+    ],
+    "common_source_literal_products": 192,
+    "maps": [
+      {
+        "index": 0,
+        "part": "symmetry-map-0",
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            65,
+            129,
+            66,
+            130
+          ],
+          [
+            92,
+            156,
+            108,
+            172
+          ]
+        ],
+        "refined_part": "support-part-0-reduced"
+      },
+      {
+        "index": 1,
+        "part": "symmetry-map-1",
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            68,
+            132,
+            72,
+            136
+          ],
+          [
+            83,
+            147,
+            99,
+            163
+          ]
+        ]
+      },
+      {
+        "index": 2,
+        "part": "symmetry-map-2",
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            17,
+            33,
+            18,
+            34
+          ],
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            197,
+            201,
+            198,
+            202
+          ]
+        ]
+      },
+      {
+        "index": 3,
+        "part": "symmetry-map-3",
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            65,
+            129,
+            66,
+            130
+          ],
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            57,
+            54,
+            58
+          ]
+        ]
+      },
+      {
+        "index": 4,
+        "part": "symmetry-map-4",
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            20,
+            36,
+            24,
+            40
+          ],
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            197,
+            198,
+            201,
+            202
+          ]
+        ]
+      },
+      {
+        "index": 5,
+        "part": "symmetry-map-5",
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            68,
+            132,
+            72,
+            136
+          ],
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58
+          ]
+        ]
+      },
+      {
+        "index": 6,
+        "part": "symmetry-map-6",
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            33,
+            18,
+            34
+          ],
+          [
+            92,
+            108,
+            156,
+            172
+          ]
+        ]
+      },
+      {
+        "index": 7,
+        "part": "symmetry-map-7",
+        "sector": [
+          1,
+          1,
+          2
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            36,
+            24,
+            40
+          ],
+          [
+            83,
+            99,
+            147,
+            163
+          ]
+        ]
+      },
+      {
+        "index": 8,
+        "part": "symmetry-map-8",
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            65,
+            129,
+            66,
+            130
+          ],
+          [
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            17,
+            33,
+            18,
+            34
+          ]
+        ],
+        "refined_part": "symmetry-map-8-reduced"
+      },
+      {
+        "index": 9,
+        "part": "symmetry-map-9",
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            68,
+            132,
+            72,
+            136
+          ],
+          [
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            20,
+            36,
+            24,
+            40
+          ]
+        ]
+      },
+      {
+        "index": 10,
+        "part": "symmetry-map-10",
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34
+          ]
+        ]
+      },
+      {
+        "index": 11,
+        "part": "symmetry-map-11",
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            65,
+            66,
+            129,
+            130
+          ]
+        ]
+      },
+      {
+        "index": 12,
+        "part": "symmetry-map-12",
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            197,
+            201,
+            198,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40
+          ]
+        ]
+      },
+      {
+        "index": 13,
+        "part": "symmetry-map-13",
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            57,
+            54,
+            58
+          ],
+          [
+            68,
+            72,
+            132,
+            136
+          ]
+        ]
+      },
+      {
+        "index": 14,
+        "part": "symmetry-map-14",
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            17,
+            33,
+            18,
+            34
+          ],
+          [
+            92,
+            156,
+            108,
+            172
+          ],
+          [
+            65,
+            129,
+            66,
+            130
+          ]
+        ]
+      },
+      {
+        "index": 15,
+        "part": "symmetry-map-15",
+        "sector": [
+          1,
+          2,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            20,
+            36,
+            24,
+            40
+          ],
+          [
+            83,
+            147,
+            99,
+            163
+          ],
+          [
+            68,
+            132,
+            72,
+            136
+          ]
+        ]
+      },
+      {
+        "index": 16,
+        "part": "symmetry-map-16",
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            65,
+            66,
+            129,
+            130
+          ]
+        ],
+        "refined_part": "symmetry-map-16-reduced"
+      },
+      {
+        "index": 17,
+        "part": "symmetry-map-17",
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            68,
+            72,
+            132,
+            136
+          ]
+        ]
+      },
+      {
+        "index": 18,
+        "part": "symmetry-map-18",
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            33,
+            18,
+            34
+          ],
+          [
+            20,
+            36,
+            24,
+            40
+          ]
+        ]
+      },
+      {
+        "index": 19,
+        "part": "symmetry-map-19",
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            65,
+            129,
+            66,
+            130
+          ],
+          [
+            68,
+            132,
+            72,
+            136
+          ]
+        ]
+      },
+      {
+        "index": 20,
+        "part": "symmetry-map-20",
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            197,
+            201,
+            198,
+            202
+          ],
+          [
+            20,
+            36,
+            24,
+            40
+          ],
+          [
+            17,
+            33,
+            18,
+            34
+          ]
+        ]
+      },
+      {
+        "index": 21,
+        "part": "symmetry-map-21",
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            53,
+            57,
+            54,
+            58
+          ],
+          [
+            68,
+            132,
+            72,
+            136
+          ],
+          [
+            65,
+            129,
+            66,
+            130
+          ]
+        ]
+      },
+      {
+        "index": 22,
+        "part": "symmetry-map-22",
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            92,
+            156,
+            108,
+            172
+          ],
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34
+          ]
+        ]
+      },
+      {
+        "index": 23,
+        "part": "symmetry-map-23",
+        "sector": [
+          2,
+          1,
+          1
+        ],
+        "ambient_source_coordinates_in_matrix_order": [
+          [
+            83,
+            147,
+            99,
+            163
+          ],
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40
+          ]
+        ]
+      }
+    ],
+    "pairs": [
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            83,
+            92,
+            99,
+            108,
+            147,
+            156,
+            163,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          1
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-1"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            92,
+            108,
+            156,
+            172,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          0,
+          2
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          3
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-3"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            92,
+            108,
+            156,
+            172,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          4
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-4"
+      },
+      {
+        "shared_legs": [
+          1
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          0,
+          5
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [
+          2
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          0,
+          6
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            83,
+            92,
+            99,
+            108,
+            147,
+            156,
+            163,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          7
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-7"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            83,
+            99,
+            147,
+            163,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          2
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-1-2"
+      },
+      {
+        "shared_legs": [
+          1
+        ],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          1,
+          3
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            83,
+            99,
+            147,
+            163,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          1,
+          4
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          5
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-1-5"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            83,
+            92,
+            99,
+            108,
+            147,
+            156,
+            163,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          6
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-1-6"
+      },
+      {
+        "shared_legs": [
+          2
+        ],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          1,
+          7
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          3
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-2-3"
+      },
+      {
+        "shared_legs": [
+          2
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          2,
+          4
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          5
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-2-5"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            92,
+            108,
+            156,
+            172,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          6
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-2-6"
+      },
+      {
+        "shared_legs": [
+          1
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            83,
+            99,
+            147,
+            163,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          2,
+          7
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          3,
+          4
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-3-4"
+      },
+      {
+        "shared_legs": [
+          2
+        ],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          3,
+          5
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          3,
+          6
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          3,
+          7
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-3-7"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          4,
+          5
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-4-5"
+      },
+      {
+        "shared_legs": [
+          1
+        ],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            92,
+            108,
+            156,
+            172,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          4,
+          6
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            83,
+            99,
+            147,
+            163,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          4,
+          7
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-4-7"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          5,
+          6
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-5-6"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          5,
+          7
+        ],
+        "scope": "within original sector"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            83,
+            92,
+            99,
+            108,
+            147,
+            156,
+            163,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          6,
+          7
+        ],
+        "scope": "within original sector",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-6-7"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            65,
+            66,
+            92,
+            108,
+            129,
+            130,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          8
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 14,
+        "part": "symmetry-joint-0-8"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            83,
+            99,
+            129,
+            130,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          9
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-9"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            65,
+            66,
+            129,
+            130,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          10
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-10"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            65,
+            66,
+            92,
+            108,
+            129,
+            130,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          11
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-11"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            65,
+            66,
+            129,
+            130,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "verified matrix product",
+        "status": "verified dense union",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": false,
+        "pair": [
+          0,
+          12
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            4
+          ]
+        ],
+        "classical_products": 16,
+        "part": "symmetry-joint-0-12"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            68,
+            72,
+            92,
+            108,
+            132,
+            136,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          13
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-13"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            65,
+            66,
+            92,
+            108,
+            129,
+            130,
+            156,
+            172
+          ],
+          [
+            65,
+            66,
+            92,
+            108,
+            129,
+            130,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          0,
+          14
+        ],
+        "scope": "between cyclic sectors"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            65,
+            66,
+            83,
+            99,
+            129,
+            130,
+            147,
+            163
+          ],
+          [
+            68,
+            72,
+            92,
+            108,
+            132,
+            136,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          0,
+          15
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-0-15"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            68,
+            72,
+            92,
+            108,
+            132,
+            136,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          8
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-1-8"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            68,
+            72,
+            83,
+            99,
+            132,
+            136,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          9
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-1-9"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            68,
+            72,
+            132,
+            136,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "verified matrix product",
+        "status": "verified dense union",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": false,
+        "pair": [
+          1,
+          10
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            4
+          ]
+        ],
+        "classical_products": 16,
+        "part": "symmetry-joint-1-10"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            83,
+            99,
+            129,
+            130,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          11
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-1-11"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            68,
+            72,
+            132,
+            136,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          12
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-1-12"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            68,
+            72,
+            83,
+            99,
+            132,
+            136,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          13
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-1-13"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            68,
+            72,
+            92,
+            108,
+            132,
+            136,
+            156,
+            172
+          ],
+          [
+            65,
+            66,
+            83,
+            99,
+            129,
+            130,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          1,
+          14
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-1-14"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            68,
+            72,
+            83,
+            99,
+            132,
+            136,
+            147,
+            163
+          ],
+          [
+            68,
+            72,
+            83,
+            99,
+            132,
+            136,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          1,
+          15
+        ],
+        "scope": "between cyclic sectors"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          8
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-2-8"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          9
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-2-9"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          10
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-2-10"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            65,
+            66,
+            129,
+            130,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          11
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-2-11"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          2,
+          12
+        ],
+        "scope": "between cyclic sectors"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            68,
+            72,
+            132,
+            136,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          13
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-2-13"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            65,
+            66,
+            129,
+            130,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "verified matrix product",
+        "status": "verified dense union",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": false,
+        "pair": [
+          2,
+          14
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            4
+          ]
+        ],
+        "classical_products": 16,
+        "part": "symmetry-joint-2-14"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            68,
+            72,
+            132,
+            136,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          2,
+          15
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-2-15"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            68,
+            72,
+            92,
+            108,
+            132,
+            136,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "verified matrix product",
+        "status": "verified dense union",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": false,
+        "pair": [
+          3,
+          8
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            4
+          ]
+        ],
+        "classical_products": 16,
+        "part": "symmetry-joint-3-8"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            68,
+            72,
+            83,
+            99,
+            132,
+            136,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          3,
+          9
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-3-9"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            68,
+            72,
+            132,
+            136,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          3,
+          10
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-3-10"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            65,
+            66,
+            129,
+            130
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          3,
+          11
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-3-11"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            68,
+            72,
+            132,
+            136,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          3,
+          12
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-3-12"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            68,
+            72,
+            132,
+            136
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          3,
+          13
+        ],
+        "scope": "between cyclic sectors"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            68,
+            72,
+            92,
+            108,
+            132,
+            136,
+            156,
+            172
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            65,
+            66,
+            129,
+            130
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          3,
+          14
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-3-14"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            68,
+            72,
+            83,
+            99,
+            132,
+            136,
+            147,
+            163
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            68,
+            72,
+            132,
+            136
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          3,
+          15
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-3-15"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          4,
+          8
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-4-8"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          4,
+          9
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-4-9"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          4,
+          10
+        ],
+        "scope": "between cyclic sectors"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            65,
+            66,
+            129,
+            130,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          4,
+          11
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-4-11"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          4,
+          12
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-4-12"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            68,
+            72,
+            132,
+            136,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          4,
+          13
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-4-13"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            20,
+            24,
+            33,
+            34,
+            36,
+            40
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            65,
+            66,
+            129,
+            130,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          4,
+          14
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-4-14"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            68,
+            72,
+            132,
+            136,
+            197,
+            198,
+            201,
+            202
+          ]
+        ],
+        "dense_recognition_status": "verified matrix product",
+        "status": "verified dense union",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": false,
+        "pair": [
+          4,
+          15
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            4
+          ]
+        ],
+        "classical_products": 16,
+        "part": "symmetry-joint-4-15"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            92,
+            108,
+            129,
+            130,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          5,
+          8
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-5-8"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            83,
+            99,
+            129,
+            130,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "verified matrix product",
+        "status": "verified dense union",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": false,
+        "pair": [
+          5,
+          9
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            4
+          ]
+        ],
+        "classical_products": 16,
+        "part": "symmetry-joint-5-9"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            129,
+            130,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          5,
+          10
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-5-10"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            65,
+            66,
+            129,
+            130
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          5,
+          11
+        ],
+        "scope": "between cyclic sectors"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            129,
+            130,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            53,
+            54,
+            57,
+            58
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          5,
+          12
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-5-12"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            68,
+            72,
+            132,
+            136
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          5,
+          13
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-5-13"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            92,
+            108,
+            129,
+            130,
+            156,
+            172
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            65,
+            66,
+            129,
+            130
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          5,
+          14
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-5-14"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            65,
+            66,
+            83,
+            99,
+            129,
+            130,
+            147,
+            163
+          ],
+          [
+            53,
+            54,
+            57,
+            58,
+            68,
+            72,
+            132,
+            136
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          5,
+          15
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-5-15"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          6,
+          8
+        ],
+        "scope": "between cyclic sectors"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          6,
+          9
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-6-9"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          6,
+          10
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-6-10"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            65,
+            66,
+            92,
+            108,
+            129,
+            130,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          6,
+          11
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-6-11"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            92,
+            108,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          6,
+          12
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-6-12"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            68,
+            72,
+            92,
+            108,
+            132,
+            136,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "verified matrix product",
+        "status": "verified dense union",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": false,
+        "pair": [
+          6,
+          13
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            4
+          ]
+        ],
+        "classical_products": 16,
+        "part": "symmetry-joint-6-13"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            65,
+            66,
+            92,
+            108,
+            129,
+            130,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          6,
+          14
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-6-14"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            65,
+            66,
+            129,
+            130
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            68,
+            72,
+            92,
+            108,
+            132,
+            136,
+            156,
+            172
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          6,
+          15
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-6-15"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          7,
+          8
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 15,
+        "part": "symmetry-joint-7-8"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "not recognized",
+        "status": "shared spaces; no dense union recognized",
+        "pair": [
+          7,
+          9
+        ],
+        "scope": "between cyclic sectors"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            17,
+            18,
+            33,
+            34,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          7,
+          10
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-7-10"
+      },
+      {
+        "shared_legs": [
+          0
+        ],
+        "union_coordinates": [
+          [
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            65,
+            66,
+            83,
+            99,
+            129,
+            130,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "verified matrix product",
+        "status": "verified dense union",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": false,
+        "pair": [
+          7,
+          11
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            4
+          ]
+        ],
+        "classical_products": 16,
+        "part": "symmetry-joint-7-11"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            197,
+            198,
+            201,
+            202
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            83,
+            99,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          7,
+          12
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-7-12"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            65,
+            66,
+            68,
+            72,
+            129,
+            130,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            53,
+            54,
+            57,
+            58
+          ],
+          [
+            68,
+            72,
+            83,
+            99,
+            132,
+            136,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          7,
+          13
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-7-13"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            17,
+            18,
+            33,
+            34,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            92,
+            108,
+            156,
+            172
+          ],
+          [
+            65,
+            66,
+            83,
+            99,
+            129,
+            130,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          7,
+          14
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-7-14"
+      },
+      {
+        "shared_legs": [],
+        "union_coordinates": [
+          [
+            20,
+            24,
+            36,
+            40,
+            68,
+            72,
+            132,
+            136
+          ],
+          [
+            20,
+            24,
+            36,
+            40,
+            83,
+            99,
+            147,
+            163
+          ],
+          [
+            68,
+            72,
+            83,
+            99,
+            132,
+            136,
+            147,
+            163
+          ]
+        ],
+        "dense_recognition_status": "dimension obstruction",
+        "status": "verified independent direct sum",
+        "complete_identity_verified": true,
+        "separate_cost_is_comparable": true,
+        "pair": [
+          7,
+          15
+        ],
+        "scope": "between cyclic sectors",
+        "products": 16,
+        "component_shapes": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            2,
+            2,
+            2
+          ]
+        ],
+        "classical_products": 16,
+        "separate_recovery_products": 16,
+        "best_known_separate_products": 16,
+        "part": "symmetry-joint-7-15"
+      }
+    ],
+    "outcomes": {
+      "within original sector": {
+        "verified independent direct sum": 16,
+        "shared spaces; no dense union recognized": 12
+      },
+      "between cyclic sectors": {
+        "verified independent direct sum": 48,
+        "verified dense union": 8,
+        "shared spaces; no dense union recognized": 8
+      }
+    },
+    "joint_recovery_savings": 0,
+    "savings_against_best_known_separate": 0,
+    "dense_union_savings": 0
+  }
+}

@@ -76,7 +76,9 @@ class ResearchSuiteTests(unittest.TestCase):
                              "coarse CW classification and verified packing",
                              "interior CW restrictions and reusable parts",
                              "seeded CW neighborhoods and checked joint recovery",
-                             "three-step support search and exact rank reuse",
+                             "support search, exact rank reuse and cyclic joint recovery",
+                             "recursive independent-product batching",
+                             "exact two-product aggregation",
                              "profiles, memory, accuracy, traces",
                              "measured arithmetic and theoretical comparison"} <= families)
             extraction = json.loads((root / "cw-extraction-q1-power1" / "report.json").read_text())["cw_extraction"]
@@ -92,6 +94,11 @@ class ResearchSuiteTests(unittest.TestCase):
             neighborhood = json.loads((root / "cw-neighborhood-q1-power1" / "report.json").read_text())["cw_neighborhood"]
             self.assertEqual(neighborhood['experiments'], [])
             self.assertEqual(neighborhood['new_verified_shapes'], 0)
+            batching = json.loads((root / "cw-batch" / "report.json").read_text())["cw_batching"]
+            self.assertEqual([e["budget"]["field_multiplications"] for e in batching["executions"]], [14, 98, 686])
+            pan = json.loads((root / "pan-batch" / "report.json").read_text())["pan_batching"]
+            self.assertEqual([e["budget"]["field_multiplications"] for e in pan["executions"]], [112])
+            self.assertNotIn("second_level_identity", pan)
             integration = next(s for s in manifest["stages"] if s["name"] == "register-generated-cw-packed")
             self.assertTrue(any(c["construction"] == "cw-coarse-q1-power1" for c in integration["candidates"]))
             for stage in manifest["stages"]:
@@ -139,9 +146,10 @@ class ResearchSuiteTests(unittest.TestCase):
             discovery = next(s for s in manifest["stages"] if s["name"] == "search-1")
             self.assertEqual(discovery["status"], "passed")
             self.assertFalse(discovery["target_reached"])
-            cw = next(s for s in manifest["stages"] if s["name"].startswith("cw-"))
+            cw = next(s for s in manifest["stages"] if s["name"] == "cw-q1-power1")
             self.assertEqual(cw["status"], "error")
             self.assertIn("CW check failure", cw["error"])
+            self.assertEqual(next(s for s in manifest["stages"] if s["name"] == "cw-batch")["status"], "passed")
             self.assertEqual(next(s for s in manifest["stages"] if s["name"] == "arithmetic-growth")["status"], "passed")
             self.assertTrue((index.parent / "certificates" / "naive" / "certificate.json").exists())
             self.assertIn("Suite status: <strong>failed", index.read_text())
